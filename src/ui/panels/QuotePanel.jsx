@@ -1,0 +1,337 @@
+import { useMemo, useState } from 'react'
+import { studio } from '../../data/studio'
+import { daysUntil, formatDateBR, minEventDate } from '../../lib/format'
+import { quoteMailto, quoteMessage, quoteText } from '../../lib/whatsapp'
+import { useStore } from '../../store/useStore'
+import { IconArrow, IconBack, IconCheck, IconCopy, IconMail, IconWhatsapp } from '../Icons'
+import { Panel } from '../Panel'
+
+const TIPOS = [
+  'Topo de bolo',
+  'Arranjo de flores',
+  'Lembrancinhas',
+  'Boneco personalizado',
+  'Peça decorativa',
+  'Outra coisa',
+]
+
+const CONTATOS = [
+  { id: 'whatsapp', label: 'WhatsApp', placeholder: '(51) 99999-0000', type: 'tel' },
+  { id: 'email', label: 'E-mail', placeholder: 'voce@email.com', type: 'email' },
+  { id: 'instagram', label: 'Instagram', placeholder: '@seuperfil', type: 'text' },
+]
+
+const PASSOS = ['O que você precisa', 'Para quando', 'Como te encontro']
+
+function Progresso({ step }) {
+  return (
+    <div className="mb-4">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-[12px] font-semibold tracking-wide text-carvao/55 uppercase">
+          Passo {step + 1} de {PASSOS.length}
+        </span>
+        <span className="text-[12.5px] font-medium text-carvao/70">{PASSOS[step]}</span>
+      </div>
+      <div className="flex gap-1.5">
+        {PASSOS.map((_, i) => (
+          <span
+            key={i}
+            className={`h-1 flex-1 rounded-full transition-colors ${i <= step ? 'bg-brasa' : 'bg-carvao/12'}`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function QuotePanel() {
+  const closePanel = useStore((s) => s.closePanel)
+  const openPanel = useStore((s) => s.openPanel)
+  const quote = useStore((s) => s.quote)
+  const setQuoteField = useStore((s) => s.setQuoteField)
+  const resetQuote = useStore((s) => s.resetQuote)
+  const toast = useStore((s) => s.toast)
+
+  const [step, setStep] = useState(0)
+  const [sent, setSent] = useState(false)
+  const [touched, setTouched] = useState(false)
+
+  const dataMinima = useMemo(() => minEventDate(studio.minLeadDays), [])
+  const diasAteEvento = daysUntil(quote.eventDate)
+  const apertado = diasAteEvento != null && diasAteEvento < studio.minLeadDays
+
+  const contato = CONTATOS.find((c) => c.id === quote.contactKind) ?? CONTATOS[0]
+
+  const erros = {
+    kind: !quote.kind.trim() ? 'Escolha ou descreva o tipo de peça' : null,
+    qty: !quote.qty.toString().trim() ? 'Diga quantas peças, mesmo que seja uma' : null,
+    name: !quote.name.trim() ? 'Preciso do seu nome' : null,
+    contact: !quote.contact.trim() ? `Informe seu ${contato.label.toLowerCase()}` : null,
+  }
+
+  const passoValido = step === 0 ? !erros.kind && !erros.qty : step === 1 ? true : !erros.name && !erros.contact
+
+  const avancar = () => {
+    setTouched(true)
+    if (!passoValido) return
+    setTouched(false)
+    if (step < PASSOS.length - 1) setStep(step + 1)
+    else setSent(true)
+  }
+
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(quoteText(quote))
+      toast('Pedido copiado')
+    } catch {
+      toast('Não consegui copiar. Selecione o texto abaixo.')
+    }
+  }
+
+  if (sent) {
+    return (
+      <Panel title="Pedido pronto para enviar" onClose={closePanel}>
+        <div className="flex items-start gap-3 rounded-xl bg-salvia/18 px-3.5 py-3">
+          <IconCheck size={20} className="mt-0.5 shrink-0 text-salvia" />
+          <p className="text-[13px] leading-relaxed text-carvao/80">
+            Montei o resumo abaixo. Escolha por onde quer mandar — {studio.answerTime.toLowerCase()}.
+          </p>
+        </div>
+
+        <pre className="rolagem-fina mt-4 max-h-56 overflow-auto rounded-xl border border-carvao/10 bg-creme p-3.5 text-[12.5px] leading-relaxed whitespace-pre-wrap text-carvao/80">
+          {quoteText(quote)}
+        </pre>
+
+        <div className="mt-4 grid gap-2">
+          <a href={quoteMessage(quote)} target="_blank" rel="noreferrer" className="btn-principal w-full">
+            <IconWhatsapp size={18} />
+            Enviar pelo WhatsApp
+          </a>
+          <div className="grid grid-cols-2 gap-2">
+            <a href={quoteMailto(quote)} className="btn-secundario">
+              <IconMail size={17} />
+              Por e-mail
+            </a>
+            <button type="button" onClick={copiar} className="btn-secundario">
+              <IconCopy size={17} />
+              Copiar
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-center justify-between border-t border-carvao/10 pt-4">
+          <button
+            type="button"
+            onClick={() => {
+              setSent(false)
+              setStep(0)
+            }}
+            className="btn-fantasma -ml-1"
+          >
+            <IconBack size={16} />
+            Revisar
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              resetQuote()
+              setSent(false)
+              setStep(0)
+              toast('Formulário limpo')
+            }}
+            className="btn-fantasma text-[13px]"
+          >
+            Começar outro
+          </button>
+        </div>
+      </Panel>
+    )
+  }
+
+  return (
+    <Panel
+      title="Pedir orçamento"
+      subtitle={`Sem compromisso. ${studio.answerTime}.`}
+      onClose={closePanel}
+      footer={
+        <div className="mb-3 flex items-center gap-2 md:mb-0">
+          {step > 0 && (
+            <button type="button" onClick={() => setStep(step - 1)} className="btn-secundario shrink-0">
+              <IconBack size={16} />
+            </button>
+          )}
+          <button type="button" onClick={avancar} className="btn-principal flex-1">
+            {step < PASSOS.length - 1 ? 'Continuar' : 'Ver resumo'}
+            <IconArrow size={16} />
+          </button>
+        </div>
+      }
+    >
+      <Progresso step={step} />
+
+      {step === 0 && (
+        <div className="grid gap-4">
+          <div>
+            <span className="etiqueta">Que tipo de peça?</span>
+            <div className="flex flex-wrap gap-1.5">
+              {TIPOS.map((tipo) => (
+                <button
+                  key={tipo}
+                  type="button"
+                  onClick={() => setQuoteField('kind', tipo)}
+                  aria-pressed={quote.kind === tipo}
+                  className={`rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                    quote.kind === tipo
+                      ? 'border-carvao bg-carvao text-porcelana'
+                      : 'border-carvao/15 bg-creme text-carvao/70'
+                  }`}
+                >
+                  {tipo}
+                </button>
+              ))}
+            </div>
+            <input
+              className="campo mt-2"
+              placeholder="ou escreva com suas palavras"
+              value={quote.kind}
+              onChange={(e) => setQuoteField('kind', e.target.value)}
+              aria-label="Tipo de peça"
+            />
+            {touched && erros.kind && <p className="mt-1.5 text-[12px] text-brasa">{erros.kind}</p>}
+          </div>
+
+          <div>
+            <label className="etiqueta" htmlFor="q-qty">
+              Quantas peças?
+            </label>
+            <input
+              id="q-qty"
+              className="campo"
+              placeholder="ex.: 1 topo e 40 lembrancinhas"
+              value={quote.qty}
+              onChange={(e) => setQuoteField('qty', e.target.value)}
+            />
+            {touched && erros.qty && <p className="mt-1.5 text-[12px] text-brasa">{erros.qty}</p>}
+          </div>
+
+          <div>
+            <label className="etiqueta" htmlFor="q-details">
+              Detalhes <span className="font-normal normal-case">(opcional)</span>
+            </label>
+            <textarea
+              id="q-details"
+              className="campo min-h-24 resize-y"
+              placeholder="Conte a ideia: o tema da festa, quem são as pessoas, se tem uma foto de referência…"
+              value={quote.details}
+              onChange={(e) => setQuoteField('details', e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+
+      {step === 1 && (
+        <div className="grid gap-4">
+          <div>
+            <label className="etiqueta" htmlFor="q-date">
+              Data do evento
+            </label>
+            <input
+              id="q-date"
+              type="date"
+              className="campo"
+              min={dataMinima}
+              value={quote.eventDate}
+              onChange={(e) => setQuoteField('eventDate', e.target.value)}
+            />
+            {quote.eventDate && !apertado && (
+              <p className="mt-1.5 text-[12px] text-carvao/55">
+                {formatDateBR(quote.eventDate)} — {diasAteEvento} dias, dá tempo tranquilo.
+              </p>
+            )}
+            {apertado && (
+              <p className="mt-1.5 rounded-lg bg-brasa/10 px-3 py-2 text-[12px] leading-relaxed text-brasa">
+                Faltam {diasAteEvento} dias, e a produção costuma levar {studio.minLeadDays}. Mande
+                o pedido de qualquer jeito: dependendo da agenda eu consigo encaixar.
+              </p>
+            )}
+            <p className="mt-1.5 text-[12px] text-carvao/50">Não tem data ainda? Pode deixar em branco.</p>
+          </div>
+
+          <div>
+            <label className="etiqueta" htmlFor="q-colors">
+              Cores ou tema <span className="font-normal normal-case">(opcional)</span>
+            </label>
+            <input
+              id="q-colors"
+              className="campo"
+              placeholder="ex.: terracota e verde-oliva, tema jardim"
+              value={quote.colors}
+              onChange={(e) => setQuoteField('colors', e.target.value)}
+            />
+          </div>
+
+          <p className="rounded-xl bg-carvao/5 px-3.5 py-3 text-[12.5px] leading-relaxed text-carvao/65">
+            Tem foto de referência? Manda junto no WhatsApp depois de enviar o resumo — é o que mais
+            ajuda a acertar a peça de primeira.
+          </p>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="grid gap-4">
+          <div>
+            <label className="etiqueta" htmlFor="q-name">
+              Seu nome
+            </label>
+            <input
+              id="q-name"
+              className="campo"
+              autoComplete="name"
+              value={quote.name}
+              onChange={(e) => setQuoteField('name', e.target.value)}
+            />
+            {touched && erros.name && <p className="mt-1.5 text-[12px] text-brasa">{erros.name}</p>}
+          </div>
+
+          <div>
+            <span className="etiqueta">Onde prefere conversar?</span>
+            <div className="mb-2 flex gap-1.5">
+              {CONTATOS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setQuoteField('contactKind', c.id)}
+                  aria-pressed={quote.contactKind === c.id}
+                  className={`flex-1 rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                    quote.contactKind === c.id
+                      ? 'border-carvao bg-carvao text-porcelana'
+                      : 'border-carvao/15 bg-creme text-carvao/70'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            <input
+              className="campo"
+              type={contato.type}
+              inputMode={contato.id === 'whatsapp' ? 'tel' : undefined}
+              placeholder={contato.placeholder}
+              value={quote.contact}
+              onChange={(e) => setQuoteField('contact', e.target.value)}
+              aria-label={contato.label}
+            />
+            {touched && erros.contact && <p className="mt-1.5 text-[12px] text-brasa">{erros.contact}</p>}
+          </div>
+
+          <p className="text-[12px] leading-relaxed text-carvao/55">
+            Seus dados vão só para o ateliê responder o orçamento. Nada de lista de e-mail.{' '}
+            <button type="button" onClick={() => openPanel('processo')} className="underline">
+              Ver como funciona a encomenda
+            </button>
+          </p>
+        </div>
+      )}
+    </Panel>
+  )
+}

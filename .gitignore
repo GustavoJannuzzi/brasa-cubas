@@ -1,0 +1,19 @@
+# dependencias
+node_modules
+
+# build
+dist
+dist-ssr
+
+# ferramentas
+.vercel
+.vite
+*.local
+
+# logs
+*.log
+npm-debug.log*
+
+# sistema operacional
+.DS_Store
+Thumbs.db

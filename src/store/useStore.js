@@ -246,7 +246,10 @@ export const useStore = create(
 
       onboardingDone: false,
       finishOnboarding: () => set({ onboardingDone: true }),
-      replayOnboarding: () => set({ onboardingDone: false }),
+      // Zera tambem o pulo: quem chegou por link direto teve o tutorial
+      // pulado, e sem isto o botao "Rever a apresentacao" nao fazia nada para
+      // sempre naquela visita.
+      replayOnboarding: () => set({ onboardingDone: false, pulouOnboarding: false }),
       // Link que chega direto num painel (#orcamento na bio) pula o tutorial.
       // Nao persiste de proposito: quem voltar depois pela home ainda ve.
       pulouOnboarding: false,
@@ -281,6 +284,15 @@ export const useStore = create(
         simpleMode: s.simpleMode,
         onboardingDone: s.onboardingDone,
       }),
+      // Peca que sai do catalogo continua no localStorage de quem ja a tinha.
+      // O painel e o selo ja a ignoram; sem isto ela ficaria la para sempre,
+      // invisivel, indo junto em todo pedido futuro que fosse lido do estado
+      // guardado. Sai na hidratacao, antes do primeiro render.
+      merge: (guardado, atual) => ({
+        ...atual,
+        ...guardado,
+        cart: (guardado?.cart ?? []).filter((line) => productById(line.id)),
+      }),
     },
   ),
 )
@@ -293,7 +305,11 @@ export const useStore = create(
 // e entrar em laco infinito. Por isso o carrinho e lido cru (referencia
 // estavel) e enriquecido em useMemo.
 
-export const selectCartCount = (s) => s.cart.reduce((sum, line) => sum + line.qty, 0)
+// Conta so o que o painel do pedido mostra. O carrinho e persistido: uma peca
+// que saia do catalogo continua no localStorage de quem ja a tinha, e o selo
+// somava uma quantidade que nenhuma linha do painel explicava.
+export const selectCartCount = (s) =>
+  s.cart.reduce((sum, line) => (productById(line.id) ? sum + line.qty : sum), 0)
 
 export const useCartSummary = () => {
   const cart = useStore((s) => s.cart)

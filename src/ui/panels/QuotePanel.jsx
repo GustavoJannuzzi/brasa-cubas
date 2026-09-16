@@ -386,14 +386,16 @@ export function QuotePanel() {
             )}
             {incerto && (
               <p className="mt-1.5 text-[12px] leading-relaxed text-carvao/70">
-                {tipoNoTexto} leva {prazoEmTexto(prazo)} e {quandoE(diasAteEvento)}. Dá para tentar:
-                mande o pedido que eu confirmo na agenda.
+                {tipoNoTexto}: o prazo costuma ser de {prazoEmTexto(prazo)} e {quandoE(diasAteEvento)}.
+                Dá para tentar: mande o pedido que eu confirmo na agenda.
               </p>
             )}
             {apertado && (
               <p className="mt-1.5 rounded-lg bg-brasa/10 px-3 py-2 text-[12px] leading-relaxed text-erro">
-                {tipoNoTexto} costuma levar {prazoEmTexto(prazo)} e {quandoE(diasAteEvento)}. Fica
-                apertado, mas mande o pedido: dependendo da agenda eu consigo encaixar.
+                {/* "Lembrancinhas costuma levar" nao concorda. A frase passou
+                    a nao depender do numero do tipo. */}
+                {tipoNoTexto}: o prazo costuma ser de {prazoEmTexto(prazo)} e {quandoE(diasAteEvento)}.
+                Fica apertado, mas mande o pedido: dependendo da agenda eu consigo encaixar.
               </p>
             )}
             <p className="mt-1.5 text-[12px] text-carvao/70">Não tem data ainda? Pode deixar em branco.</p>

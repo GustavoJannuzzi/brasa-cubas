@@ -39,21 +39,21 @@ export function HelpPanel() {
     <Panel title="Como navegar" subtitle="O ateliê é 3D, mas nada aqui depende de saber girar a cena" onClose={closePanel}>
       <ul className="grid gap-2.5 text-[13.5px] leading-relaxed text-carvao/75">
         <li className="flex gap-2.5">
-          <span className="font-display text-brasa">1</span>
+          <span className="font-display text-brasa-texto">1</span>
           <span>
             {isTouch ? 'Arraste com um dedo' : 'Arraste com o mouse'} para girar o ateliê.{' '}
             {isTouch ? 'Pinça' : 'Rolar a roda'} para aproximar e afastar.
           </span>
         </li>
         <li className="flex gap-2.5">
-          <span className="font-display text-brasa">2</span>
+          <span className="font-display text-brasa-texto">2</span>
           <span>
             Toque nos marcadores <strong className="font-semibold text-carvao">✦</strong> para abrir
             cada parte do ateliê. Tocar direto no objeto também funciona.
           </span>
         </li>
         <li className="flex gap-2.5">
-          <span className="font-display text-brasa">3</span>
+          <span className="font-display text-brasa-texto">3</span>
           <span>
             Com pressa? O menu {isTouch ? 'de baixo' : 'do topo'} leva direto a produtos, orçamento e
             contato, sem precisar explorar.

@@ -24,6 +24,7 @@ const irPara = (id) => document.getElementById(id)?.scrollIntoView({ block: 'sta
 // simplesmente quer ver a lista de precos e ir embora.
 export function SimpleMode() {
   const toggleSimpleMode = useStore((s) => s.toggleSimpleMode)
+  const gl3d = useStore((s) => s.gl3d)
   const addToCart = useStore((s) => s.addToCart)
   const openPanel = useStore((s) => s.openPanel)
   const { lines, count, total, isEstimate } = useCartSummary()
@@ -73,16 +74,20 @@ export function SimpleMode() {
 
             {/* Com o "Pedido (n)" ao lado nao cabem dois botoes escritos em
                 375px. Aqui a lista e o que a pessoa escolheu: o 3D fica em
-                icone, com nome para leitor de tela. */}
-            <button
-              type="button"
-              onClick={toggleSimpleMode}
-              aria-label="Ver o ateliê em 3D"
-              className="btn-secundario px-3 py-2 text-[12.5px] whitespace-nowrap sm:px-3.5"
-            >
-              <IconCube size={15} />
-              <span className="hidden sm:inline">Ver o ateliê em 3D</span>
-            </button>
+                icone, com nome para leitor de tela.
+                E some de vez quando o aparelho NAO ABRE 3D: convidar para uma
+                porta que nao existe so gera um clique frustrado. */}
+            {gl3d !== 'indisponivel' && (
+              <button
+                type="button"
+                onClick={toggleSimpleMode}
+                aria-label="Ver o ateliê em 3D"
+                className="btn-secundario px-3 py-2 text-[12.5px] whitespace-nowrap sm:px-3.5"
+              >
+                <IconCube size={15} />
+                <span className="hidden sm:inline">Ver o ateliê em 3D</span>
+              </button>
+            )}
           </div>
         </div>
 

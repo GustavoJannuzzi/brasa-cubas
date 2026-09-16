@@ -9,9 +9,16 @@ import { IconLayers } from './Icons'
  */
 export function Aviso3D({ onTentarDeNovo }) {
   const gl3d = useStore((s) => s.gl3d)
+  const entered = useStore((s) => s.entered)
   const setSimpleMode = useStore((s) => s.setSimpleMode)
 
-  if (gl3d === 'ok') return null
+  // Antes de entrar quem fala e o loader, que ja diz a mesma coisa e ja oferece
+  // a lista. Esta faixa fica fora do involucro inerte (para funcionar por cima
+  // de um painel no celular), entao aqui atras do loader — que e opaco e cobre
+  // a tela inteira — ela virava o defeito que o inert tinha resolvido: medi dois
+  // botoes que recebiam foco no Tab, cobertos, invisiveis. E as duas regioes
+  // vivas anunciavam a queda em dobro.
+  if (gl3d === 'ok' || !entered) return null
 
   const indisponivel = gl3d === 'indisponivel'
 

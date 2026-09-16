@@ -42,13 +42,18 @@ export function Loader() {
     enter()
   }
 
+  // 'indisponivel' e 'perdido' sao coisas diferentes: dizer "este navegador nao
+  // abre o 3D" para quem estava vendo a cena e ela caiu e falso, e manda a
+  // pessoa embora achando que o aparelho dela nao serve.
   const status = pronto
     ? 'Ateliê pronto'
-    : gl3d !== 'ok'
+    : gl3d === 'indisponivel'
       ? 'Este navegador não abre o 3D'
-      : demorou
-        ? 'O 3D está demorando neste aparelho'
-        : 'Montando o ateliê…'
+      : gl3d === 'perdido'
+        ? 'O 3D parou de desenhar'
+        : demorou
+          ? 'O 3D está demorando neste aparelho'
+          : 'Montando o ateliê…'
 
   return (
     <div className="camada-cena fixed inset-0 z-50 flex flex-col items-center justify-center bg-carvao px-6 text-center">

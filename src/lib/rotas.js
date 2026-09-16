@@ -29,19 +29,31 @@ export function hashDoEstado(painel, produto) {
   return h ? `#${h}` : ''
 }
 
-/** Le o endereco. Hash desconhecido ou peca que nao existe mais nao quebra. */
+// decodeURIComponent lanca URIError em sequencia percent invalida ('#%' ou
+// '#produto/%E0'). Vindo de um link torto ou de um scanner, isso derrubava o
+// App inteiro na montagem — tela branca. Endereco e entrada de fora: nao pode
+// quebrar a pagina.
+const decodificar = (texto) => {
+  try {
+    return decodeURIComponent(texto)
+  } catch {
+    return texto
+  }
+}
+
+/** Le o endereco. Hash desconhecido, torto ou peca que nao existe mais nao quebra. */
 export function estadoDoHash(hash) {
   const cru = (hash || '').replace(/^#/, '')
   if (!cru) return { painel: null, produto: null }
 
   const [cabeca, ...resto] = cru.split('/')
   if (cabeca === 'produto') {
-    const id = decodeURIComponent(resto.join('/'))
+    const id = decodificar(resto.join('/'))
     // Link antigo para uma peca que saiu do catalogo: abre a lista, que e o
     // lugar util, em vez de um painel em branco.
     return productById(id) ? { painel: 'produto', produto: id } : { painel: 'produtos', produto: null }
   }
 
-  const painel = DE_HASH[decodeURIComponent(cabeca)]
+  const painel = DE_HASH[decodificar(cabeca)]
   return painel ? { painel, produto: null } : { painel: null, produto: null }
 }

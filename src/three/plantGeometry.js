@@ -369,7 +369,7 @@ const banquinho = (out, { h = 0.46, r = 0.15 }) => {
 }
 
 /** Macrame: quatro cordas do gancho ate por baixo do vaso, com nos. */
-const macrame = (out, { queda = 0.5, rVaso = 0.085 }) => {
+const macrame = (out, { queda = 0.5, rVaso = 0.085, yLargo = 0.05 }) => {
   const anel = new THREE.TorusGeometry(0.014, 0.004, 6, 16)
   anel.rotateX(Math.PI / 2)
   put(out, 'cord', paint(anel, CORDA[1], CORDA[0], 'y'))
@@ -379,12 +379,16 @@ const macrame = (out, { queda = 0.5, rVaso = 0.085 }) => {
     const a = (i / 4) * Math.PI * 2 + Math.PI / 4
     const cx = Math.cos(a)
     const cz = Math.sin(a)
+    // A corda desce COLADA na parede ate o fundo e so entao vira bercinho, por
+    // BAIXO do vaso. Sem o ponto na altura do bojo (yLargo), a spline mergulhava
+    // para dentro antes da hora e a corda atravessava a parede do cachepo.
     const fio = curva([
       [cx * 0.012, -0.006, cz * 0.012],
-      [cx * rVaso * 0.55, noY * 0.6, cz * rVaso * 0.55],
+      [cx * rVaso * 0.82, noY * 0.6, cz * rVaso * 0.82],
       [cx * rVaso * 1.02, noY, cz * rVaso * 1.02],
-      [cx * rVaso * 0.92, -queda + 0.018, cz * rVaso * 0.92],
-      [cx * rVaso * 0.2, -queda - 0.012, cz * rVaso * 0.2],
+      [cx * rVaso, -queda + yLargo, cz * rVaso],
+      [cx * rVaso * 0.99, -queda + 0.01, cz * rVaso * 0.99],
+      [cx * rVaso * 0.2, -queda - 0.016, cz * rVaso * 0.2],
     ])
     put(out, 'cord', tubo(fio, { r0: 0.0032, r1: 0.0032, radial: 5, segs: 20, corA: CORDA[0], corB: CORDA[1] }))
 
@@ -870,7 +874,7 @@ export function buildPlant(kind, opts = {}) {
     // o raio vem do proprio vaso: com 0.082 fixo, a corda atravessava o
     // cachepo da samambaia e ficava solta no da jiboia
     const aro = out.pot.find((g) => g.userData.aro)?.userData.aro
-    macrame(out, { queda: opts.hanging, rVaso: (aro?.r ?? 0.078) + 0.004 })
+    macrame(out, { queda: opts.hanging, rVaso: (aro?.r ?? 0.078) + 0.01, yLargo: aro?.alt ?? 0.05 })
   }
   if (opts.bracket) suporteParede(out, typeof opts.bracket === 'object' ? opts.bracket : {})
   if (opts.stand) banquinho(out, opts.stand)

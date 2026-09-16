@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { buildPiece, disposePiece, pieceHeight, pieceRadius } from './pieceGeometry'
+import { buildPiece, pieceHeight, pieceRadius } from './pieceGeometry'
 
 const GROUP_MATERIAL = {
   body: { key: 'body', roughness: 0.6 },
@@ -32,6 +32,7 @@ export function CeramicPiece({
   interactive = false,
   highlighted = false,
   castShadow = true,
+  quality = 'alta',
   label,
   onSelect,
   onHoverChange,
@@ -39,8 +40,13 @@ export function CeramicPiece({
   const group = useRef()
   const [hovered, setHovered] = useState(false)
 
-  const built = useMemo(() => buildPiece(piece), [piece])
-  useEffect(() => () => disposePiece(built), [built])
+  // A peca em destaque ganha a geometria cheia: e a unica de que a camera
+  // chega perto o bastante para a petala facetar. O resto da cena fica no
+  // nivel do aparelho.
+  const built = useMemo(
+    () => buildPiece(piece, { qualidade: highlighted ? 'foco' : quality }),
+    [piece, highlighted, quality],
+  )
 
   const materials = useMemo(() => {
     const made = {}

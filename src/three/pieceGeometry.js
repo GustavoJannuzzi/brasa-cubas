@@ -8,12 +8,51 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 // (massa, pintura, petala, folha, miolo da flor). No fim, cada grupo e mesclado
 // em uma unica geometria -> 5 draw calls por peca em vez de uma centena.
 
-// --- primitivas reaproveitadas (baixa contagem de poligonos, pensando em celular) ---
-const SPHERE = new THREE.SphereGeometry(1, 16, 12)
-const CYLINDER = new THREE.CylinderGeometry(1, 1, 1, 16)
-const CONE = new THREE.ConeGeometry(1, 1, 14)
-const BOX = new THREE.BoxGeometry(1, 1, 1)
-const CAPSULE = new THREE.CapsuleGeometry(1, 1.2, 4, 10)
+// --- niveis de detalhe ------------------------------------------------------
+// Uma esfera 16x12 tem 352 triangulos, e ela era clonada para CADA petala,
+// miolo e folha: as 19 pecas somavam 206 mil triangulos, 81% deles em petala,
+// iguais no celular. Na prateleira do desktop a petala ocupa de 18 a 30 px e
+// no celular de 13 a 21 — cerca de 1,4 a 2 px por triangulo, o pior caso para
+// GPU de celular: custo de vertice e de rasterizacao por detalhe que nao
+// aparece.
+//
+// `foco` existe so para a peca em destaque, a unica de que a camera chega
+// perto o bastante para facetar.
+const NIVEIS = {
+  foco: { petala: [16, 12], esfera: [16, 12], cilindro: 16, haste: 8, cone: 14, lathe: 26 },
+  alta: { petala: [10, 7], esfera: [16, 12], cilindro: 16, haste: 6, cone: 14, lathe: 24 },
+  baixa: { petala: [8, 5], esfera: [12, 8], cilindro: 12, haste: 4, cone: 10, lathe: 16 },
+}
+
+const primitivas = new Map()
+const conjunto = (nivel) => {
+  let p = primitivas.get(nivel)
+  if (!p) {
+    const n = NIVEIS[nivel] ?? NIVEIS.alta
+    p = {
+      esfera: new THREE.SphereGeometry(1, n.esfera[0], n.esfera[1]),
+      // Petala, miolo e folha sao achatados ate virar lasca (0,0035 de 0,011):
+      // a subdivisao que uma esfera precisa simplesmente nao se ve neles.
+      petala: new THREE.SphereGeometry(1, n.petala[0], n.petala[1]),
+      cilindro: new THREE.CylinderGeometry(1, 1, 1, n.cilindro),
+      // Haste aberta: e um palito de 2 mm plantado no vaso, e as duas tampas
+      // ficavam enterradas.
+      haste: new THREE.CylinderGeometry(1, 1, 1, n.haste, 1, true),
+      cone: new THREE.ConeGeometry(1, 1, n.cone),
+      caixa: new THREE.BoxGeometry(1, 1, 1),
+      capsula: new THREE.CapsuleGeometry(1, 1.2, 4, nivel === 'baixa' ? 6 : 10),
+      lathe: n.lathe,
+    }
+    primitivas.set(nivel, p)
+  }
+  return p
+}
+
+// Nivel corrente. Os builders sao sincronos e rodam todos dentro de
+// buildPiece, entao ler daqui evita arrastar o parametro por vinte
+// assinaturas — mas e estado escondido: quem chamar um builder por fora pega
+// o nivel de quem chamou por ultimo.
+let P = conjunto('alta')
 
 const torusCache = new Map()
 const torus = (tube, arc, radial = 8, tubular = 20) => {
@@ -45,9 +84,11 @@ const add = (out, group, geo, pos, rot, scale, parent) => {
   return m
 }
 
-const addLathe = (out, group, profile, pos, rot, scale, parent, segments = 22) => {
+const addLathe = (out, group, profile, pos, rot, scale, parent, segments) => {
   const points = profile.map(([x, y]) => new THREE.Vector2(Math.max(x, 0.0001), y))
-  const geo = new THREE.LatheGeometry(points, segments)
+  // O numero que o builder pede e um TETO, nao uma promessa: em qualidade
+  // baixa nenhum perfil passa de 16 lados, nem o prato de 10 cm.
+  const geo = new THREE.LatheGeometry(points, Math.min(segments ?? P.lathe, P.lathe))
   const m = compose(pos, rot, scale)
   if (parent) m.premultiply(parent)
   out[group].push(geo.applyMatrix4(m))
@@ -66,7 +107,7 @@ const addSimpleFlower = (out, { pos, rot = [0, 0, 0], size = 1, petals = 5, pare
     add(
       out,
       'petal',
-      SPHERE,
+      P.petala,
       [Math.cos(a) * 0.014, 0.002, Math.sin(a) * 0.014],
       [0.34 * Math.sin(a), -a, 0.34 * Math.cos(a)],
       [0.011, 0.0035, 0.015],
@@ -75,7 +116,7 @@ const addSimpleFlower = (out, { pos, rot = [0, 0, 0], size = 1, petals = 5, pare
   }
   // O miolo tem cor propria: quando usava a cor de destaque da peca,
   // um terno escuro ou um vaso terracota virava um ponto preto na flor.
-  add(out, 'center', SPHERE, [0, 0.005, 0], [0, 0, 0], 0.005, base)
+  add(out, 'center', P.petala, [0, 0.005, 0], [0, 0, 0], 0.005, base)
 }
 
 // Rosa: tres aneis de petalas, cada um mais aberto que o de dentro.
@@ -95,7 +136,7 @@ const addRose = (out, { pos, rot = [0, 0, 0], size = 1, parent }) => {
       add(
         out,
         'petal',
-        SPHERE,
+        P.petala,
         [Math.cos(a) * ring.radius, 0.004 - r * 0.001, Math.sin(a) * ring.radius],
         [ring.tilt * Math.sin(a), -a, ring.tilt * Math.cos(a)],
         ring.scale,
@@ -106,7 +147,7 @@ const addRose = (out, { pos, rot = [0, 0, 0], size = 1, parent }) => {
 }
 
 const addLeaf = (out, { pos, rot, size = 1, parent }) => {
-  add(out, 'leaf', SPHERE, pos, rot, [0.008 * size, 0.002 * size, 0.018 * size], parent)
+  add(out, 'leaf', P.petala, pos, rot, [0.008 * size, 0.002 * size, 0.018 * size], parent)
 }
 
 const addStem = (out, { from, to, parent }) => {
@@ -117,7 +158,7 @@ const addStem = (out, { from, to, parent }) => {
   const mid = a.clone().add(dir.clone().multiplyScalar(0.5))
   const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize())
   const e = new THREE.Euler().setFromQuaternion(q)
-  add(out, 'leaf', CYLINDER, [mid.x, mid.y, mid.z], [e.x, e.y, e.z], [0.0022, len, 0.0022], parent)
+  add(out, 'leaf', P.haste, [mid.x, mid.y, mid.z], [e.x, e.y, e.z], [0.0022, len, 0.0022], parent)
 }
 
 // --- perfis de revolucao --------------------------------------------------
@@ -261,7 +302,7 @@ const builders = {
 
   caneca(out, piece) {
     addLathe(out, 'body', PROFILES.canecaParede, [0, 0, 0])
-    add(out, 'body', CYLINDER, [0, 0.004, 0], [0, 0, 0], [0.039, 0.008, 0.039])
+    add(out, 'body', P.cilindro, [0, 0.004, 0], [0, 0, 0], [0.039, 0.008, 0.039])
     // alca
     add(out, 'body', torus(0.006, Math.PI * 1.15), [0.04, 0.05, 0], [0, Math.PI / 2, -0.4], [0.026, 0.026, 0.026])
     for (let i = 0; i < (piece.flowers || 4); i++) {
@@ -347,8 +388,8 @@ const builders = {
         [x, 0.018, 0],
         [0, 0, lean],
       )
-      add(out, 'body', SPHERE, [x + lean * -0.06, 0.088, 0], [0, 0, 0], 0.014)
-      add(out, 'accent', SPHERE, [x + lean * -0.062, 0.092, -0.003], [0, 0, 0], [0.015, 0.012, 0.015])
+      add(out, 'body', P.esfera, [x + lean * -0.06, 0.088, 0], [0, 0, 0], 0.014)
+      add(out, 'accent', P.esfera, [x + lean * -0.062, 0.092, -0.003], [0, 0, 0], [0.015, 0.012, 0.015])
     }
     figure(-0.027, true, 0.1)
     figure(0.029, false, -0.1)
@@ -377,7 +418,7 @@ const builders = {
       add(out, 'body', torus(0.011, Math.PI * 1.35), [0, y, 0], rot, [r, r, r])
     })
     // haste que entra no bolo
-    add(out, 'body', CYLINDER, [0, 0.008, 0], [0, 0, 0], [0.004, 0.02, 0.004])
+    add(out, 'body', P.cilindro, [0, 0.008, 0], [0, 0, 0], [0.004, 0.02, 0.004])
 
     const count = piece.flowers || 14
     for (let i = 0; i < count; i++) {
@@ -410,8 +451,8 @@ const builders = {
   },
 
   ima(out) {
-    add(out, 'body', CYLINDER, [0, 0.004, 0], [0, 0, 0], [0.026, 0.006, 0.026])
-    add(out, 'accent', CYLINDER, [0, 0.0015, 0], [0, 0, 0], [0.012, 0.004, 0.012])
+    add(out, 'body', P.cilindro, [0, 0.004, 0], [0, 0, 0], [0.026, 0.006, 0.026])
+    add(out, 'accent', P.cilindro, [0, 0.0015, 0], [0, 0, 0], [0.012, 0.004, 0.012])
     addRose(out, { pos: [0, 0.008, 0], size: 1.15 })
     addLeaf(out, { pos: [0.02, 0.008, 0.004], rot: [1.3, 0.3, 0], size: 0.85 })
     addLeaf(out, { pos: [-0.018, 0.008, -0.008], rot: [1.3, -2.4, 0], size: 0.8 })
@@ -434,14 +475,14 @@ const builders = {
       [0, 0, 0],
     )
     // bracos
-    add(out, 'accent', CAPSULE, [0.019, 0.062, 0.006], [0.3, 0, 0.55], [0.0055, 0.022, 0.0055])
-    add(out, 'accent', CAPSULE, [-0.019, 0.062, 0.006], [0.3, 0, -0.55], [0.0055, 0.022, 0.0055])
+    add(out, 'accent', P.capsula, [0.019, 0.062, 0.006], [0.3, 0, 0.55], [0.0055, 0.022, 0.0055])
+    add(out, 'accent', P.capsula, [-0.019, 0.062, 0.006], [0.3, 0, -0.55], [0.0055, 0.022, 0.0055])
     // maos e cabeca na cor da massa
-    add(out, 'body', SPHERE, [0.026, 0.045, 0.012], [0, 0, 0], 0.006)
-    add(out, 'body', SPHERE, [-0.026, 0.045, 0.012], [0, 0, 0], 0.006)
-    add(out, 'body', SPHERE, [0, 0.098, 0], [0, 0, 0], 0.018)
+    add(out, 'body', P.esfera, [0.026, 0.045, 0.012], [0, 0, 0], 0.006)
+    add(out, 'body', P.esfera, [-0.026, 0.045, 0.012], [0, 0, 0], 0.006)
+    add(out, 'body', P.esfera, [0, 0.098, 0], [0, 0, 0], 0.018)
     // cabelo
-    add(out, 'accent', SPHERE, [0, 0.103, -0.004], [0, 0, 0], [0.019, 0.016, 0.019])
+    add(out, 'accent', P.esfera, [0, 0.103, -0.004], [0, 0, 0], [0.019, 0.016, 0.019])
     // golinha
     add(out, 'body', torus(0.2, Math.PI * 2, 6, 12), [0, 0.081, 0], [Math.PI / 2, 0, 0], 0.014)
   },
@@ -466,7 +507,7 @@ const builders = {
       add(
         out,
         'leaf',
-        CYLINDER,
+        P.cilindro,
         [Math.cos(a) * 0.014, 0.115, Math.sin(a) * 0.014],
         [lean * Math.sin(a), 0, -lean * Math.cos(a)],
         [0.0035, 0.13, 0.0035],
@@ -474,7 +515,7 @@ const builders = {
       add(
         out,
         'accent',
-        CONE,
+        P.cone,
         [Math.cos(a) * 0.026, 0.178, Math.sin(a) * 0.026],
         [lean * Math.sin(a), 0, -lean * Math.cos(a)],
         [0.006, 0.026, 0.006],
@@ -483,22 +524,22 @@ const builders = {
   },
 
   rolo(out) {
-    add(out, 'body', CYLINDER, [0, 0, 0], [0, 0, Math.PI / 2], [0.026, 0.19, 0.026])
-    add(out, 'accent', CYLINDER, [0.125, 0, 0], [0, 0, Math.PI / 2], [0.012, 0.07, 0.012])
-    add(out, 'accent', CYLINDER, [-0.125, 0, 0], [0, 0, Math.PI / 2], [0.012, 0.07, 0.012])
+    add(out, 'body', P.cilindro, [0, 0, 0], [0, 0, Math.PI / 2], [0.026, 0.19, 0.026])
+    add(out, 'accent', P.cilindro, [0.125, 0, 0], [0, 0, Math.PI / 2], [0.012, 0.07, 0.012])
+    add(out, 'accent', P.cilindro, [-0.125, 0, 0], [0, 0, Math.PI / 2], [0.012, 0.07, 0.012])
   },
 
   tigelaMassa(out) {
     addLathe(out, 'body', PROFILES.tigelaRasa, [0, 0, 0], [0, 0, 0], 1.25)
     // bolinha de massa dentro
-    add(out, 'accent', SPHERE, [0.004, 0.024, -0.003], [0, 0, 0], [0.03, 0.018, 0.028])
+    add(out, 'accent', P.esfera, [0.004, 0.024, -0.003], [0, 0, 0], [0.03, 0.018, 0.028])
   },
 
   caderno(out) {
-    add(out, 'body', BOX, [0, 0.006, 0], [0, 0, 0], [0.19, 0.012, 0.135])
-    add(out, 'accent', BOX, [0, 0.013, 0], [0, 0, 0], [0.186, 0.003, 0.131])
+    add(out, 'body', P.caixa, [0, 0.006, 0], [0, 0, 0], [0.19, 0.012, 0.135])
+    add(out, 'accent', P.caixa, [0, 0.013, 0], [0, 0, 0], [0.186, 0.003, 0.131])
     // lapis atravessado
-    add(out, 'accent', CYLINDER, [0.03, 0.018, 0.04], [0, 0.5, Math.PI / 2], [0.004, 0.15, 0.004])
+    add(out, 'accent', P.cilindro, [0.03, 0.018, 0.04], [0, 0.5, Math.PI / 2], [0.004, 0.15, 0.004])
   },
 
   // Flores meio prontas em cima do tapete de corte: o trabalho em andamento.
@@ -520,7 +561,7 @@ const builders = {
       add(
         out,
         'petal',
-        SPHERE,
+        P.petala,
         [Math.cos(a) * (0.05 + (i % 3) * 0.028), 0.0018, Math.sin(a) * (0.045 + (i % 2) * 0.03)],
         [0, a, 0],
         [0.011, 0.0025, 0.015],
@@ -528,13 +569,13 @@ const builders = {
     }
     // bolinhas de massa crua
     for (let i = 0; i < 3; i++) {
-      add(out, 'body', SPHERE, [-0.1 + i * 0.026, 0.008, 0.07], [0, 0, 0], 0.009)
+      add(out, 'body', P.esfera, [-0.1 + i * 0.026, 0.008, 0.07], [0, 0, 0], 0.009)
     }
   },
 
   planta(out) {
     addLathe(out, 'body', PROFILES.potePequeno, [0, 0, 0], [0, 0, 0], 1.35)
-    add(out, 'accent', SPHERE, [0, 0.07, 0], [0, 0, 0], [0.05, 0.012, 0.05])
+    add(out, 'accent', P.esfera, [0, 0.07, 0], [0, 0, 0], [0.05, 0.012, 0.05])
     for (let i = 0; i < 11; i++) {
       const a = (i / 11) * Math.PI * 2 + i * 0.5
       const h = 0.09 + (i % 4) * 0.035
@@ -543,7 +584,7 @@ const builders = {
       add(
         out,
         'leaf',
-        SPHERE,
+        P.petala,
         [Math.cos(a) * r, h + 0.014, Math.sin(a) * r],
         [0.5 * Math.sin(a), -a, 0.5 * Math.cos(a)],
         [0.016, 0.004, 0.032],
@@ -556,7 +597,18 @@ const builders = {
  * Monta uma peca e devolve uma geometria por material.
  * @returns {{body?:THREE.BufferGeometry, accent?:THREE.BufferGeometry, petal?:THREE.BufferGeometry, leaf?:THREE.BufferGeometry}}
  */
-export function buildPiece(piece) {
+// A geometria depende so de forma e nivel — a cor vem do material —, entao duas
+// pecas iguais na cena dividem uma geometria so. Ela vive enquanto a pagina
+// vive, como os materiais das plantas: por isso nao ha descarte por instancia.
+const cache = new Map()
+
+export function buildPiece(piece, { qualidade = 'alta' } = {}) {
+  const nivel = NIVEIS[qualidade] ? qualidade : 'alta'
+  const chave = `${piece.kind}|${piece.flowers ?? ''}|${nivel}`
+  const pronto = cache.get(chave)
+  if (pronto) return pronto
+
+  P = conjunto(nivel)
   const build = builders[piece.kind] ?? builders.vaso
   const out = emptyGroups()
   build(out, piece)
@@ -572,11 +624,8 @@ export function buildPiece(piece) {
     merged.computeBoundingSphere()
     result[group] = merged
   }
+  cache.set(chave, result)
   return result
-}
-
-export function disposePiece(built) {
-  Object.values(built ?? {}).forEach((geo) => geo?.dispose?.())
 }
 
 /** Altura util da peca, para posicionar rotulos e o anel de destaque. */

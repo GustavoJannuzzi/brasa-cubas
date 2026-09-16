@@ -63,7 +63,7 @@ function Etiqueta({ product, position, onOpen }) {
   )
 }
 
-function ProdutoNaPrateleira({ product, showTag }) {
+function ProdutoNaPrateleira({ product, showTag, quality }) {
   const focusedProduct = useStore((s) => s.focusedProduct)
   const openProduct = useStore((s) => s.openProduct)
   const [hovered, setHovered] = useState(false)
@@ -82,6 +82,7 @@ function ProdutoNaPrateleira({ product, showTag }) {
         scale={escala}
         interactive
         highlighted={highlighted}
+        quality={quality}
         label={product.name}
         onSelect={() => openProduct(product.id)}
         onHoverChange={(label) => setHovered(Boolean(label))}
@@ -122,7 +123,7 @@ function MaoFrancesa({ x, y }) {
   )
 }
 
-export function Shelf() {
+export function Shelf({ quality = 'alta' }) {
   const view = useStore((s) => s.view)
   const focusedProduct = useStore((s) => s.focusedProduct)
   const isMobile = useIsMobile()
@@ -157,11 +158,12 @@ export function Shelf() {
           piece={f.piece}
           position={[shelf.slotsX[f.x], shelf.levels[f.shelf] + shelf.thickness / 2, shelf.z + 0.01]}
           scale={PIECE_SCALE * (f.scale ?? 1)}
+          quality={quality}
         />
       ))}
 
       {products.map((product) => (
-        <ProdutoNaPrateleira key={product.id} product={product} showTag={showTag} />
+        <ProdutoNaPrateleira key={product.id} product={product} showTag={showTag} quality={quality} />
       ))}
     </group>
   )

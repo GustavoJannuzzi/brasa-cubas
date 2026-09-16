@@ -103,8 +103,8 @@ function Scene({ quality }) {
 
       <Lighting quality={quality} />
       <Atelier />
-      <WorkTable />
-      <Shelf />
+      <WorkTable quality={quality} />
+      <Shelf quality={quality} />
       <Pinboard />
       <Plants quality={quality} />
       <Hotspots />

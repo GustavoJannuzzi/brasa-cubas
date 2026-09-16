@@ -122,7 +122,7 @@ function Banqueta({ position }) {
   )
 }
 
-export function WorkTable() {
+export function WorkTable({ quality = 'alta' }) {
   const wood = useMemo(() => tableWoodTexture(), [])
   const mat = useMemo(() => matTexture(), [])
   const legH = TOP - table.thickness
@@ -190,17 +190,18 @@ export function WorkTable() {
       </mesh>
 
       {/* --- o que esta sobre a mesa --- */}
-      <CeramicPiece piece={DECOR.flores} position={[-0.42, TOP + 0.006, 0.08]} scale={DECOR_SCALE} />
+      <CeramicPiece piece={DECOR.flores} position={[-0.42, TOP + 0.006, 0.08]} scale={DECOR_SCALE} quality={quality} />
       <CeramicPiece
         piece={DECOR.rolo}
         position={[-0.8, TOP + 0.027 * DECOR_SCALE, 0.3]}
         rotation={[0, 0.22, 0]}
         scale={DECOR_SCALE}
+        quality={quality}
       />
-      <CeramicPiece piece={DECOR.tigela} position={[-0.1, TOP, -0.22]} scale={DECOR_SCALE} />
-      <CeramicPiece piece={DECOR.pinceis} position={[0.16, TOP, -0.34]} scale={DECOR_SCALE} />
-      <CeramicPiece piece={DECOR.caderno} position={[0.38, TOP, 0.14]} rotation={[0, -0.14, 0]} scale={DECOR_SCALE} />
-      <CeramicPiece piece={DECOR.potinho} position={[0.86, TOP, 0.28]} scale={DECOR_SCALE} />
+      <CeramicPiece piece={DECOR.tigela} position={[-0.1, TOP, -0.22]} scale={DECOR_SCALE} quality={quality} />
+      <CeramicPiece piece={DECOR.pinceis} position={[0.16, TOP, -0.34]} scale={DECOR_SCALE} quality={quality} />
+      <CeramicPiece piece={DECOR.caderno} position={[0.38, TOP, 0.14]} rotation={[0, -0.14, 0]} scale={DECOR_SCALE} quality={quality} />
+      <CeramicPiece piece={DECOR.potinho} position={[0.86, TOP, 0.28]} scale={DECOR_SCALE} quality={quality} />
 
       <Lampada position={[-0.94, TOP, -0.28]} />
       <Telefone position={[0.6, TOP, -0.32]} />

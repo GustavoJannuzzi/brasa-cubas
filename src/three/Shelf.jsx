@@ -28,8 +28,13 @@ const FILLER = [
 // ilegivel de longe e gigante no close-up da peca. Tamanho de tela e constante.
 function Etiqueta({ product, position, onOpen }) {
   return (
-    <Html position={position} center zIndexRange={[18, 0]} style={{ pointerEvents: 'auto' }}>
+    <Html position={position} center zIndexRange={[18, 0]} style={{ pointerEvents: 'auto' }} aria-hidden="true">
+      {/* Fora do caminho do teclado, como os marcadores: a etiqueta e DOM
+          solto sobre a cena e continua focavel mesmo fora do quadro. O
+          catalogo lista as mesmas pecas, com nome e preco. */}
       <button
+        type="button"
+        tabIndex={-1}
         onClick={(e) => {
           e.stopPropagation()
           onOpen()

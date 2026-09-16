@@ -13,6 +13,10 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
   const sheet = useRef(null)
   const [drag, setDrag] = useState(0)
   const gesture = useRef(null)
+  // Quem tinha o foco antes de o painel abrir, e o rAF que devolve o foco a
+  // essa pessoa quando ele fecha.
+  const quemAbriu = useRef(null)
+  const devolucao = useRef(0)
 
   useEffect(() => {
     const onKey = (e) => {
@@ -22,10 +26,70 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  // ATENCAO a ordem: este efeito precisa vir ANTES do que move o foco para o
+  // painel. Efeitos rodam na ordem em que sao declarados, e invertido ele
+  // guardava o proprio painel como "quem abriu" — o foco acabava no body.
+  useEffect(() => {
+    // Guarda quem tinha o foco e devolve ao fechar. Sem isto, cada painel
+    // fechado jogava o teclado de volta ao comeco da pagina, e quem navega
+    // assim perdia o lugar a cada ida e volta.
+    // Cancela uma devolucao agendada por um cleanup anterior. Em
+    // desenvolvimento o StrictMode monta, limpa e remonta: sem isto, o
+    // requestAnimationFrame daquele cleanup disparava depois e arrancava o
+    // foco de dentro do painel recem-aberto.
+    cancelAnimationFrame(devolucao.current)
+
+    const candidato = document.activeElement
+    // Numa remontagem o foco ja esta dentro do painel; guardar isso como "quem
+    // abriu" perderia o botao de origem.
+    if (
+      candidato instanceof HTMLElement &&
+      candidato !== document.body &&
+      !sheet.current?.contains(candidato)
+    ) {
+      quemAbriu.current = candidato
+    }
+
+    return () => {
+      const alvo = quemAbriu.current
+      // Depois do commit, e nao dentro dele: no celular o fundo fica inerte
+      // enquanto a folha existe, e o React remove o painel antes de tirar o
+      // inert do irmao. Focar ali dentro era engolido, e o foco caia no body.
+      devolucao.current = requestAnimationFrame(() => {
+        if (alvo && document.contains(alvo) && !alvo.closest('[inert]')) {
+          alvo.focus({ preventScroll: true })
+        }
+      })
+    }
+  }, [])
+
   useEffect(() => {
     // Leva o foco para o painel, para leitor de tela e teclado acompanharem.
     sheet.current?.focus({ preventScroll: true })
   }, [title])
+
+  useEffect(() => {
+    // No celular a folha e modal: o Tab tem de circular dentro dela.
+    if (!isMobile) return
+    const onKey = (e) => {
+      if (e.key !== 'Tab') return
+      const focaveis = sheet.current?.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )
+      if (!focaveis?.length) return
+      const primeiro = focaveis[0]
+      const ultimo = focaveis[focaveis.length - 1]
+      if (e.shiftKey && document.activeElement === primeiro) {
+        e.preventDefault()
+        ultimo.focus()
+      } else if (!e.shiftKey && document.activeElement === ultimo) {
+        e.preventDefault()
+        primeiro.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [isMobile])
 
   const onPointerDown = useCallback((e) => {
     if (!e.isPrimary) return

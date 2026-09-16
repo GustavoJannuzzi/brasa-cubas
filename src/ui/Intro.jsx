@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { studio } from '../data/studio'
 import { products } from '../data/products'
 import { useStore } from '../store/useStore'
@@ -148,22 +148,47 @@ export function Onboarding() {
   const finishOnboarding = useStore((s) => s.finishOnboarding)
   const startTour = useStore((s) => s.startTour)
   const [tela, setTela] = useState(0)
+  const proximo = useRef(null)
 
   useEffect(() => {
     if (!onboardingDone) setTela(0)
   }, [onboardingDone])
 
-  if (!entered || onboardingDone || pulouOnboarding) return null
+  const naTela = entered && !onboardingDone && !pulouOnboarding
+
+  useEffect(() => {
+    // O foco entra no dialogo em vez de ficar no fundo, que agora esta inerte.
+    if (naTela) proximo.current?.focus()
+  }, [naTela, tela])
+
+  useEffect(() => {
+    if (!naTela) return
+    // Esc fecha, como em qualquer caixa modal. Aqui fechar e "Pular".
+    const onKey = (e) => {
+      if (e.key === 'Escape') finishOnboarding()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [naTela, finishOnboarding])
+
+  if (!naTela) return null
 
   const ultima = tela === TELAS.length - 1
 
   return (
-    <div className="fixed inset-0 z-[45] flex items-end justify-center bg-carvao/45 p-4 md:items-center">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-titulo"
+      className="fixed inset-0 z-[45] flex items-end justify-center bg-carvao/45 p-4 md:items-center"
+    >
       <div className="anim-sobe w-full max-w-md rounded-2xl bg-porcelana p-5 shadow-[var(--shadow-painel)]">
         <span className="text-[11px] font-semibold tracking-wide text-brasa uppercase">
           {tela + 1} de {TELAS.length}
         </span>
-        <h2 className="mt-1.5 text-[20px] leading-snug">{TELAS[tela].titulo}</h2>
+        <h2 id="onboarding-titulo" className="mt-1.5 text-[20px] leading-snug">
+          {TELAS[tela].titulo}
+        </h2>
         <p className="mt-2 text-[14px] leading-relaxed text-carvao/70">{TELAS[tela].texto}</p>
 
         {ultima && (
@@ -192,6 +217,7 @@ export function Onboarding() {
             Pular
           </button>
           <button
+            ref={proximo}
             type="button"
             onClick={() => (ultima ? finishOnboarding() : setTela(tela + 1))}
             className="btn-principal"

@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useState } from 'react'
+import { useIsMobile } from './hooks/useMedia'
 import { useRotaHash } from './hooks/useRotaHash'
 import { temWebGL } from './lib/webgl'
 import { useStore } from './store/useStore'
@@ -57,6 +58,19 @@ export default function App() {
   // mandar um link que abre direto no orcamento ou numa peca.
   useRotaHash()
 
+  const entered = useStore((s) => s.entered)
+  const panel = useStore((s) => s.panel)
+  const onboardingDone = useStore((s) => s.onboardingDone)
+  const pulouOnboarding = useStore((s) => s.pulouOnboarding)
+  const isMobile = useIsMobile()
+
+  // Camadas que cobrem a tela inteira. Enquanto uma delas esta aberta, o fundo
+  // nao pode receber foco: quem usa teclado comecava tabulando por botoes
+  // invisiveis atras do loader e abria painel que nao estava vendo.
+  const onboardingNaTela = entered && !onboardingDone && !pulouOnboarding
+  const folhaDoCelular = isMobile && Boolean(panel)
+  const fundoInerte = !entered || onboardingNaTela || folhaDoCelular
+
   useEffect(() => {
     // O CSS usa isso para devolver a rolagem normal da pagina no modo simples.
     document.body.dataset.modo = simpleMode ? 'simples' : 'atelie'
@@ -94,37 +108,42 @@ export default function App() {
 
   return (
     <>
-      {gl3d !== 'indisponivel' && (
-        <Boundary3D
-          key={tentativa}
-          onErro={() => {
-            setGl3d('perdido')
-            setAssetsReady(true)
-          }}
-        >
-          <Suspense fallback={null}>
-            <Experience />
-          </Suspense>
-        </Boundary3D>
-      )}
-      <div className="vinheta" aria-hidden="true" />
+      {/* Tudo que fica ATRAS de uma camada modal vive neste involucro: com
+          inert, o Tab nao entra aqui enquanto o loader, o onboarding ou a
+          folha do celular estiverem abertos. */}
+      <div inert={fundoInerte || undefined}>
+        {gl3d !== 'indisponivel' && (
+          <Boundary3D
+            key={tentativa}
+            onErro={() => {
+              setGl3d('perdido')
+              setAssetsReady(true)
+            }}
+          >
+            <Suspense fallback={null}>
+              <Experience />
+            </Suspense>
+          </Boundary3D>
+        )}
+        <div className="vinheta" aria-hidden="true" />
 
-      <Header />
-      <OrientationBar />
-      <HeroCard />
-      <FocusedProductBar />
-      <TourBar />
-      <MobileNav />
+        <Header />
+        <OrientationBar />
+        <HeroCard />
+        <FocusedProductBar />
+        <TourBar />
+        <MobileNav />
+
+        <Aviso3D
+          onTentarDeNovo={() => {
+            setGl3d('ok')
+            setTentativa((n) => n + 1)
+          }}
+        />
+        <LowPerfBanner />
+      </div>
 
       <PainelAtivo />
-
-      <Aviso3D
-        onTentarDeNovo={() => {
-          setGl3d('ok')
-          setTentativa((n) => n + 1)
-        }}
-      />
-      <LowPerfBanner />
       <Onboarding />
       <Loader />
       <Toasts />

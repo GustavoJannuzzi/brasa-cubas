@@ -31,9 +31,14 @@ function Hotspot({ spot }) {
 
       {/* Marcador em coluna: ponto em cima, rotulo embaixo. Rotulo ao lado
           estourava a borda da tela em retrato, e para o lado errado. */}
-      <Html center zIndexRange={[16, 0]} style={{ pointerEvents: 'auto' }}>
+      {/* Fora do caminho do teclado de proposito: o marcador e DOM solto sobre
+          a cena e continua focavel mesmo quando esta atras da camera ou fora
+          da tela. O menu e o catalogo levam aos mesmos destinos e sao o
+          caminho de teclado. */}
+      <Html center zIndexRange={[16, 0]} style={{ pointerEvents: 'auto' }} aria-hidden="true">
         <button
           type="button"
+          tabIndex={-1}
           onClick={(e) => {
             e.stopPropagation()
             openPanel(spot.panel)

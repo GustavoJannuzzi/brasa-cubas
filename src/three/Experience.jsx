@@ -7,6 +7,7 @@ import { foiRebaixado, limparRebaixamento, marcarRebaixado, tierDoAparelho } fro
 import { useStore } from '../store/useStore'
 import { Atelier } from './Atelier'
 import { CameraRig } from './CameraRig'
+import { Gato } from './Cat'
 import { Hotspots } from './Hotspot'
 import { Lighting } from './Lighting'
 import { Pinboard } from './Pinboard'
@@ -255,6 +256,10 @@ function Scene({ quality, aoBaixarDpr }) {
         <Quadros />
       </Suspense>
       <Plants quality={quality} />
+      {/* O gato entra depois das plantas porque divide o canto com elas: a
+          posicao dele foi escolhida medindo a distancia ate a `costela-fundo`,
+          que eu tinha acabado de levantar. */}
+      <Gato />
       <Hotspots />
 
       {/* Poeira no facho de luz. Fica no caminho que o sol de verdade faz —

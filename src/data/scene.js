@@ -270,6 +270,34 @@ export const orbit = {
   },
 }
 
+// --- gato -----------------------------------------------------------------
+// Onde fica o arranhador. A escolha saiu de medicao com marcador, nao de gosto:
+//
+//  - um marcador de 24 cm (gato deitado no chao) NAO entra no quadro de
+//    abertura em nenhuma das duas larguras — em 1440 nenhum dos seis candidatos
+//    aparecia, e em 375 so lascas de borda. O assoalho quase nao se ve daqui;
+//  - o MESMO ponto com 70 cm entra nas duas. Como na costela do fundo, o que
+//    decide nesta cena e a altura, nao o lugar;
+//  - o candidato colado no mural ([-1.55, 0, -0.9]) passava em todos os
+//    numeros e foi reprovado OLHANDO: o poste caia em cima da folhagem da planta
+//    que eu tinha acabado de levantar, e ainda por cima embaixo do marcador
+//    `galeria` ([-1.74, 1.6, -0.9]), no canto mais carregado do quadro;
+//  - com o poste alto (ver Cat.jsx), em [-1.15, 0, -0.85] o abajur vermelho da
+//    bancada ficava NA FRENTE do corpo do gato no desktop. Cada ALTURA trocava
+//    uma oclusao por outra, entao a alavanca passou a ser o LADO: empurrado
+//    0.22 para +x, ele sai de tras da cupula no desktop e se afasta do circulo do
+//    marcador "Como e feito" no celular. Conferido olhando nas duas larguras, e
+//    comparado com um empurrao para +x e para tras, que fazia o mesmo mas
+//    puxava o poste para perto do corredor da vista `prateleira`;
+//  - x -0.93 cai DENTRO da largura da bancada (halfW 1.1), mas ATRAS dela: a
+//    base do poste termina em z -0.68, 16 cm atras da borda de tras do tampo
+//    (-0.52), e a volta do gato (raio 0.24) chega a -0.61, ainda atras. Fica a
+//    0.86 m da `costela-fundo`.
+export const gato = {
+  arranhador: [-0.93, 0, -0.85],
+  giro: 0.55,
+}
+
 // Pontos clicaveis na cena. `panel` amarra o ponto ao painel de UI,
 // e o mesmo id aparece no menu do topo — cena e menu levam ao mesmo lugar.
 export const hotspots = [

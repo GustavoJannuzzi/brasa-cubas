@@ -126,7 +126,7 @@ texto, `--color-brasa-texto` #b3512a (4,52:1), com o menor desvio possível do
 - **Resto do raio-x**: os quinze eram o topo de 172 achados (1 de severidade 4,
   22 de severidade 3). O restante segue na lista.
 
-## 3. Divergências de dados (não trocar sem confirmar)
+## 4. Divergências de dados (não trocar sem confirmar)
 
 Os dados daqui são fictícios; os fatos verificados estão no projeto pai
 (`src/lib/site.ts`, `docs/01`, `docs/03`, `PERGUNTAS-PARA-A-ISABELA.md`).
@@ -147,7 +147,7 @@ Os dados daqui são fictícios; os fatos verificados estão no projeto pai
 | Contagens fixas | "11 peças com preço", "cinco pontos", "três telas" | Passam a depender do catálogo real |
 | Domínio / canonical / og:image | `brasacubas.com.br` comentado, sem og:image | Domínio não definido (§11) |
 
-## 4. Como retomar
+## 5. Como retomar
 
 ```bash
 npm run build

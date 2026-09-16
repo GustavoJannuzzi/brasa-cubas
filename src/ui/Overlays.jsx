@@ -43,10 +43,27 @@ export function HeroCard() {
   // baixo da tela. Faltava so o quadro na lista — era inconsistencia, nao
   // decisao.
   const quadroFocado = useStore((s) => s.quadroFocado)
+  // Fora da visao geral o card tambem sai, pelo mesmo motivo do quadro em close:
+  // quem foi ate a estante quer VER a estante. Medido na `prateleira` em 1440, o
+  // card cobria a etiqueta "Lembrancinha Vasinho de Flor · a partir de R$ 12" —
+  // preco escondido na vista que vende. O tour ja escondia o card em todas as
+  // vistas; faltava a navegacao comum fazer igual.
+  // `view` comeca em 'home' no store, entao quem acabou de entrar segue vendo o
+  // card.
+  const view = useStore((s) => s.view)
   const openPanel = useStore((s) => s.openPanel)
   const [fechado, setFechado] = useState(false)
 
-  if (!entered || !onboardingDone || panel || focusedProduct || quadroFocado || tourStep >= 0 || fechado)
+  if (
+    !entered ||
+    !onboardingDone ||
+    panel ||
+    focusedProduct ||
+    quadroFocado ||
+    view !== 'home' ||
+    tourStep >= 0 ||
+    fechado
+  )
     return null
 
   return (

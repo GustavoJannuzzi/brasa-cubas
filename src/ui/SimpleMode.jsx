@@ -7,11 +7,17 @@ import { useCartSummary, useStore } from '../store/useStore'
 import { IconArrow, IconCube, IconInstagram, IconMail, IconPlus, IconWhatsapp } from './Icons'
 import { PieceThumb } from './PieceThumb'
 
+// Sem '#': estes nomes sao os MESMOS que os hashes de painel (#produtos,
+// #contato). Como ancora real, o clique escrevia no endereco sem passar pelo
+// popstate — e o voltar do navegador, depois, lia aquele hash como pedido de
+// painel e abria um modal por cima da lista. A lista rola, nao navega.
 const SECOES = [
-  ['#produtos', 'Produtos'],
-  ['#encomendar', 'Como encomendar'],
-  ['#contato', 'Contato'],
+  ['produtos', 'Produtos'],
+  ['encomendar', 'Como encomendar'],
+  ['contato', 'Contato'],
 ]
+
+const irPara = (id) => document.getElementById(id)?.scrollIntoView({ block: 'start' })
 
 // Mesma informacao do ateliê 3D, em uma pagina que rola.
 // Existe para conexao fraca, aparelho antigo, leitor de tela e para quem
@@ -43,14 +49,15 @@ export function SimpleMode() {
           </span>
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
             <nav className="hidden items-center gap-1 sm:flex" aria-label="Seções da página">
-              {SECOES.map(([href, label]) => (
-                <a
-                  key={href}
-                  href={href}
+              {SECOES.map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => irPara(id)}
                   className="rounded-full px-3 py-2 text-[12.5px] font-medium text-carvao/70 hover:bg-carvao/6 hover:text-carvao"
                 >
                   {label}
-                </a>
+                </button>
               ))}
             </nav>
 
@@ -86,14 +93,15 @@ export function SimpleMode() {
           className="rolagem-fina flex gap-1.5 overflow-x-auto border-t border-carvao/10 px-4 py-2 sm:hidden"
           aria-label="Seções da página"
         >
-          {SECOES.map(([href, label]) => (
-            <a
-              key={href}
-              href={href}
+          {SECOES.map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => irPara(id)}
               className="shrink-0 rounded-full border border-carvao/12 bg-creme px-3 py-1.5 text-[12.5px] font-medium text-carvao/70"
             >
               {label}
-            </a>
+            </button>
           ))}
         </nav>
       </header>
@@ -108,10 +116,10 @@ export function SimpleMode() {
             decorativas. {studio.city} · {studio.shipping}.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            <a href="#produtos" className="btn-principal">
+            <button type="button" onClick={() => irPara('produtos')} className="btn-principal">
               Ver os produtos
               <IconArrow size={16} />
-            </a>
+            </button>
             <button type="button" onClick={() => openPanel('orcamento')} className="btn-secundario">
               Pedir orçamento
             </button>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
@@ -80,9 +80,8 @@ const QUADRO_RUIM = 50
  * saida principal deste site. Parado em outro app, o rAF nao roda; o primeiro
  * quadro na volta traz todo o tempo de fora e a janela inteira dava ~0 fps.
  */
-function PerfWatch() {
+function PerfWatch({ aoBaixarDpr }) {
   const reportLowPerf = useStore((s) => s.reportLowPerf)
-  const setDpr = useThree((s) => s.setDpr)
   const acc = useRef({ tempos: [], janela: 0, ruins: 0, boas: 0, avaliadas: 0, carencia: 0, degrau: 0, subiu: false })
 
   useEffect(() => {
@@ -151,7 +150,11 @@ function PerfWatch() {
     // ha recompilacao — e costuma ser o que falta num aparelho no limite.
     if (a.degrau === 0) {
       a.degrau = 1
-      setDpr(1)
+      // Sobe para o React em vez de chamar setDpr aqui: o prop `dpr` do Canvas
+      // e declarativo e o R3F o reaplica a cada re-renderizacao, entao o
+      // setDpr imperativo durava ate o proximo render — o degrau 1 se desfazia
+      // sozinho no primeiro toque em qualquer botao.
+      aoBaixarDpr?.()
       a.carencia = 0
       return
     }
@@ -163,7 +166,7 @@ function PerfWatch() {
   return null
 }
 
-function Scene({ quality }) {
+function Scene({ quality, aoBaixarDpr }) {
   const alta = quality === 'alta'
   return (
     <>
@@ -194,7 +197,7 @@ function Scene({ quality }) {
       <CameraRig />
       <CameraFov />
       <SceneReady />
-      <PerfWatch />
+      <PerfWatch aoBaixarDpr={aoBaixarDpr} />
       <GuardaContexto />
     </>
   )
@@ -207,6 +210,9 @@ export function Experience() {
   // nao pode trocar sombra nem antialias no meio do gesto.
   const aparelho = useMemo(() => (foiRebaixado() ? 'baixa' : tierDoAparelho()), [])
   const quality = lowPerf || aparelho === 'baixa' ? 'baixa' : 'alta'
+  // Teto de dpr do degrau 1 do PerfWatch. Precisa viver no React porque o prop
+  // `dpr` e reaplicado a cada render.
+  const [tetoDpr, setTetoDpr] = useState(null)
 
   return (
     <Canvas
@@ -214,7 +220,7 @@ export function Experience() {
       // PCFSoftShadowMap de 'soft' foi removido e so gerava aviso no console.
       // A borda macia vem de shadow-radius, no Lighting.
       shadows={quality === 'alta' ? 'percentage' : false}
-      dpr={[1, quality === 'alta' ? 1.75 : 1.25]}
+      dpr={[1, tetoDpr ?? (quality === 'alta' ? 1.75 : 1.25)]}
       // Coerente porque o nivel do aparelho nao muda depois de criado o
       // renderer. Em aparelho de toque, 'default' deixa o sistema escolher a
       // GPU integrada, que gasta menos bateria e aquece menos.
@@ -231,7 +237,7 @@ export function Experience() {
       }}
       style={{ position: 'fixed', inset: 0, touchAction: 'none' }}
     >
-      <Scene quality={quality} />
+      <Scene quality={quality} aoBaixarDpr={() => setTetoDpr(1)} />
     </Canvas>
   )
 }

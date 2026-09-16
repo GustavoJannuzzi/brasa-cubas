@@ -123,13 +123,21 @@ export const useStore = create(
         // "a partir de R$ 12" e um toque em Adicionar poe 20 unidades e
         // R$ 240 — quem nao ve a conta so descobre no carrinho, e a confianca
         // quebra justamente ali. Um segundo toque leva a 40 e R$ 480.
-        const valor = money(product.price * total)
+        // "a partir de" tem de aparecer tambem aqui: anunciar R$ 480 fechado
+        // para peca cujo valor depende da personalizacao e promessa que o
+        // orcamento nao vai cumprir.
+        const bruto = money(product.price * total)
+        const valor = product.from ? `a partir de ${bruto}` : bruto
+        // So e "minimo do pedido" quando a quantidade FOI o minimo. Quem
+        // escolheu 40 no detalhe nao esta vendo um minimo.
+        const ehMinimo = !jaEstava && product.minQty > 1 && total === product.minQty
+
         get().toast(
           jaEstava
             ? `${product.name}: agora são ${total} ${product.unit} · ${valor}`
-            : product.minQty > 1
+            : ehMinimo
               ? `${product.name}: ${total} ${product.unit} (mínimo do pedido) · ${valor}`
-              : `${product.name} no pedido · ${valor}`,
+              : `${product.name}: ${total} ${product.unit} · ${valor}`,
           { chave: `carrinho:${id}` },
         )
       },
@@ -141,14 +149,33 @@ export const useStore = create(
         }))
       },
       // Remover e limpar sao destrutivos e ficam a um toque de "Continuar
-      // escolhendo": guardam o pedido anterior e oferecem a volta.
+      // escolhendo": guardam o que saiu e oferecem a volta.
+      //
+      // O desfazer e OPERACAO INVERSA sobre o carrinho atual, nao restauracao
+      // de um retrato. Guardando o array inteiro, o aviso vive 6 s e qualquer
+      // coisa que a pessoa mexesse nesse meio-tempo — somar uma peca, mudar
+      // quantidade — era apagada em silencio ao desfazer.
       removeFromCart: (id) => {
         const anterior = get().cart
+        const indice = anterior.findIndex((line) => line.id === id)
+        if (indice < 0) return
+        const linha = anterior[indice]
         const product = productById(id)
+
         set({ cart: anterior.filter((line) => line.id !== id) })
         get().toast(`${product?.name ?? 'Peça'} saiu do pedido`, {
           chave: 'carrinho:desfazer',
-          acao: { rotulo: 'Desfazer', aoClicar: () => set({ cart: anterior }) },
+          acao: {
+            rotulo: 'Desfazer',
+            aoClicar: () =>
+              set((s) => {
+                // Se a peca voltou por outro caminho, nao duplicar.
+                if (s.cart.some((l) => l.id === id)) return s
+                const volta = [...s.cart]
+                volta.splice(Math.min(indice, volta.length), 0, linha)
+                return { cart: volta }
+              }),
+          },
         })
       },
       clearCart: () => {
@@ -157,7 +184,17 @@ export const useStore = create(
         set({ cart: [] })
         get().toast('Pedido limpo', {
           chave: 'carrinho:desfazer',
-          acao: { rotulo: 'Desfazer', aoClicar: () => set({ cart: anterior }) },
+          acao: {
+            rotulo: 'Desfazer',
+            aoClicar: () =>
+              set((s) => {
+                // Mescla: o que entrou depois de limpar continua, e com a
+                // quantidade que a pessoa escolheu agora.
+                const porId = new Map(s.cart.map((l) => [l.id, l]))
+                for (const l of anterior) if (!porId.has(l.id)) porId.set(l.id, l)
+                return { cart: [...porId.values()] }
+              }),
+          },
         })
       },
 

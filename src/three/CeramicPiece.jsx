@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useReducedMotion } from '../hooks/useMedia'
 import { buildPiece, pieceHeight, pieceRadius } from './pieceGeometry'
@@ -68,6 +68,11 @@ export function CeramicPiece({
 
   // Destaque: a peca sobe e cresce um pouco. Interpolado no quadro para nao
   // depender de nenhuma biblioteca de animacao.
+  // O mapa de sombra nao e mais refeito a cada quadro (ver Sombra, em
+  // Experience). Esta peca e a unica coisa da cena que mexe de verdade, entao e
+  // ela quem pede o redesenho — nos quadros em que mexeu.
+  const gl = useThree((s) => s.gl)
+
   const target = useRef({ lift: 0, grow: 1 })
   target.current.lift = highlighted ? 0.035 : hovered ? 0.012 : 0
   target.current.grow = highlighted ? 1.12 : hovered ? 1.05 : 1
@@ -76,6 +81,7 @@ export function CeramicPiece({
     if (!group.current) return
     const k = 1 - Math.exp(-10 * delta)
     const g = group.current
+    const antes = { y: g.position.y, s: g.scale.x, r: g.rotation.y }
     g.position.y = THREE.MathUtils.lerp(g.position.y, position[1] + target.current.lift, k)
     const s = THREE.MathUtils.lerp(g.scale.x / scale, target.current.grow, k) * scale
     g.scale.setScalar(s)
@@ -93,6 +99,13 @@ export function CeramicPiece({
       if (dif < -Math.PI) dif += volta
       g.rotation.y = THREE.MathUtils.lerp(rotation[1] + dif, rotation[1], k)
       if (Math.abs(g.rotation.y - rotation[1]) < 0.004) g.rotation.y = rotation[1]
+    }
+
+    // Mexeu, a sombra precisa acompanhar. O lerp converge ate a igualdade de
+    // float, entao parada a peca para de pedir sozinha — nao ha epsilon
+    // arbitrario segurando o pedido ligado para sempre.
+    if (g.position.y !== antes.y || g.scale.x !== antes.s || g.rotation.y !== antes.r) {
+      gl.shadowMap.needsUpdate = true
     }
   })
 

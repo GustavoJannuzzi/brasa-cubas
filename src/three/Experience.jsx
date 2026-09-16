@@ -25,6 +25,41 @@ function SceneReady() {
   return null
 }
 
+// Quantos quadros a sombra continua sendo refeita de graca depois de montar.
+// Cobre o assentamento da cena: geometria que chega, material que compila, a
+// peca que ainda esta interpolando a posicao inicial. Contado em quadros, nao
+// em segundos, que e o que importa para material compilar — mas baixo de
+// proposito: neste desktop a cena roda a 18,5 fps, e 90 quadros eram quase
+// cinco segundos pagando a passada de sombra a toa.
+const QUADROS_DE_ASSENTAMENTO = 45
+
+/**
+ * Para de refazer o mapa de sombra numa cena que nao mudou.
+ *
+ * Medido: com o mapa vivo sao 287 chamadas e 243.218 triangulos por quadro;
+ * congelado, 108 e 68.184. Ou seja, 72% dos triangulos do quadro eram 179
+ * projetores redesenhados para produzir exatamente a mesma imagem. Parado, nem
+ * uma matriz de projetor muda: a peca converge o lerp ate a igualdade de float,
+ * e o vento da planta e uniforme de shader que nem chega ao material de
+ * profundidade — a sombra da folha ja e estatica hoje.
+ *
+ * Quem mexe pede: ver o `needsUpdate` no useFrame de CeramicPiece.
+ */
+function Sombra() {
+  const gl = useThree((s) => s.gl)
+  const quadros = useRef(0)
+
+  useFrame(() => {
+    if (quadros.current > QUADROS_DE_ASSENTAMENTO) return
+    quadros.current += 1
+    if (quadros.current <= QUADROS_DE_ASSENTAMENTO) return
+    gl.shadowMap.autoUpdate = false
+    gl.shadowMap.needsUpdate = true
+  })
+
+  return null
+}
+
 // O prop `camera` do Canvas so vale na criacao. Girar o aparelho ou
 // redimensionar a janela precisa recalcular o campo de visao aqui.
 function CameraFov() {
@@ -197,6 +232,7 @@ function Scene({ quality, aoBaixarDpr }) {
       <CameraRig />
       <CameraFov />
       <SceneReady />
+      <Sombra />
       <PerfWatch aoBaixarDpr={aoBaixarDpr} />
       <GuardaContexto />
     </>

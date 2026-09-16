@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useIsMobile } from '../hooks/useMedia'
 import { Html } from '@react-three/drei'
 import { products } from '../data/products'
 import { PIECE_SCALE, shelf, shelfSlotPosition } from '../data/scene'
+import { useIsMobile } from '../hooks/useMedia'
 import { priceLabel } from '../lib/format'
 import { useStore } from '../store/useStore'
 import { CeramicPiece } from './CeramicPiece'
+import { roundedBox } from './shapes'
 
 // Pecas que nao ficam de pe: prato e ima sao expostos inclinados,
 // apoiados como numa vitrine. `lift` e em unidades de peca (antes da escala).
@@ -15,11 +16,12 @@ const DISPLAY = {
 }
 
 // Pecas de cenario nas vagas que sobraram, para a prateleira nao ter buraco.
+// As duas vagas da direita que antes tinham pote de pincel e pilha de prato
+// agora sao planta (ver `plants` em data/scene.js): verde na estante mudou
+// mais a cena do que uma terceira pilha de louca bege.
 const FILLER = [
   { shelf: 0, x: 1, piece: { kind: 'pilhaPratos', body: '#eadfcc', accent: '#b8734a' } },
   { shelf: 0, x: 3, piece: { kind: 'potinho', body: '#e0d3bd', accent: '#8fa089' } },
-  { shelf: 1, x: 4, piece: { kind: 'potePinceis', body: '#ded0b8', accent: '#b8734a', leaf: '#6b5540' }, scale: 0.6 },
-  { shelf: 2, x: 4, piece: { kind: 'pilhaPratos', body: '#f2e9da', accent: '#8fa089' }, scale: 0.9 },
 ]
 
 // Sem distanceFactor de proposito: escalar com a distancia deixava a etiqueta
@@ -32,11 +34,10 @@ function Etiqueta({ product, position, onOpen }) {
           e.stopPropagation()
           onOpen()
         }}
-        className="whitespace-nowrap rounded-md border border-carvao/15 bg-creme/95 px-2 py-1 text-left leading-tight shadow-sm"
-        style={{ fontSize: 12 }}
+        className="etiqueta-peca"
       >
         <span className="block max-w-[12rem] truncate font-medium text-carvao">{product.name}</span>
-        <span className="block font-semibold text-brasa">{priceLabel(product)}</span>
+        <span className="block text-sm font-semibold text-brasa">{priceLabel(product)}</span>
       </button>
     </Html>
   )
@@ -76,6 +77,29 @@ function ProdutoNaPrateleira({ product, showTag }) {
   )
 }
 
+/** Mao-francesa: chapa na parede, chapa sob a tabua e um tirante na diagonal. */
+function MaoFrancesa({ x, y }) {
+  const zParede = shelf.z - shelf.depth / 2
+  return (
+    <group position={[x, y, 0]}>
+      <mesh geometry={roundedBox(0.03, 0.17, 0.014, 0.005)} position={[0, -0.095, zParede + 0.008]} castShadow>
+        <meshStandardMaterial color="#544940" roughness={0.42} metalness={0.35} />
+      </mesh>
+      <mesh geometry={roundedBox(0.03, 0.014, 0.19, 0.005)} position={[0, -0.03, zParede + 0.096]} castShadow>
+        <meshStandardMaterial color="#544940" roughness={0.42} metalness={0.35} />
+      </mesh>
+      <mesh
+        geometry={roundedBox(0.022, 0.012, 0.2, 0.005)}
+        position={[0, -0.095, zParede + 0.082]}
+        rotation={[0.72, 0, 0]}
+        castShadow
+      >
+        <meshStandardMaterial color="#544940" roughness={0.42} metalness={0.35} />
+      </mesh>
+    </group>
+  )
+}
+
 export function Shelf() {
   const view = useStore((s) => s.view)
   const focusedProduct = useStore((s) => s.focusedProduct)
@@ -89,17 +113,18 @@ export function Shelf() {
     <group>
       {shelf.levels.map((y, level) => (
         <group key={level}>
-          {/* tabua */}
-          <mesh castShadow receiveShadow position={[0, y, shelf.z]}>
-            <boxGeometry args={[shelf.halfW * 2, shelf.thickness, shelf.depth]} />
-            <meshStandardMaterial color="#9a6b48" roughness={0.66} />
+          {/* tabua: canto arredondado de 8 mm, que e o que uma tabua lixada
+              tem e o que pega o brilho do sol na quina da frente */}
+          <mesh
+            geometry={roundedBox(shelf.halfW * 2, shelf.thickness, shelf.depth, 0.008)}
+            position={[0, y, shelf.z]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial color="#9a6b48" roughness={0.6} />
           </mesh>
-          {/* mao-francesa */}
-          {[-0.68, 0.68].map((x, i) => (
-            <mesh key={i} castShadow position={[x, y - 0.07, shelf.z - 0.07]}>
-              <boxGeometry args={[0.032, 0.1, 0.11]} />
-              <meshStandardMaterial color="#5f5248" roughness={0.5} metalness={0.25} />
-            </mesh>
+          {[-0.68, 0.68].map((x) => (
+            <MaoFrancesa key={x} x={x} y={y} />
           ))}
         </group>
       ))}

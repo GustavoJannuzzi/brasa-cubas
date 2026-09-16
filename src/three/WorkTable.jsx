@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
+import * as THREE from 'three'
 import { table } from '../data/scene'
 import { CeramicPiece } from './CeramicPiece'
+import { roundedBox, roundedCylinder } from './shapes'
 import { matTexture, tableWoodTexture } from './textures'
 
 const TOP = table.topY
@@ -9,36 +11,51 @@ const TOP = table.topY
 const DECOR_SCALE = 1.15
 
 // Pecas de cenario da bancada: nao sao produtos, existem para a mesa
-// parecer uma mesa de trabalho de verdade.
+// parecer uma mesa de trabalho de verdade. A planta que ficava aqui saiu:
+// virou suculenta de verdade em `plants` (data/scene.js).
 const DECOR = {
   rolo: { kind: 'rolo', body: '#c9a06b', accent: '#8a5a44' },
   tigela: { kind: 'tigelaMassa', body: '#eadfcc', accent: '#e8a0a8' },
   pinceis: { kind: 'potePinceis', body: '#dcd0bb', accent: '#b8734a', leaf: '#6b5540' },
   caderno: { kind: 'caderno', body: '#f6efe2', accent: '#c2582d' },
   flores: { kind: 'floresSoltas', body: '#f2e7d5', accent: '#c9a227', petal: '#f0c3c6', leaf: '#8fa089' },
-  planta: { kind: 'planta', body: '#c98b5e', accent: '#4a3b2a', leaf: '#7e9078' },
   potinho: { kind: 'potinho', body: '#e9dcc6', accent: '#8fa089' },
 }
+
+const METAL = { color: '#3f3a36', roughness: 0.4, metalness: 0.4 }
+
+// Perfil da cupula da lampada. Lathe e nao cone aberto: o cone de face unica
+// desaparece quando a camera passa por tras dele, e a borda fica sem espessura.
+const CUPULA = [
+  [0.014, 0.1],
+  [0.03, 0.07],
+  [0.062, 0.016],
+  [0.082, 0],
+  [0.079, -0.004],
+  [0.058, 0.014],
+  [0.026, 0.066],
+  [0.011, 0.098],
+].map(([x, y]) => new THREE.Vector2(x, y))
 
 function Lampada({ position }) {
   return (
     <group position={position}>
-      <mesh castShadow position={[0, 0.008, 0]}>
-        <cylinderGeometry args={[0.058, 0.062, 0.016, 20]} />
-        <meshStandardMaterial color="#3f3a36" roughness={0.45} metalness={0.35} />
+      <mesh geometry={roundedCylinder(0.062, 0.018, 0.008, 20)} castShadow>
+        <meshStandardMaterial {...METAL} />
       </mesh>
-      <mesh castShadow position={[0, 0.16, -0.02]} rotation={[0.12, 0, 0]}>
-        <cylinderGeometry args={[0.008, 0.008, 0.3, 10]} />
-        <meshStandardMaterial color="#3f3a36" roughness={0.45} metalness={0.35} />
+      <mesh position={[0, 0.17, -0.02]} rotation={[0.12, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.008, 0.009, 0.31, 10]} />
+        <meshStandardMaterial {...METAL} />
       </mesh>
-      <mesh castShadow position={[0.02, 0.315, 0.06]} rotation={[0.85, 0, 0.2]}>
-        <coneGeometry args={[0.08, 0.1, 18, 1, true]} />
-        <meshStandardMaterial color="#c2582d" roughness={0.5} side={2} />
+      {/* cupula: lathe em vez de cone aberto, para ter borda com espessura */}
+      <mesh position={[0.02, 0.315, 0.06]} rotation={[0.85, 0, 0.2]} castShadow>
+        <latheGeometry args={[CUPULA, 18]} />
+        <meshStandardMaterial color="#c2582d" roughness={0.45} side={THREE.DoubleSide} />
       </mesh>
       {/* a luz da lampada: o ponto quente que puxa o olho para a bancada */}
-      <pointLight position={[0.04, 0.29, 0.1]} intensity={0.45} distance={1.5} decay={2} color="#ffbe7a" />
+      <pointLight position={[0.04, 0.29, 0.1]} intensity={0.5} distance={1.6} decay={2} color="#ffbe7a" />
       <mesh position={[0.035, 0.285, 0.095]}>
-        <sphereGeometry args={[0.022, 10, 8]} />
+        <sphereGeometry args={[0.022, 12, 8]} />
         <meshBasicMaterial color="#ffe0b0" toneMapped={false} />
       </mesh>
     </group>
@@ -46,29 +63,27 @@ function Lampada({ position }) {
 }
 
 function Telefone({ position }) {
+  const baquelite = { color: '#8a3a2a', roughness: 0.34 }
   return (
     <group position={position} rotation={[0, -0.35, 0]} scale={1.35}>
-      <mesh castShadow position={[0, 0.022, 0]}>
-        <boxGeometry args={[0.125, 0.044, 0.1]} />
-        <meshStandardMaterial color="#8a3a2a" roughness={0.38} />
+      <mesh geometry={roundedBox(0.125, 0.044, 0.1, 0.016)} position={[0, 0.022, 0]} castShadow>
+        <meshStandardMaterial {...baquelite} />
       </mesh>
       <mesh position={[0, 0.046, -0.012]} rotation={[-0.3, 0, 0]}>
         <cylinderGeometry args={[0.03, 0.03, 0.006, 20]} />
         <meshStandardMaterial color="#d9cdb8" roughness={0.5} />
       </mesh>
       {/* fone no gancho */}
-      <mesh castShadow position={[0, 0.062, 0.012]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.013, 0.013, 0.1, 12]} />
-        <meshStandardMaterial color="#8a3a2a" roughness={0.38} />
+      <mesh position={[0, 0.062, 0.012]} rotation={[0, 0, Math.PI / 2]} castShadow>
+        <capsuleGeometry args={[0.013, 0.074, 3, 10]} />
+        <meshStandardMaterial {...baquelite} />
       </mesh>
-      <mesh position={[-0.05, 0.058, 0.012]}>
-        <sphereGeometry args={[0.019, 10, 8]} />
-        <meshStandardMaterial color="#8a3a2a" roughness={0.38} />
-      </mesh>
-      <mesh position={[0.05, 0.058, 0.012]}>
-        <sphereGeometry args={[0.019, 10, 8]} />
-        <meshStandardMaterial color="#8a3a2a" roughness={0.38} />
-      </mesh>
+      {[-0.05, 0.05].map((x) => (
+        <mesh key={x} position={[x, 0.058, 0.012]}>
+          <sphereGeometry args={[0.019, 12, 8]} />
+          <meshStandardMaterial {...baquelite} />
+        </mesh>
+      ))}
     </group>
   )
 }
@@ -76,9 +91,8 @@ function Telefone({ position }) {
 function Banqueta({ position }) {
   return (
     <group position={position}>
-      <mesh castShadow position={[0, 0.44, 0]}>
-        <cylinderGeometry args={[0.16, 0.16, 0.03, 18]} />
-        <meshStandardMaterial color="#8a5a44" roughness={0.68} />
+      <mesh geometry={roundedCylinder(0.16, 0.032, 0.012, 20)} position={[0, 0.44, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#8a5a44" roughness={0.64} />
       </mesh>
       {[0, 1, 2].map((i) => {
         const a = (i / 3) * Math.PI * 2
@@ -89,7 +103,17 @@ function Banqueta({ position }) {
             position={[Math.cos(a) * 0.1, 0.21, Math.sin(a) * 0.1]}
             rotation={[Math.sin(a) * 0.12, 0, -Math.cos(a) * 0.12]}
           >
-            <cylinderGeometry args={[0.016, 0.02, 0.44, 8]} />
+            <cylinderGeometry args={[0.016, 0.02, 0.44, 10]} />
+            <meshStandardMaterial color="#6f4a37" roughness={0.68} />
+          </mesh>
+        )
+      })}
+      {/* travessa entre os pes: e o que faz a banqueta parecer marcenaria */}
+      {[0, 1, 2].map((i) => {
+        const a = (i / 3) * Math.PI * 2 + Math.PI / 3
+        return (
+          <mesh key={`t${i}`} position={[Math.cos(a) * 0.075, 0.13, Math.sin(a) * 0.075]} rotation={[0, -a, Math.PI / 2]}>
+            <cylinderGeometry args={[0.008, 0.008, 0.15, 8]} />
             <meshStandardMaterial color="#6f4a37" roughness={0.7} />
           </mesh>
         )
@@ -105,10 +129,15 @@ export function WorkTable() {
 
   return (
     <group>
-      {/* tampo */}
-      <mesh castShadow receiveShadow position={[0, TOP - table.thickness / 2, 0]}>
-        <boxGeometry args={[table.halfW * 2, table.thickness, table.halfD * 2]} />
-        <meshStandardMaterial map={wood} roughness={0.62} />
+      {/* tampo: raio de 10 mm na quina. O tampo e a peca mais perto da camera
+          na vista da bancada, e era a que mais entregava a caixa reta. */}
+      <mesh
+        geometry={roundedBox(table.halfW * 2, table.thickness, table.halfD * 2, 0.01)}
+        position={[0, TOP - table.thickness / 2, 0]}
+        castShadow
+        receiveShadow
+      >
+        <meshStandardMaterial map={wood} bumpMap={wood} bumpScale={0.25} roughness={0.55} />
       </mesh>
 
       {/* pernas */}
@@ -120,34 +149,44 @@ export function WorkTable() {
       ].map(([sx, sz], i) => (
         <mesh
           key={i}
-          castShadow
+          geometry={roundedBox(0.072, legH, 0.072, 0.008)}
           position={[sx * (table.halfW - 0.1), legH / 2, sz * (table.halfD - 0.1)]}
+          castShadow
+          receiveShadow
         >
-          <boxGeometry args={[0.07, legH, 0.07]} />
-          <meshStandardMaterial color="#7b5238" roughness={0.72} />
+          <meshStandardMaterial color="#7b5238" roughness={0.7} />
         </mesh>
       ))}
 
-      {/* travessa e prateleira de baixo, com caixas de material */}
-      <mesh receiveShadow position={[0, 0.22, -0.1]}>
-        <boxGeometry args={[table.halfW * 2 - 0.22, 0.03, table.halfD * 2 - 0.34]} />
-        <meshStandardMaterial color="#6f4a37" roughness={0.75} />
+      {/* prateleira de baixo, com caixotes de material */}
+      <mesh
+        geometry={roundedBox(table.halfW * 2 - 0.22, 0.032, table.halfD * 2 - 0.34, 0.006)}
+        position={[0, 0.22, -0.1]}
+        receiveShadow
+      >
+        <meshStandardMaterial color="#6f4a37" roughness={0.74} />
       </mesh>
       {[
         { x: -0.6, color: '#b8734a' },
         { x: -0.2, color: '#8fa089' },
         { x: 0.52, color: '#c9a06b' },
-      ].map((box, i) => (
-        <mesh key={i} castShadow position={[box.x, 0.31, -0.12]}>
-          <boxGeometry args={[0.32, 0.15, 0.26]} />
-          <meshStandardMaterial color={box.color} roughness={0.8} />
-        </mesh>
+      ].map((caixa, i) => (
+        <group key={i} position={[caixa.x, 0.31, -0.12]}>
+          <mesh geometry={roundedBox(0.32, 0.15, 0.26, 0.018)} castShadow receiveShadow>
+            <meshStandardMaterial color={caixa.color} roughness={0.78} />
+          </mesh>
+          {/* boca do caixote um tom abaixo: da fundo e tira o ar de bloco */}
+          <mesh position={[0, 0.076, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.28, 0.22]} />
+            <meshStandardMaterial color="#5c4636" roughness={0.9} />
+          </mesh>
+        </group>
       ))}
 
       {/* tapete de corte */}
       <mesh receiveShadow position={[-0.42, TOP + 0.003, 0.1]} rotation={[-Math.PI / 2, 0, 0.02]}>
         <planeGeometry args={[0.68, 0.46]} />
-        <meshStandardMaterial map={mat} roughness={0.85} />
+        <meshStandardMaterial map={mat} roughness={0.82} />
       </mesh>
 
       {/* --- o que esta sobre a mesa --- */}
@@ -162,7 +201,6 @@ export function WorkTable() {
       <CeramicPiece piece={DECOR.pinceis} position={[0.16, TOP, -0.34]} scale={DECOR_SCALE} />
       <CeramicPiece piece={DECOR.caderno} position={[0.38, TOP, 0.14]} rotation={[0, -0.14, 0]} scale={DECOR_SCALE} />
       <CeramicPiece piece={DECOR.potinho} position={[0.86, TOP, 0.28]} scale={DECOR_SCALE} />
-      <CeramicPiece piece={DECOR.planta} position={[1.0, TOP, -0.08]} scale={DECOR_SCALE} />
 
       <Lampada position={[-0.94, TOP, -0.28]} />
       <Telefone position={[0.6, TOP, -0.32]} />

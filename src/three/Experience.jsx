@@ -9,6 +9,7 @@ import { CameraRig } from './CameraRig'
 import { Hotspots } from './Hotspot'
 import { Lighting } from './Lighting'
 import { Pinboard } from './Pinboard'
+import { Plants } from './Plants'
 import { Shelf } from './Shelf'
 import { WorkTable } from './WorkTable'
 
@@ -77,16 +78,19 @@ function Scene({ quality }) {
       <WorkTable />
       <Shelf />
       <Pinboard />
+      <Plants quality={quality} />
       <Hotspots />
 
-      {/* poeira no facho de luz da janela */}
+      {/* Poeira no facho de luz. Fica no caminho que o sol de verdade faz —
+          do vao da janela (1.34, 1.72, -1.7) ate a bancada (0.5, 0.78, 0) —
+          e nao num ponto qualquer: fora do facho nao haveria luz para revelar. */}
       <Sparkles
-        count={alta ? 60 : 24}
-        scale={[2.6, 1.8, 1.6]}
-        position={[0.9, 1.35, -0.4]}
+        count={alta ? 70 : 24}
+        scale={[1.4, 1.3, 1.9]}
+        position={[0.92, 1.26, -0.85]}
         size={alta ? 2.2 : 1.6}
         speed={0.22}
-        opacity={0.45}
+        opacity={0.5}
         color="#ffe6c0"
       />
 
@@ -105,12 +109,15 @@ export function Experience() {
 
   return (
     <Canvas
-      shadows={quality === 'alta' ? 'soft' : false}
+      // 'percentage' (PCF) e o que o three 0.186 usa de qualquer jeito: o
+      // PCFSoftShadowMap de 'soft' foi removido e so gerava aviso no console.
+      // A borda macia vem de shadow-radius, no Lighting.
+      shadows={quality === 'alta' ? 'percentage' : false}
       dpr={[1, quality === 'alta' ? 1.75 : 1.25]}
       gl={{ antialias: quality === 'alta', powerPreference: 'high-performance' }}
       // Em retrato o campo horizontal encolhe muito: um fov maior evita
       // ter de afastar a camera ate a cena virar uma maquete distante.
-      camera={{ position: [0.4, 2.1, 4.6], fov: isMobile ? 50 : 38, near: 0.1, far: 40 }}
+      camera={{ position: [0.22, 1.66, 2.5], fov: isMobile ? 50 : 38, near: 0.08, far: 30 }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping
         gl.toneMappingExposure = 1.08

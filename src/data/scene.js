@@ -1,9 +1,11 @@
 // Geometria da cena em metros. Um lugar so para as medidas, para que
-// prateleira, mesa, hotspots e camera nunca saiam de sincronia.
+// prateleira, mesa, plantas, hotspots e camera nunca saiam de sincronia.
 //
-// A escala nao e realista de proposito: as pecas de porcelana fria tem de 5 a
-// 20 cm de verdade, e nessa escala virariam pontinhos na prateleira. Elas sao
-// expostas em PIECE_SCALE para o produto ser o que o olho ve primeiro.
+// A escala das PECAS nao e realista de proposito: as de porcelana fria tem de
+// 5 a 20 cm de verdade, e nessa escala virariam pontinhos na prateleira. Elas
+// sao expostas em PIECE_SCALE para o produto ser o que o olho ve primeiro.
+// O AMBIENTE, ao contrario, e em escala de verdade — parede de 2,9 m, bancada
+// de 78 cm, vaso de 25 cm. E o que da a referencia de tamanho para tudo.
 
 export const PIECE_SCALE = 1.45
 
@@ -27,18 +29,25 @@ export const PIECE_HEIGHT = {
 export const pieceWorldHeight = (piece) =>
   (PIECE_HEIGHT[piece.kind] ?? 0.12) * PIECE_SCALE * (piece.scale ?? 1)
 
+// O ateliê e um comodo de tres paredes. A da frente nao existe — e por ali que
+// a camera olha — e a da direita e um retorno curto: fecha o canto quando o
+// visitante gira para aquele lado sem virar parede cega na frente da cena.
+//
+// Parede e caixa, nao plano: com espessura a quina da abertura aparece, o
+// rodape tem onde encostar e o comodo para de parecer papel dobrado.
 export const room = {
-  wallZ: -1.6,
-  // A parede do fundo e larga de proposito: com a camera aberta, uma parede
-  // curta deixava o vazio preto aparecer na beirada do quadro.
-  backHalfW: 3.6,
-  wallH: 3.5,
-  leftWallX: -1.78,
-  leftWallSpan: 3.0,
-  leftWallCenterZ: -0.3,
-  window: { x: 1.46, y: 1.74, w: 0.68, h: 1.05 },
+  wallZ: -1.7, // face interna da parede do fundo
+  halfW: 1.92, // faces internas das laterais, em -halfW e +halfW
+  wallH: 2.9,
+  wallT: 0.1,
+  leftFrontZ: 1.75, // ate onde a parede da esquerda avanca
+  rightFrontZ: 0.1, // o retorno da direita para aqui
+  floorFrontZ: 2.7, // o assoalho avanca um pouco mais que as paredes
+  window: { x: 1.34, y: 1.72, w: 0.7, h: 1.12 },
   // Placa na sobra de parede entre a parede da esquerda e a prateleira.
-  sign: { x: -1.34, y: 1.62, w: 0.62, h: 0.3 },
+  sign: { x: -1.4, y: 2.16, w: 0.66, h: 0.32 },
+  // Viga aparente no teto: e dela que as plantas penduram.
+  beam: { y: 2.62, z: -0.55, h: 0.16, d: 0.12 },
 }
 
 export const table = {
@@ -51,7 +60,7 @@ export const table = {
 // shelf 0 = mais alta. Cada nivel e uma tabua na parede do fundo.
 // O vao entre niveis (0.48) tem de caber a peca mais alta ja escalada.
 export const shelf = {
-  z: -1.42,
+  z: -1.55,
   depth: 0.28,
   halfW: 0.92,
   thickness: 0.045,
@@ -66,6 +75,64 @@ export const shelfSlotPosition = (slot) => [
   shelf.z,
 ]
 
+// --- plantas --------------------------------------------------------------
+// O ateliê e cheio de planta de proposito: e o que tira a cena do "quarto
+// vazio com uma estante", o que da leitura de escala e o que enquadra o
+// primeiro plano. Ficam nos quatro lugares onde planta fica na vida real —
+// chao, parede, prateleira e pendurada na viga.
+//
+// Duas regras de posicao, as duas por causa da camera:
+// 1. folhagem nao fura parede: nenhum vertice de folha ou haste passa das
+//    faces internas (±room.halfW onde ha parede lateral, room.wallZ no fundo);
+//    a hera encosta na parede, nao atravessa;
+// 2. nada pendurado no corredor entre a camera da vista `prateleira`
+//    e a estante (|x| < 0.55), senao a planta tapa o produto.
+export const plants = [
+  // chao
+  { id: 'costela-frente', kind: 'costela', position: [-1.15, 0, 1.35], rotation: [0, 0.6, 0], scale: 1.15, seed: 3 },
+  { id: 'costela-fundo', kind: 'costela', position: [-1.3, 0, -1.2], rotation: [0, -0.9, 0], scale: 0.7, seed: 17 },
+  // x 1.44: em 1.5 a folha mais aberta furava o retorno da parede direita
+  // (2,9 cm) quando o vento chegava na amplitude maxima.
+  { id: 'espada-janela', kind: 'espada', position: [1.44, 0, -1.05], rotation: [0, -0.4, 0], scale: 1.05, seed: 8 },
+  {
+    id: 'samambaia-banquinho',
+    kind: 'samambaia',
+    // y = stand.h * scale: a altura do banquinho e montada no espaco local e
+    // o grupo ainda aplica a escala, entao 0.46 deixava os pes no ar.
+    position: [1.55, 0.414, 0.72],
+    rotation: [0, 0.9, 0],
+    scale: 0.9,
+    seed: 23,
+    stand: { h: 0.46, r: 0.15 },
+  },
+
+  // parede: hera subindo nas duas laterais e dois vasos em suporte de ferro
+  // x na face da parede (±1.918): a haste nasce 1,2 cm para fora do grupo,
+  // entao em 1.9 a hera ficava 3 cm descolada.
+  { id: 'hera-direita', kind: 'hera', position: [1.918, 0.52, -0.8], rotation: [0, -Math.PI / 2, 0], scale: 0.85, seed: 5 },
+  { id: 'hera-esquerda', kind: 'hera', position: [-1.918, 0.58, 0.55], rotation: [0, Math.PI / 2, 0], scale: 0.78, seed: 31 },
+  // `bracket` traz as medidas do suporte: alcance do braco ate a parede e raio
+  // do aro no vaso desta planta (em unidades locais, antes da escala).
+  { id: 'suporte-jiboia', kind: 'jiboia', position: [-1.46, 1.78, -1.62], rotation: [0, 0.3, 0], scale: 0.6, seed: 12, bracket: { comp: 0.137 } },
+  { id: 'suporte-suculenta', kind: 'suculenta', position: [-1.74, 1.3, -1.62], rotation: [0, -0.4, 0], scale: 1.4, seed: 44, bracket: { r: 0.037, alt: 0.028, comp: 0.058 } },
+
+  // prateleira: nas pontas das tabuas, fora das vagas de produto
+  { id: 'jiboia-prateleira', kind: 'jiboia', position: [-0.86, 1.9425, -1.5], rotation: [0, 0.4, 0], scale: 0.6, seed: 9, frente: true },
+  { id: 'suculenta-prateleira', kind: 'suculenta', position: [0.68, 1.4625, -1.5], rotation: [0, 1.1, 0], scale: 1.15, seed: 21 },
+  { id: 'cacto-prateleira', kind: 'cacto', position: [0.68, 0.9825, -1.5], rotation: [0, -0.6, 0], scale: 1.05, seed: 6 },
+
+  // bancada
+  { id: 'suculenta-mesa', kind: 'suculenta', position: [1.0, 0.78, -0.08], rotation: [0, 0.3, 0], scale: 1.3, seed: 15 },
+
+  // penduradas na viga, todas fora do corredor de visao da estante
+  { id: 'pendurada-samambaia', kind: 'samambaia', position: [1.12, 2.54, -0.55], rotation: [0, 0.3, 0], scale: 0.85, seed: 2, hanging: 0.5 },
+  // A da esquerda fica perto da ponta da viga e com corda curta. Em x -1.05,
+  // vista da camera `home`, os ramos cobriam 43% da placa com o nome do
+  // ateliê. Aqui a placa fica livre e o mural nao passa de 3% coberto.
+  { id: 'pendurada-jiboia', kind: 'jiboia', position: [-1.38, 2.54, -0.55], rotation: [0, -0.7, 0], scale: 0.8, seed: 27, hanging: 0.22 },
+  { id: 'pendurada-jiboia-2', kind: 'jiboia', position: [1.62, 2.54, -0.55], rotation: [0, 1.6, 0], scale: 0.7, seed: 36, hanging: 0.66 },
+]
+
 // Presets de camera: [posicao, alvo].
 // `mobile` e um enquadramento proprio para tela em pe. Nao da para so afastar
 // a camera: em retrato o campo horizontal e menor, e afastar o suficiente para
@@ -73,34 +140,73 @@ export const shelfSlotPosition = (slot) => [
 // recebe um recorte mais apertado e navega pelos pontos.
 export const views = {
   home: {
-    position: [0.15, 1.58, 3.0],
-    target: [-0.05, 1.26, -0.9],
-    mobile: { position: [0.05, 1.8, 3.1], target: [0, 1.16, -0.85] },
+    position: [0.22, 1.66, 2.5],
+    target: [0, 1.22, -0.95],
+    mobile: { position: [0.08, 1.74, 3.05], target: [0, 1.14, -0.9] },
   },
   mesa: {
-    position: [0, 1.32, 1.2],
-    target: [0, 0.8, -0.05],
-    mobile: { position: [0, 1.46, 1.5], target: [0, 0.82, -0.08] },
+    position: [0.05, 1.42, 1.22],
+    target: [0, 0.8, -0.06],
+    mobile: { position: [0, 1.52, 1.56], target: [0, 0.82, -0.08] },
   },
+  // A vista que vende. No desktop (16:10) a distancia e a menor em que as tres
+  // tabuas e as etiquetas de cima ficam abaixo do menu; mais perto, a tabua de
+  // cima some atras dele. Em retrato a conta e pela LARGURA: as cinco colunas
+  // de peca precisam caber, o que empurra a camera para perto da frente.
   prateleira: {
-    position: [0, 1.48, 1.35],
-    target: [0, 1.44, -1.4],
-    mobile: { position: [0, 1.46, 1.75], target: [0, 1.42, -1.4] },
+    position: [0, 1.62, 1.09],
+    target: [0, 1.6, -1.52],
+    mobile: { position: [0, 1.6, 2.05], target: [0, 1.58, -1.52] },
   },
   orcamento: {
-    position: [0.54, 1.34, 1.16],
-    target: [0.35, 0.8, 0.06],
-    mobile: { position: [0.48, 1.44, 1.34], target: [0.34, 0.8, 0.04] },
+    position: [0.52, 1.22, 0.98],
+    target: [0.38, 0.8, 0.1],
+    mobile: { position: [0.46, 1.34, 1.2], target: [0.36, 0.8, 0.08] },
   },
   galeria: {
-    position: [-0.72, 1.52, 0.72],
-    target: [-1.7, 1.5, -0.9],
-    mobile: { position: [-0.55, 1.52, 0.95], target: [-1.7, 1.5, -0.88] },
+    position: [-0.6, 1.56, 0.1],
+    target: [-1.82, 1.5, -0.9],
+    mobile: { position: [-0.42, 1.56, 0.36], target: [-1.82, 1.5, -0.88] },
   },
   contato: {
-    position: [0.76, 1.3, 0.86],
-    target: [0.58, 0.82, -0.3],
-    mobile: { position: [0.7, 1.4, 1.02], target: [0.58, 0.82, -0.3] },
+    position: [0.74, 1.16, 0.64],
+    target: [0.6, 0.82, -0.3],
+    mobile: { position: [0.7, 1.26, 0.82], target: [0.6, 0.82, -0.3] },
+  },
+}
+
+// Limites da orbita. Ficam aqui, e nao dentro do CameraRig, porque sao
+// geometria: dependem de onde estao as paredes e de onde esta o assoalho.
+export const orbit = {
+  minDistance: 0.45,
+  maxDistance: 4.9,
+  minPolarAngle: 0.22,
+  // Teto do angulo vertical. 2.05 rad (117 graus) passa bastante da
+  // horizontal, o que e o que permite olhar para cima e ver as plantas
+  // penduradas na viga. Este valor vale de perto: no CameraRig ele e
+  // reapertado a cada quadro em funcao da distancia, senao o mesmo angulo que
+  // e confortavel a 1 m enterraria a camera no chao a 4,9 m.
+  maxPolarAngle: 2.05,
+  // Nas pontas deste giro a camera, de longe, iria parar atras das paredes
+  // laterais. Elas sao colisores (CameraRig): a camera se aproxima do alvo em
+  // vez de atravessar.
+  minAzimuthAngle: -1.2,
+  maxAzimuthAngle: 1.2,
+  // Altura minima da camera. O assoalho nao tem face de baixo: se a camera
+  // passar dele, a cena desaparece.
+  cameraMinY: 0.32,
+  // Altura maxima. O teto e um plano de uma face so, que some visto de cima, e
+  // acima dele o comodo vira casa de bonecas aberta, com o vazio em volta.
+  // Fica abaixo das plantas penduradas na viga.
+  cameraMaxY: 2.45,
+  // Caixa em que o ALVO da camera pode andar: dentro do comodo, sem encostar
+  // na parede. So o alvo e preso — a camera continua podendo se afastar pela
+  // frente aberta, que e de onde o diorama se ve. A caixa precisa CONTER o
+  // alvo de todo preset (galeria em x -1.82, prateleira e pecas em z -1.53):
+  // alvo que comeca fora dela e jogado para dentro no primeiro pixel de pan.
+  targetBounds: {
+    min: [-1.85, 0.42, -1.56],
+    max: [1.5, 2.3, 0.95],
   },
 }
 
@@ -115,7 +221,7 @@ export const hotspots = [
     icon: 'shelf',
     panel: 'produtos',
     view: 'prateleira',
-    position: [0, 1.76, -1.26],
+    position: [0, 1.74, -1.38],
     order: 1,
   },
   {
@@ -137,7 +243,7 @@ export const hotspots = [
     icon: 'photos',
     panel: 'galeria',
     view: 'galeria',
-    position: [-1.66, 1.6, -0.9],
+    position: [-1.74, 1.6, -0.9],
     order: 3,
   },
   {

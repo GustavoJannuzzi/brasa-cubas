@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
 import { useIsMobile } from '../hooks/useMedia'
-import { foiRebaixado, marcarRebaixado, tierDoAparelho } from '../lib/tier'
+import { foiRebaixado, limparRebaixamento, marcarRebaixado, tierDoAparelho } from '../lib/tier'
 import { useStore } from '../store/useStore'
 import { Atelier } from './Atelier'
 import { CameraRig } from './CameraRig'
@@ -83,7 +83,7 @@ const QUADRO_RUIM = 50
 function PerfWatch() {
   const reportLowPerf = useStore((s) => s.reportLowPerf)
   const setDpr = useThree((s) => s.setDpr)
-  const acc = useRef({ tempos: [], janela: 0, ruins: 0, avaliadas: 0, carencia: 0, degrau: 0 })
+  const acc = useRef({ tempos: [], janela: 0, ruins: 0, boas: 0, avaliadas: 0, carencia: 0, degrau: 0, subiu: false })
 
   useEffect(() => {
     const aoVoltar = () => {
@@ -124,7 +124,22 @@ function PerfWatch() {
     a.tempos = []
     a.janela = 0
     a.avaliadas += 1
-    if (mediana > QUADRO_RUIM) a.ruins += 1
+
+    if (mediana > QUADRO_RUIM) {
+      a.ruins += 1
+      a.boas = 0
+    } else {
+      a.boas += 1
+      // Vinte segundos seguidos de quadro bom desfazem um rebaixamento antigo.
+      // O nivel NAO muda agora: trocar de nivel no meio do uso recompilaria
+      // todos os programas, que e justamente o tombo que se quer evitar. A
+      // proxima visita e que abre completa.
+      if (!a.subiu && a.boas >= 10 && foiRebaixado()) {
+        a.subiu = true
+        limparRebaixamento()
+      }
+    }
+
     if (a.avaliadas < 4) return
 
     const ruim = a.ruins >= 3

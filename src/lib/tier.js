@@ -34,23 +34,55 @@ export function tierDoAparelho() {
   return 'alta'
 }
 
+// Um rebaixamento nao pode valer para sempre. Na primeira versao ele era
+// permanente, e um engasgo de um dia ruim — outra aba pesada, notebook em
+// economia de bateria, um download rodando — condenava TODAS as visitas
+// seguintes naquele navegador, sem aviso e sem volta. Medido aqui: uma maquina
+// que `tierDoAparelho()` classifica como 'alta' abrindo com sombra desligada e
+// dpr 1 por causa de um disparo antigo.
+const VALIDADE = 7 * 24 * 60 * 60 * 1000
+
 /**
  * A visita passada travou e o site rebaixou. Comecar ja no degrau certo evita
- * repetir o engasgo da queda toda vez que a pessoa volta.
+ * repetir o engasgo da queda toda vez que a pessoa volta — mas o registro
+ * vence, e a propria sessao pode desfaze-lo se o aparelho provar que da conta.
  */
 export function foiRebaixado() {
   try {
-    return localStorage.getItem(CHAVE) === 'baixa'
+    const cru = localStorage.getItem(CHAVE)
+    if (!cru) return false
+
+    // Formato antigo, sem data: honra uma vez e regrava ja datado.
+    if (cru === 'baixa') {
+      marcarRebaixado()
+      return true
+    }
+
+    const { quando } = JSON.parse(cru)
+    if (!quando || Date.now() - quando > VALIDADE) {
+      limparRebaixamento()
+      return false
+    }
+    return true
   } catch {
-    // Aba anonima ou storage bloqueado: seguir sem memoria e melhor que quebrar.
+    // Aba anonima, storage bloqueado ou registro corrompido: seguir sem
+    // memoria e melhor que quebrar.
     return false
   }
 }
 
 export function marcarRebaixado() {
   try {
-    localStorage.setItem(CHAVE, 'baixa')
+    localStorage.setItem(CHAVE, JSON.stringify({ nivel: 'baixa', quando: Date.now() }))
   } catch {
     /* sem storage, a proxima visita mede de novo */
+  }
+}
+
+export function limparRebaixamento() {
+  try {
+    localStorage.removeItem(CHAVE)
+  } catch {
+    /* idem */
   }
 }

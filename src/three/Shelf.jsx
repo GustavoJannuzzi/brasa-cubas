@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Html } from '@react-three/drei'
 import { products } from '../data/products'
 import { PIECE_SCALE, shelf, shelfSlotPosition } from '../data/scene'
+import { useCliqueSemArrasto } from '../hooks/useCliqueSemArrasto'
 import { useIsMobile } from '../hooks/useMedia'
 import { priceLabel } from '../lib/format'
 import { useStore } from '../store/useStore'
@@ -27,20 +28,17 @@ const FILLER = [
 // Sem distanceFactor de proposito: escalar com a distancia deixava a etiqueta
 // ilegivel de longe e gigante no close-up da peca. Tamanho de tela e constante.
 function Etiqueta({ product, position, onOpen }) {
+  const semArrasto = useCliqueSemArrasto((e) => {
+    e.stopPropagation()
+    onOpen()
+  })
+
   return (
     <Html position={position} center zIndexRange={[18, 0]} style={{ pointerEvents: 'auto' }} aria-hidden="true">
       {/* Fora do caminho do teclado, como os marcadores: a etiqueta e DOM
           solto sobre a cena e continua focavel mesmo fora do quadro. O
           catalogo lista as mesmas pecas, com nome e preco. */}
-      <button
-        type="button"
-        tabIndex={-1}
-        onClick={(e) => {
-          e.stopPropagation()
-          onOpen()
-        }}
-        className="etiqueta-peca"
-      >
+      <button type="button" tabIndex={-1} {...semArrasto} className="etiqueta-peca">
         <span className="block max-w-[12rem] truncate font-medium text-carvao">{product.name}</span>
         <span className="block text-sm font-semibold text-brasa">{priceLabel(product)}</span>
       </button>

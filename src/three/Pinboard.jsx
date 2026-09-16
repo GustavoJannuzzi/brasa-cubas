@@ -44,6 +44,9 @@ export function Pinboard() {
           position={[item.x, item.y, 0.021]}
           rotation={[0, 0, item.tilt]}
           onClick={(e) => {
+            // Arrasto que comeca em cima de uma foto e giro de camera, nao
+            // clique na foto.
+            if (e.delta > 6) return
             e.stopPropagation()
             openPanel('galeria')
           }}

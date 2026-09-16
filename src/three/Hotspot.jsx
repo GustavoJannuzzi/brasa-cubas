@@ -1,5 +1,6 @@
 import { Html } from '@react-three/drei'
 import { hotspots } from '../data/scene'
+import { useCliqueSemArrasto } from '../hooks/useCliqueSemArrasto'
 import { useStore } from '../store/useStore'
 import { hotspotIcons } from '../ui/Icons'
 
@@ -9,6 +10,10 @@ function Hotspot({ spot }) {
   const active = useStore((s) => s.panel === spot.panel)
   const isTourTarget = useStore((s) => s.tourStep >= 0 && hotspots[s.tourStep]?.id === spot.id)
   const Icon = hotspotIcons[spot.icon]
+  const semArrasto = useCliqueSemArrasto((e) => {
+    e.stopPropagation()
+    openPanel(spot.panel)
+  })
 
   return (
     <group position={spot.position}>
@@ -16,6 +21,7 @@ function Hotspot({ spot }) {
           e o gesto que a pessoa tenta primeiro. */}
       <mesh
         onClick={(e) => {
+          if (e.delta > 6) return
           e.stopPropagation()
           openPanel(spot.panel)
         }}
@@ -39,10 +45,7 @@ function Hotspot({ spot }) {
         <button
           type="button"
           tabIndex={-1}
-          onClick={(e) => {
-            e.stopPropagation()
-            openPanel(spot.panel)
-          }}
+          {...semArrasto}
           aria-label={`${spot.label}: ${spot.hint}`}
           className="flex flex-col items-center gap-1"
         >

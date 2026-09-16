@@ -105,6 +105,9 @@ export function CeramicPiece({
           }}
           onPointerOut={() => setHover(false)}
           onClick={(e) => {
+            // Arrastar para girar a cena comeca, muitas vezes, com o dedo em
+            // cima de uma peca: sem este corte o painel abria sozinho.
+            if (e.delta > 6) return
             e.stopPropagation()
             onSelect?.()
           }}

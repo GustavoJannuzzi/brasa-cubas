@@ -25,7 +25,23 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
   const [drag, setDrag] = useState(0)
   const gesture = useRef(null)
   // Quem tinha o foco antes de o painel abrir.
-  const quemAbriu = useRef(null)
+  //
+  // Capturado na RENDERIZACAO, nao num efeito. Efeito de filho roda antes do
+  // efeito do pai, e o `Progresso` do orcamento foca um titulo `sr-only` ao
+  // montar: quando a captura rodava como efeito, o foco ja estava dentro da
+  // folha, a guarda de "nao guardar o proprio painel" rejeitava (certo), e
+  // sobrava NADA para devolver — ao fechar com Esc o foco caia no body. Medido:
+  // dos sete paineis, so o orcamento perdia o foco assim, nas duas larguras.
+  // A renderizacao do pai acontece antes de qualquer filho montar, entao aqui
+  // `document.activeElement` ainda e quem abriu.
+  const [quemAbriu] = useState(() => {
+    const candidato = document.activeElement
+    if (!(candidato instanceof HTMLElement) || candidato === document.body) return null
+    // Numa remontagem o foco ja esta dentro de um painel; guardar isso
+    // perderia o botao de origem.
+    if (candidato.closest('[role="dialog"]')) return null
+    return candidato
+  })
 
   useEffect(() => {
     const onKey = (e) => {
@@ -39,26 +55,15 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
   // painel. Efeitos rodam na ordem em que sao declarados, e invertido ele
   // guardava o proprio painel como "quem abriu" — o foco acabava no body.
   useEffect(() => {
-    // Guarda quem tinha o foco e devolve ao fechar. Sem isto, cada painel
-    // fechado jogava o teclado de volta ao comeco da pagina, e quem navega
-    // assim perdia o lugar a cada ida e volta.
+    // Devolve ao fechar o foco de quem abriu. Sem isto, cada painel fechado
+    // jogava o teclado de volta ao comeco da pagina, e quem navega assim
+    // perdia o lugar a cada ida e volta.
     // Cancela uma devolucao agendada por um cleanup anterior — do StrictMode
     // OU de outro painel. Ver o comentario de `devolucaoPendente`.
     cancelAnimationFrame(devolucaoPendente)
 
-    const candidato = document.activeElement
-    // Numa remontagem o foco ja esta dentro do painel; guardar isso como "quem
-    // abriu" perderia o botao de origem.
-    if (
-      candidato instanceof HTMLElement &&
-      candidato !== document.body &&
-      !sheet.current?.contains(candidato)
-    ) {
-      quemAbriu.current = candidato
-    }
-
     return () => {
-      const alvo = quemAbriu.current
+      const alvo = quemAbriu
       // Depois do commit, e nao dentro dele: no celular o fundo fica inerte
       // enquanto a folha existe, e o React remove o painel antes de tirar o
       // inert do irmao. Focar ali dentro era engolido, e o foco caia no body.
@@ -124,9 +129,15 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
   return (
     <>
       {isMobile && (
+        // Fundo de tocar-para-fechar. Fora da ordem de tabulacao e escondido do
+        // leitor de tela DE PROPOSITO: medido, ele era um `button` tabulavel de
+        // 375x812 — a tela inteira — invisivel, e o leitor anunciava "Fechar"
+        // cobrindo tudo. O caminho de teclado ja existe e foi medido: Esc fecha
+        // os sete paineis. O toque continua igual.
         <button
           type="button"
-          aria-label="Fechar"
+          aria-hidden="true"
+          tabIndex={-1}
           onClick={onClose}
           className="camada-cena fixed inset-0 z-30 bg-carvao/35"
           style={{ backdropFilter: 'blur(1px)' }}

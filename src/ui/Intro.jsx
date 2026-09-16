@@ -75,11 +75,19 @@ export function Loader() {
           ateliê, em 3D.
         </p>
 
-        <div className="mt-8 h-0.5 w-48 overflow-hidden rounded-full bg-porcelana/15">
+        {/* A marca dela respirando, no lugar da barra que corria de um lado ao
+            outro. Mais leve, e diz "estou montando" sem fingir porcentagem —
+            que era o motivo de a barra ser indeterminada. Pronta, ela para de
+            respirar: a quietude e o aviso de que acabou. O respiro entra na
+            lista do `prefers-reduced-motion` no CSS, como as outras. */}
+        <div className="mt-8 grid place-items-center" aria-hidden="true">
           <span
-            className={`block h-full rounded-full bg-brasa-clara ${pronto ? 'w-full' : 'barra-andando'}`}
-            style={{ transition: 'width .3s var(--ease-suave)' }}
-          />
+            className={`grid h-9 w-9 place-items-center rounded-full bg-brasa text-porcelana ${
+              pronto ? '' : 'anim-respira'
+            }`}
+          >
+            <span className="font-display text-[15px] leading-none">bc</span>
+          </span>
         </div>
 
         <p role="status" aria-live="polite" className="mt-3 text-[12.5px] text-porcelana/60">

@@ -218,17 +218,6 @@
   }
 }
 
-/* Barra do loader quando ainda nao ha o que medir: anda de um lado ao outro em
-   vez de fingir uma porcentagem. */
-@keyframes anda-barra {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(240%);
-  }
-}
-
 @keyframes entra-gaveta {
   from {
     transform: translateX(24px);
@@ -252,18 +241,29 @@
 .anim-gaveta {
   animation: entra-gaveta 0.32s var(--ease-suave) both;
 }
-/* Barra indeterminada: um terco da largura indo e voltando. Diz "estou
-   trabalhando" sem afirmar quanto falta. */
-.barra-andando {
-  width: 40%;
-  animation: anda-barra 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+/* Respiro do monograma enquanto o atelie monta. Mais leve que a barra: em vez
+   de uma coisa correndo de um lado ao outro, a marca dela apenas respira. */
+@keyframes respira-marca {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.72;
+  }
+  50% {
+    transform: scale(1.055);
+    opacity: 1;
+  }
+}
+.anim-respira {
+  animation: respira-marca 2.6s var(--ease-suave) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .anim-pulso,
   .anim-sobe,
   .anim-painel,
-  .anim-gaveta {
+  .anim-gaveta,
+  .anim-respira {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
   }
@@ -273,13 +273,6 @@
     background: transparent;
     border: 2px solid var(--color-brasa);
     opacity: 0.9;
-  }
-  /* Parada, a barra de 40% voltaria a insinuar "falta pouco". Cheia e apagada
-     ela so diz "estou carregando". */
-  .barra-andando {
-    animation: none;
-    width: 100%;
-    opacity: 0.45;
   }
 }
 

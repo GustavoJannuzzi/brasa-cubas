@@ -4,7 +4,7 @@ export const studio = {
   name: 'Brasa Cubas',
   tagline: 'Ateliê de porcelana fria',
   pitch: 'Peças modeladas e pintadas à mão, uma a uma, sob encomenda.',
-  city: 'Porto Alegre, RS',
+  city: 'Foz do Iguaçu, PR',
   whatsapp: '5551999990000', // formato internacional, sem + nem espacos
   whatsappLabel: '(51) 99999-0000',
   email: 'atelie@brasacubas.com.br',
@@ -12,7 +12,7 @@ export const studio = {
   instagramUrl: 'https://instagram.com/brasacubas',
   hours: 'Seg a sex, 9h às 18h',
   answerTime: 'Resposta em até 1 dia útil',
-  shipping: 'Envio para todo o Brasil · Entrega em mãos em Porto Alegre',
+  shipping: 'Envio para todo o Brasil · Entrega em mãos em Foz do Iguaçu',
   minLeadDays: 10,
 }
 
@@ -56,7 +56,7 @@ export const faq = [
   },
   {
     q: 'Como as peças são enviadas?',
-    a: 'Cada peça vai embalada em caixa rígida com berço de espuma. Envio por Correios ou transportadora, com rastreio. Em Porto Alegre, posso entregar em mãos.',
+    a: 'Cada peça vai embalada em caixa rígida com berço de espuma. Envio por Correios ou transportadora, com rastreio. Em Foz do Iguaçu, posso entregar em mãos.',
   },
   {
     q: 'Tem pedido mínimo?',

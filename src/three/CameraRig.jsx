@@ -3,7 +3,16 @@ import { CameraControls } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { productById } from '../data/products'
-import { orbit, pieceWorldHeight, shelf, shelfSlotPosition, views } from '../data/scene'
+import {
+  orbit,
+  pieceWorldHeight,
+  quadroFraming,
+  quadros,
+  retratos,
+  shelf,
+  shelfSlotPosition,
+  views,
+} from '../data/scene'
 import { useIsMobile, useReducedMotion } from '../hooks/useMedia'
 import { useStore } from '../store/useStore'
 
@@ -30,6 +39,7 @@ export function CameraRig() {
   const scene = useThree((s) => s.scene)
   const view = useStore((s) => s.view)
   const focusedProduct = useStore((s) => s.focusedProduct)
+  const quadroFocado = useStore((s) => s.quadroFocado)
   const entered = useStore((s) => s.entered)
   const cameraSeq = useStore((s) => s.cameraSeq)
   const isMobile = useIsMobile()
@@ -96,11 +106,21 @@ export function CameraRig() {
     const c = controls.current
     if (!c || !entered) return
 
+    // Tres fontes para o enquadramento, na ordem de prioridade: o quadro que a
+    // pessoa clicou, a peca em destaque, e o preset da vista. O quadro entra
+    // por aqui de proposito — reusar este caminho e o que faz o botao de casa, o
+    // Esc e o "voltar para a visao geral" ja funcionarem como saida, sem eu
+    // inventar um jeito proprio de desfazer o zoom.
+    const quadro = quadroFocado
+      ? [...quadros, ...retratos].find((q) => q.id === quadroFocado)
+      : null
     const product = focusedProduct ? productById(focusedProduct) : null
     const preset = views[view] ?? views.home
-    const framing = product
-      ? productFraming(product, isMobile)
-      : (isMobile && preset.mobile) || preset
+    const framing = quadro
+      ? quadroFraming(quadro, isMobile)
+      : product
+        ? productFraming(product, isMobile)
+        : (isMobile && preset.mobile) || preset
 
     ultimoToque.current = performance.now()
     c.setLookAt(...framing.position, ...framing.target, !reduced)
@@ -109,7 +129,7 @@ export function CameraRig() {
     useStore.getState().setVistaLivre(false)
     // cameraSeq nas dependencias e o que faz "voltar para a visao geral"
     // funcionar quando a vista ja e 'home' e so a camera saiu do lugar.
-  }, [view, focusedProduct, entered, isMobile, reduced, cameraSeq])
+  }, [view, focusedProduct, quadroFocado, entered, isMobile, reduced, cameraSeq])
 
   useFrame((state, delta) => {
     const c = controls.current
@@ -172,8 +192,14 @@ export function CameraRig() {
       // a navegacao parecer presa num ponto.
       truckSpeed={1.8}
       dollySpeed={0.9}
-      azimuthRotateSpeed={0.9}
-      polarRotateSpeed={0.75}
+      // No toque o giro e mais lento, e o VERTICAL bem mais que o horizontal.
+      // Com um dedo girando os dois eixos na mesma velocidade, arrastar dava
+      // sensacao de camera de jogo em primeira pessoa — o retorno da revisao
+      // foi exatamente esse: "parece camera de jogo, esquisito, menos
+      // rotacional". Freando o vertical, um dedo passa a ler como girar uma
+      // mesa giratoria: a sala roda em volta e o horizonte fica quieto.
+      azimuthRotateSpeed={isMobile ? 0.55 : 0.9}
+      polarRotateSpeed={isMobile ? 0.26 : 0.75}
     />
   )
 }

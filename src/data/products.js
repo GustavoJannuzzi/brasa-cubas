@@ -221,52 +221,52 @@ export const productById = (id) => products.find((p) => p.id === id)
 // Projetos entregues. As "fotos" sao placeholders em gradiente —
 // substituir por imagens reais em /public/galeria quando houver.
 export const gallery = [
+  // Legendas genericas de proposito. Antes cada vaga nomeava um projeto e um
+  // cliente ("Casamento Marina & Teo", "45 bonecos"), o que nao sobreviveria a
+  // uma foto ao lado: foto e legenda passariam a se contradizer. Aqui cada
+  // entrada descreve a PECA, sem nome de cliente, sem quantidade e sem ano
+  // inventados — e o `foto` e o que vai ao mural e ao painel de projetos.
+  //
+  // As fotos sao referencias, nao pecas da Isabela: trocar pelas dela antes de
+  // qualquer lancamento real.
   {
     id: 'g1',
-    title: 'Casamento Marina & Téo',
-    kind: 'Topo de bolo + 80 lembrancinhas',
-    year: 2025,
-    text: 'Paleta terracota e verde-oliva. O topo repetiu o vestido e o buquê de verdade, flor por flor.',
+    title: 'Vaso ondulado',
+    kind: 'Porcelana fria',
+    foto: '/fotos/peca-01.jpg',
+    text: 'Boca aberta em ondas, feita à mão uma a uma. Fica bem com flor seca, que não pede água.',
     palette: ['#c2582d', '#8fa089'],
   },
   {
     id: 'g2',
-    title: 'Formatura de Medicina',
-    kind: '45 bonecos personalizados',
-    year: 2025,
-    text: 'Cada boneco com o rosto de um formando, jaleco e estetoscópio. O maior lote que já produzi.',
+    title: 'Vaso vazado',
+    kind: 'Porcelana fria',
+    foto: '/fotos/peca-02.jpg',
+    text: 'Os recortes são abertos ainda na massa mole. A luz que passa por eles muda o desenho ao longo do dia.',
     palette: ['#4a5d6b', '#f2e7d5'],
   },
   {
     id: 'g3',
-    title: 'Chá de bebê da Alice',
-    kind: 'Arranjos de mesa e topo',
-    year: 2026,
-    text: 'Seis arranjos de flor de cerejeira para as mesas e um topo com a ursinha da família.',
+    title: 'Vaso canelado',
+    kind: 'Porcelana fria',
+    foto: '/fotos/peca-03.jpg',
+    text: 'Ranhuras verticais marcadas de cima a baixo, com a base lisa. Pensado para planta pendente.',
     palette: ['#f0a8b4', '#f6f1e8'],
   },
   {
     id: 'g4',
-    title: 'Coleção Vasos Brasa',
-    kind: 'Série de 12 vasos',
-    year: 2026,
-    text: 'Primeira série autoral, com degradê de terracota. Vendida em dois fins de semana de feira.',
-    palette: ['#b4522b', '#dfa66f'],
+    title: 'Travessa folha',
+    kind: 'Porcelana fria',
+    foto: '/fotos/peca-04.jpg',
+    text: 'Nervuras copiadas de uma folha de verdade. Costuma virar porta-anéis ou apoio de mesa.',
+    palette: ['#8fa089', '#efe4d2'],
   },
   {
     id: 'g5',
-    title: 'Bodas de Ouro seu Nelson',
-    kind: 'Boneco do casal + prato',
-    year: 2025,
-    text: 'Refiz o casal a partir de uma foto de 1975. O prato levou a data pintada no centro.',
-    palette: ['#c9a227', '#f4ece0'],
-  },
-  {
-    id: 'g6',
-    title: 'Feira Coletivo Redenção',
-    kind: 'Mostra de ateliê',
-    year: 2026,
-    text: 'Montagem da banca com prateleira de peças pequenas: ímãs, vasinhos e porta-joias.',
-    palette: ['#8fa089', '#efe4d2'],
+    title: 'Vaso orgânico',
+    kind: 'Porcelana fria',
+    foto: '/fotos/peca-05.jpg',
+    text: 'Forma irregular com aberturas por onde a planta escapa. Cada peça sai diferente da anterior.',
+    palette: ['#b4522b', '#dfa66f'],
   },
 ]

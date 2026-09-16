@@ -69,7 +69,7 @@ export function ContactPanel() {
 
       <p className="mt-4 rounded-xl bg-carvao/5 px-3.5 py-3 text-[12.5px] leading-relaxed text-carvao/70">
         O ateliê é um espaço de trabalho, não uma loja de rua — visita só com hora marcada. Para
-        retirada em Porto Alegre, combinamos o ponto pelo WhatsApp.
+        retirada em Foz do Iguaçu, combinamos o ponto pelo WhatsApp.
       </p>
     </Panel>
   )

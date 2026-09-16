@@ -38,10 +38,16 @@ export function HeroCard() {
   const panel = useStore((s) => s.panel)
   const tourStep = useStore((s) => s.tourStep)
   const focusedProduct = useStore((s) => s.focusedProduct)
+  // Quadro em close esconde o card pelo mesmo motivo que peca em destaque ja
+  // escondia: quem clicou numa foto quer VER a foto, e o card cobre o terco de
+  // baixo da tela. Faltava so o quadro na lista — era inconsistencia, nao
+  // decisao.
+  const quadroFocado = useStore((s) => s.quadroFocado)
   const openPanel = useStore((s) => s.openPanel)
   const [fechado, setFechado] = useState(false)
 
-  if (!entered || !onboardingDone || panel || focusedProduct || tourStep >= 0 || fechado) return null
+  if (!entered || !onboardingDone || panel || focusedProduct || quadroFocado || tourStep >= 0 || fechado)
+    return null
 
   return (
     <div className="anim-sobe fixed right-3 bottom-[4.4rem] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[22rem] camada-cena">

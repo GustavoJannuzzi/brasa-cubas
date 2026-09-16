@@ -63,13 +63,37 @@ function Sombra() {
 
 // O prop `camera` do Canvas so vale na criacao. Girar o aparelho ou
 // redimensionar a janela precisa recalcular o campo de visao aqui.
+// Cobertura horizontal que a abertura do celular precisa ter, em graus. E ela
+// que decide o enquadramento: o que tem de caber — mural a esquerda, estante a
+// direita — esta espalhado na HORIZONTAL.
+const CAMPO_HORIZONTAL = 32
+
 function CameraFov() {
   const isMobile = useIsMobile()
   const camera = useThree((s) => s.camera)
+  const tamanho = useThree((s) => s.size)
+
   useEffect(() => {
-    camera.fov = isMobile ? 50 : 38
+    if (!isMobile) {
+      camera.fov = 38
+      camera.updateProjectionMatrix()
+      return
+    }
+    // No celular o fov sai da PROPORCAO da tela, e nao de um numero fixo.
+    //
+    // Medido: com fov fixo, na proporcao 0,56 (o aparelho do retorno) cabiam 19
+    // de 25 combinacoes de alvo; na proporcao 0,46 cabiam 2, e as duas exigiam
+    // fov 70 — lente larga demais. `fov` no three e VERTICAL, entao tela mais
+    // estreita perde campo horizontal justamente onde a cena precisa dele.
+    // Fixando a cobertura horizontal, cada aparelho recebe o vertical que a
+    // proporcao dele pede, e o enquadramento para de depender do modelo.
+    const meiaHorizontal = THREE.MathUtils.degToRad(CAMPO_HORIZONTAL) / 2
+    const proporcao = Math.max(0.3, tamanho.width / Math.max(1, tamanho.height))
+    const vertical = 2 * Math.atan(Math.tan(meiaHorizontal) / proporcao)
+    camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vertical), 46, 72)
     camera.updateProjectionMatrix()
-  }, [camera, isMobile])
+  }, [camera, isMobile, tamanho])
+
   return null
 }
 
@@ -283,7 +307,7 @@ export function Experience() {
       }}
       // Em retrato o campo horizontal encolhe muito: um fov maior evita
       // ter de afastar a camera ate a cena virar uma maquete distante.
-      camera={{ position: [0.22, 1.66, 2.5], fov: isMobile ? 50 : 38, near: 0.08, far: 30 }}
+      camera={{ position: [0.22, 1.66, 2.5], fov: isMobile ? 54 : 38, near: 0.08, far: 30 }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping
         gl.toneMappingExposure = 1.08

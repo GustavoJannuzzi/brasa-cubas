@@ -22,22 +22,17 @@ export function GalleryPanel() {
       <ul className="grid gap-3">
         {gallery.map((item) => (
           <li key={item.id} className="cartao overflow-hidden">
-            {/* Lugar da foto. Trocar por <img> quando as imagens existirem. */}
-            <div
-              className="grid h-32 place-items-center"
-              style={{
-                background: `linear-gradient(135deg, ${item.palette[0]} 0%, ${item.palette[1]} 100%)`,
-              }}
-            >
-              <span className="rounded-full bg-carvao/20 px-2.5 py-1 text-[10.5px] font-medium tracking-wide text-porcelana uppercase">
-                foto em breve
-              </span>
-            </div>
+            {/* A foto no lugar do degrade de espera. `loading="lazy"` porque a
+                lista abre com cinco e nem todas aparecem de cara. */}
+            <img
+              src={item.foto}
+              alt={item.title}
+              loading="lazy"
+              className="h-56 w-full object-cover"
+              style={{ background: item.palette[1] }}
+            />
             <div className="p-3.5">
-              <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-[15px] leading-snug">{item.title}</h3>
-                <span className="shrink-0 text-[12px] text-carvao/55">{item.year}</span>
-              </div>
+              <h3 className="text-[15px] leading-snug">{item.title}</h3>
               <p className="mt-0.5 text-[12px] font-medium text-brasa-texto">{item.kind}</p>
               <p className="mt-1.5 text-[13px] leading-relaxed text-carvao/70">{item.text}</p>
             </div>

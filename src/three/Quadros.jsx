@@ -1,60 +1,31 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTexture } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { room } from '../data/scene'
+import { quadros, retratos } from '../data/scene'
+import { useReducedMotion } from '../hooks/useMedia'
+import { useStore } from '../store/useStore'
 import { roundedBox } from './shapes'
 
-// Primeiras imagens de verdade da cena: ate aqui tudo era geometria e textura
-// desenhada em canvas. Sao fotos de referencia de peca (quadrinhos na parede) e
-// fotos da familia da Isabela (porta-retratos), servidas de /public/fotos.
+// Quadros da parede e porta-retratos, com as fotos da Isabela.
 //
-// Ficam num modulo proprio, e nao dentro de Atelier, porque carregam de forma
-// assincrona: quem chama envolve isto num <Suspense> curto, para o comodo
-// aparecer inteiro enquanto as fotos ainda estao vindo.
+// As POSICOES vivem em data/scene.js, nao aqui: o CameraRig precisa delas para
+// enquadrar quem clica num quadro, e duas copias da mesma lista seria a receita
+// para eu editar uma e nao entender por que nada muda.
+//
+// Carregam de forma assincrona, entao quem monta este componente envolve tudo
+// num <Suspense> curto — a cena inteira nao pode suspender junto.
 
-const FRENTE_PAREDE = 0.012 // 12 mm a frente da face interna, para a moldura ter ar
+export const FOTOS = [...quadros.map((q) => q.foto), ...retratos.map((r) => r.foto)]
 
-/**
- * Quadros de parede.
- *
- * Distribuidos em dois grupos, e isso e resultado de olhar, nao de calculo: na
- * primeira tentativa os cinco foram para a parede do fundo a esquerda, e os
- * dois de baixo brigaram com a luminaria (que, da camera `home`, cai bem na
- * frente deles) e com a borda do mural. Parede apertada le pior que parede
- * vazia. A esquerda cabem tres; os outros dois foram para o retorno da direita,
- * que e a parede realmente vazia da sala — e assim recompensam quem gira para
- * aquele lado, onde antes so havia parede lisa.
- */
-const QUADROS = [
-  // Coluna entre a placa e a estante, na parede do fundo.
-  { foto: '/fotos/peca-01.jpg', pos: [-1.18, 1.74, room.wallZ + FRENTE_PAREDE], gira: 0, w: 0.23, inclina: 0.012 },
-  { foto: '/fotos/peca-03.jpg', pos: [-1.18, 1.41, room.wallZ + FRENTE_PAREDE], gira: 0, w: 0.23, inclina: -0.01 },
-  { foto: '/fotos/peca-05.jpg', pos: [-1.18, 1.08, room.wallZ + FRENTE_PAREDE], gira: 0, w: 0.23, inclina: 0.008 },
-  // Retorno da direita, em DIPTICO: mesmo tamanho, mesma altura, 32 cm de
-  // centro a centro. Passei por duas tentativas piores ate aqui — a 1 m eles
-  // liam como dois objetos solitarios, e a meio metro com tamanhos e alturas
-  // diferentes ainda liam como par mal arrumado. Numa parede grande e vazia o
-  // que funciona e o conjunto alinhado; espacamento de quadro se mede na tela,
-  // nao no chao.
-  //
-  // Os dois ficam ATRAS de z -1.05: a hera do retorno nasce em z -0.8 e a
-  // folhagem dela chega perto disso. Passar por cima seria trocar parede vazia
-  // por quadro escondido atras de folha.
-  { foto: '/fotos/peca-02.jpg', pos: [room.halfW - FRENTE_PAREDE, 1.46, -1.5], gira: -Math.PI / 2, w: 0.21, inclina: -0.008 },
-  { foto: '/fotos/peca-04.jpg', pos: [room.halfW - FRENTE_PAREDE, 1.46, -1.18], gira: -Math.PI / 2, w: 0.21, inclina: 0.008 },
-]
-
-/** Fotos da Isabela em porta-retrato, apoiadas em superficie. */
-const RETRATOS = [
-  // No peitoril da janela: o ponto livre mais visto da vista `home`.
-  { foto: '/fotos/retrato-04.jpg', pos: [1.31, 1.17, room.wallZ + 0.1], gira: -0.34, w: 0.15, prop: 0.8 },
-  // Na ponta livre da tabua de baixo, do lado oposto a jiboia da tabua de cima.
-  { foto: '/fotos/retrato-01.jpg', pos: [-0.86, 0.9825, -1.5], gira: 0.42, w: 0.14, prop: 1 },
-  // Na bancada, entre o caderno e o potinho.
-  { foto: '/fotos/retrato-03.jpg', pos: [0.63, 0.78, 0.31], gira: -0.22, w: 0.115, prop: 1 },
-]
-
-export const FOTOS = [...QUADROS.map((q) => q.foto), ...RETRATOS.map((r) => r.foto)]
+// Respiro do brilho: sem icone, sem texto, sem seta. O pedido foi "algum tipo
+// de interacao que comunique que da para chegar perto, mas sem escrever".
+const BRILHO_MIN = 0.03
+const BRILHO_MAX = 0.17
+const BRILHO_TOQUE = 0.38
+// Com movimento reduzido nada pulsa: fica um realce parado, do mesmo jeito que
+// o pulso do marcador vira anel e a poeira do facho para de flutuar.
+const BRILHO_PARADO = 0.12
 
 /**
  * Prepara a textura para foto colorida.
@@ -74,21 +45,65 @@ function usarFotos(urls) {
   }, [mapas])
 }
 
+/** O brilho da moldura, que e o unico aviso de que da para clicar. */
+function usarBrilho(reduzida) {
+  const material = useRef(null)
+  const [perto, setPerto] = useState(false)
+
+  useFrame((state) => {
+    const m = material.current
+    if (!m) return
+    if (reduzida) {
+      m.emissiveIntensity = perto ? BRILHO_TOQUE : BRILHO_PARADO
+      return
+    }
+    const onda = (Math.sin(state.clock.elapsedTime * 1.1) + 1) / 2
+    const base = BRILHO_MIN + onda * (BRILHO_MAX - BRILHO_MIN)
+    m.emissiveIntensity = perto ? BRILHO_TOQUE : base
+  })
+
+  const sobre = (valor) => {
+    setPerto(valor)
+    document.body.style.cursor = valor ? 'pointer' : ''
+  }
+  return { material, sobre }
+}
+
 /** Moldura de parede: caixa de madeira, passe-partout claro e a foto. */
-function QuadroDeParede({ mapa, pos, gira, largura, inclina }) {
-  const altura = largura / 0.8 // as fotos de peca sao 4:5
+function QuadroDeParede({ mapa, item, aoClicar, reduzida }) {
+  const { material, sobre } = usarBrilho(reduzida)
+  const altura = item.w / item.prop // a proporcao vem da foto, nao fixa em 4:5
   const margem = 0.018
+  // A foto encaixa na area interna RESPEITANDO a proporcao dela. Subtrair uma
+  // margem fixa das duas dimensoes muda a proporcao da area, e a imagem saia
+  // desencaixada — sobrava passe-partout de um lado so.
+  const caixaL = item.w - margem * 2.6
+  const caixaA = altura - margem * 2.6
+  const fotoL = Math.min(caixaL, caixaA * item.prop)
+  const fotoA = fotoL / item.prop
+
   return (
-    <group position={pos} rotation={[0, gira, inclina]}>
-      <mesh geometry={roundedBox(largura, altura, 0.016, 0.004)} castShadow receiveShadow>
-        <meshStandardMaterial color="#7a5537" roughness={0.55} />
+    <group
+      position={item.pos}
+      rotation={[0, item.gira, item.inclina]}
+      onClick={(e) => {
+        // Arrasto que comeca em cima do quadro e giro de camera, nao clique.
+        if (e.delta > 6) return
+        e.stopPropagation()
+        aoClicar()
+      }}
+      onPointerOver={() => sobre(true)}
+      onPointerOut={() => sobre(false)}
+    >
+      <mesh geometry={roundedBox(item.w, altura, 0.016, 0.004)} castShadow receiveShadow>
+        <meshStandardMaterial ref={material} color="#7a5537" emissive="#ffb887" roughness={0.55} />
       </mesh>
       <mesh position={[0, 0, 0.009]}>
-        <planeGeometry args={[largura - margem, altura - margem]} />
+        <planeGeometry args={[item.w - margem, altura - margem]} />
         <meshStandardMaterial color="#f7f1e6" roughness={0.9} />
       </mesh>
       <mesh position={[0, 0, 0.0095]}>
-        <planeGeometry args={[largura - margem * 2.6, (altura - margem * 2.6) * 0.98]} />
+        <planeGeometry args={[fotoL, fotoA]} />
         <meshStandardMaterial map={mapa} roughness={0.78} />
       </mesh>
     </group>
@@ -96,27 +111,45 @@ function QuadroDeParede({ mapa, pos, gira, largura, inclina }) {
 }
 
 /** Porta-retrato de mesa: moldura em pe, inclinada, com o pe atras. */
-function PortaRetrato({ mapa, pos, gira, largura, prop }) {
-  const altura = largura / prop
+function PortaRetrato({ mapa, item, aoClicar, reduzida }) {
+  const { material, sobre } = usarBrilho(reduzida)
+  const altura = item.w / item.prop
   const margem = 0.014
+  // Mesmo encaixe do quadro de parede: proporcao da foto preservada dentro da
+  // area interna, para nao sobrar passe-partout de um lado.
+  const caixaL = item.w - margem * 2.2
+  const caixaA = altura - margem * 2.2
+  const fotoL = Math.min(caixaL, caixaA * item.prop)
+  const fotoA = fotoL / item.prop
   const INCLINACAO = 0.16 // ~9 graus para tras, como um porta-retrato de verdade
+
   return (
-    <group position={pos} rotation={[0, gira, 0]}>
+    <group
+      position={item.pos}
+      rotation={[0, item.gira, 0]}
+      onClick={(e) => {
+        if (e.delta > 6) return
+        e.stopPropagation()
+        aoClicar()
+      }}
+      onPointerOver={() => sobre(true)}
+      onPointerOut={() => sobre(false)}
+    >
       <group position={[0, altura / 2, 0]} rotation={[-INCLINACAO, 0, 0]}>
-        <mesh geometry={roundedBox(largura, altura, 0.012, 0.003)} castShadow receiveShadow>
-          <meshStandardMaterial color="#8a6647" roughness={0.5} />
+        <mesh geometry={roundedBox(item.w, altura, 0.012, 0.003)} castShadow receiveShadow>
+          <meshStandardMaterial ref={material} color="#8a6647" emissive="#ffb887" roughness={0.5} />
         </mesh>
         <mesh position={[0, 0, 0.0068]}>
-          <planeGeometry args={[largura - margem, altura - margem]} />
+          <planeGeometry args={[item.w - margem, altura - margem]} />
           <meshStandardMaterial color="#f7f1e6" roughness={0.9} />
         </mesh>
         <mesh position={[0, 0, 0.0072]}>
-          <planeGeometry args={[largura - margem * 2.2, altura - margem * 2.2]} />
+          <planeGeometry args={[fotoL, fotoA]} />
           <meshStandardMaterial map={mapa} roughness={0.76} />
         </mesh>
         {/* pe: a aba que segura a moldura em pe, inclinada ao contrario */}
         <mesh
-          geometry={roundedBox(largura * 0.34, altura * 0.62, 0.008, 0.003)}
+          geometry={roundedBox(item.w * 0.34, altura * 0.62, 0.008, 0.003)}
           position={[0, -altura * 0.14, -0.024]}
           rotation={[0.34, 0, 0]}
           castShadow
@@ -130,19 +163,27 @@ function PortaRetrato({ mapa, pos, gira, largura, prop }) {
 
 export function Quadros() {
   const mapas = usarFotos(FOTOS)
+  const reduzida = useReducedMotion()
+  const focarQuadro = useStore((s) => s.focarQuadro)
+
   return (
     <group>
-      {QUADROS.map((q, i) => (
-        <QuadroDeParede key={q.foto} mapa={mapas[i]} pos={q.pos} gira={q.gira} largura={q.w} inclina={q.inclina} />
+      {quadros.map((item, i) => (
+        <QuadroDeParede
+          key={item.id}
+          item={item}
+          mapa={mapas[i]}
+          reduzida={reduzida}
+          aoClicar={() => focarQuadro(item.id)}
+        />
       ))}
-      {RETRATOS.map((r, i) => (
+      {retratos.map((item, i) => (
         <PortaRetrato
-          key={r.foto}
-          mapa={mapas[QUADROS.length + i]}
-          pos={r.pos}
-          gira={r.gira}
-          largura={r.w}
-          prop={r.prop}
+          key={item.id}
+          item={item}
+          mapa={mapas[quadros.length + i]}
+          reduzida={reduzida}
+          aoClicar={() => focarQuadro(item.id)}
         />
       ))}
     </group>

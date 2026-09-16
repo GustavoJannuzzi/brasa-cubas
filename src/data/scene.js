@@ -90,7 +90,12 @@ export const shelfSlotPosition = (slot) => [
 export const plants = [
   // chao
   { id: 'costela-frente', kind: 'costela', position: [-1.15, 0, 1.35], rotation: [0, 0.6, 0], scale: 1.15, seed: 3 },
-  { id: 'costela-fundo', kind: 'costela', position: [-1.3, 0, -1.2], rotation: [0, -0.9, 0], scale: 0.7, seed: 17 },
+  // Movida e aumentada depois da revisao do celular: em [-1.3, 0, -1.2] ela
+  // ficava DENTRO do quadro de abertura mas atras da bancada — "esta ali atras,
+  // quase nao da para ver". Medido: o raio da camera ate ela batia no tapete de
+  // corte do tampo. Agora vai para o canto do fundo, onde a linha de visada
+  // passa por cima da bancada, e cresce um pouco para se ler a distancia.
+  { id: 'costela-fundo', kind: 'costela', position: [-1.58, 0, -1.42], rotation: [0, -0.7, 0], scale: 0.85, seed: 17 },
   // x 1.44: em 1.5 a folha mais aberta furava o retorno da parede direita
   // (2,9 cm) quando o vento chegava na amplitude maxima.
   { id: 'espada-janela', kind: 'espada', position: [1.44, 0, -1.05], rotation: [0, -0.4, 0], scale: 1.05, seed: 8 },
@@ -133,6 +138,51 @@ export const plants = [
   { id: 'pendurada-jiboia-2', kind: 'jiboia', position: [1.62, 2.54, -0.55], rotation: [0, 1.6, 0], scale: 0.7, seed: 36, hanging: 0.66 },
 ]
 
+// Quadros e porta-retratos. Ficam AQUI, e nao dentro do componente, porque o
+// CameraRig precisa deles para calcular o enquadramento de quem clica num
+// quadro — e rig importando de componente seria dependencia ao contrario.
+//
+// `prop` e a proporcao da foto: a da bancada e 4:5 e as de familia sao
+// quadradas. Sem isso a moldura assumiria 4:5 para todas e esticaria as outras.
+const FRENTE_PAREDE = 0.012 // 12 mm a frente da face interna, para a moldura ter ar
+
+export const quadros = [
+  // Coluna entre a placa e a estante, na parede do fundo.
+  { id: 'q1', foto: '/fotos/retrato-04.jpg', prop: 0.8, pos: [-1.18, 1.74, -1.7 + FRENTE_PAREDE], gira: 0, w: 0.23, inclina: 0.012 },
+  { id: 'q2', foto: '/fotos/retrato-01.jpg', prop: 1, pos: [-1.18, 1.44, -1.7 + FRENTE_PAREDE], gira: 0, w: 0.21, inclina: -0.01 },
+  { id: 'q3', foto: '/fotos/retrato-03.jpg', prop: 1, pos: [-1.18, 1.14, -1.7 + FRENTE_PAREDE], gira: 0, w: 0.21, inclina: 0.008 },
+  // Retorno da direita, em diptico. Repetem duas da coluna — sao tres fotos
+  // para mais de tres lugares —, mas este lado so aparece para quem gira para
+  // ca, entao a repeticao nunca cai no mesmo quadro que a coluna.
+  { id: 'q4', foto: '/fotos/retrato-01.jpg', prop: 1, pos: [1.92 - FRENTE_PAREDE, 1.46, -1.5], gira: -Math.PI / 2, w: 0.21, inclina: -0.008 },
+  { id: 'q5', foto: '/fotos/retrato-03.jpg', prop: 1, pos: [1.92 - FRENTE_PAREDE, 1.46, -1.18], gira: -Math.PI / 2, w: 0.21, inclina: 0.008 },
+]
+
+export const retratos = [
+  { id: 'r1', foto: '/fotos/retrato-04.jpg', pos: [1.31, 1.17, -1.6], gira: -0.34, w: 0.15, prop: 0.8 },
+  { id: 'r2', foto: '/fotos/retrato-01.jpg', pos: [-0.86, 0.9825, -1.5], gira: 0.42, w: 0.14, prop: 1 },
+  { id: 'r3', foto: '/fotos/retrato-03.jpg', pos: [0.63, 0.78, 0.31], gira: -0.22, w: 0.115, prop: 1 },
+]
+
+/**
+ * De onde olhar um quadro de perto.
+ * A moldura olha para +z no espaco local dela, girada por `gira` em Y — entao a
+ * normal e (sin, 0, cos). A camera vai nessa direcao, na altura do quadro.
+ */
+export const quadroFraming = (quadro, mobile) => {
+  // Distancia proporcional a LARGURA, e nao fixa: a mesma distancia que
+  // enquadra um quadro de 23 cm deixaria um porta-retrato de 11,5 cm pequeno no
+  // meio da tela. Assim todos ocupam mais ou menos o mesmo pedaco do quadro.
+  const d = (mobile ? 2.9 : 2.5) * quadro.w
+  const nx = Math.sin(quadro.gira)
+  const nz = Math.cos(quadro.gira)
+  const [x, y, z] = quadro.pos
+  return {
+    position: [x + nx * d, y, z + nz * d],
+    target: [x, y, z],
+  }
+}
+
 // Presets de camera: [posicao, alvo].
 // `mobile` e um enquadramento proprio para tela em pe. Nao da para so afastar
 // a camera: em retrato o campo horizontal e menor, e afastar o suficiente para
@@ -142,7 +192,14 @@ export const views = {
   home: {
     position: [0.22, 1.66, 2.5],
     target: [0, 1.22, -0.95],
-    mobile: { position: [0.08, 1.74, 3.05], target: [0, 1.14, -0.9] },
+    // Enquadramento pedido na revisao do celular, reproduzido a partir de um
+    // print: a abertura anterior chegava fechada na estante e o mural dos
+    // projetos ficava FORA de quadro — "os projetos nao estao aparecendo, tinha
+    // que aparecer quando o site inicia". Daqui entram na mesma tela o mural
+    // inteiro, a placa, as tres tabuas, a bancada, a viga em cima e o assoalho
+    // embaixo. Cabe nos limites que ja existiam: distancia 4,79 (teto 4,9),
+    // azimute 0,68 rad (limite 1,2) e alvo dentro de `targetBounds`.
+    mobile: { position: [1.9, 1.62, 2.4], target: [-1.15, 1.08, -1.28] },
   },
   mesa: {
     position: [0.05, 1.42, 1.22],

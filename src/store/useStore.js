@@ -20,6 +20,11 @@ export const useStore = create(
       view: 'home',
       // Produto em foco na cena (peca destacada na prateleira).
       focusedProduct: null,
+      // Quadro que a camera foi ver de perto. Mesma ideia de `focusedProduct`,
+      // e por isso entra pelo mesmo caminho no CameraRig: o retorno da revisao
+      // foi que as fotos na parede sao pequenas demais no celular para se saber
+      // quem esta nelas.
+      quadroFocado: null,
       // Conta quantas vezes alguem PEDIU um enquadramento. Pedir 'home' estando
       // em 'home' nao muda `view`, entao o efeito do CameraRig nao rodava: quem
       // se perdia arrastando apertava voltar e nada acontecia.
@@ -28,7 +33,7 @@ export const useStore = create(
       // rotulo nao pode seguir afirmando que ela esta na visao geral.
       vistaLivre: false,
       setVistaLivre: (vistaLivre) => set((s) => (s.vistaLivre === vistaLivre ? s : { vistaLivre })),
-      goTo: (view) => set((s) => ({ view, focusedProduct: null, cameraSeq: s.cameraSeq + 1 })),
+      goTo: (view) => set((s) => ({ view, focusedProduct: null, quadroFocado: null, cameraSeq: s.cameraSeq + 1 })),
 
       // --- paineis ---
       // null | produtos | produto | orcamento | galeria | processo | contato | carrinho | ajuda
@@ -70,7 +75,8 @@ export const useStore = create(
           cameraSeq: s.cameraSeq + 1,
         })),
 
-      clearFocus: () => set({ focusedProduct: null, selectedProduct: null }),
+      focarQuadro: (id) => set({ quadroFocado: id, panel: null, focusedProduct: null }),
+      clearFocus: () => set({ focusedProduct: null, selectedProduct: null, quadroFocado: null }),
 
       backToProducts: () => set({ panel: 'produtos', selectedProduct: null, focusedProduct: null }),
 

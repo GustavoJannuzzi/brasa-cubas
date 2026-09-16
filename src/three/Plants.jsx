@@ -20,7 +20,14 @@ const ACABAMENTO = {
 // forca. Sao objetos mutaveis de proposito — mexer no `.value` nao recompila
 // shader, ao contrario de trocar a amplitude por uma constante no codigo.
 const tempoVento = { value: 0 }
-const forcaVento = { value: 0.022 }
+// Exportado de proposito, e so por isso: e o unico jeito de uma sonda conferir
+// a promessa de `prefers-reduced-motion` aqui. O uniforme NAO aparece em
+// `material.uniforms` nem em `material.userData` — `aplicarVento` o injeta
+// dentro do `onBeforeCompile`, entao ele vive no shader compilado. Como a
+// atribuicao la embaixo e `shader.uniforms.uForca = forcaVento`, o shader
+// recebe esta MESMA referencia: ler `forcaVento.value` daqui e ler o que ele
+// esta usando agora.
+export const forcaVento = { value: 0.022 }
 
 /**
  * Vento no vertex shader. O deslocamento e proporcional a `aVento` (distancia

@@ -273,7 +273,12 @@ export function LowPerfBanner() {
   if (!lowPerf) return null
 
   return (
-    <div className="camada-cena anim-sobe fixed top-[3.4rem] left-1/2 z-[44] w-[min(26rem,calc(100vw-1.5rem))] -translate-x-1/2 md:top-[4.4rem]">
+    // Na faixa livre entre o cabecalho e a estante, junto da barra de
+    // orientacao. No topo centralizado ele cobria a tabua de cima (arranjo,
+    // pilha de pratos, mini arranjo, potinho) e embaixo cobria as etiquetas de
+    // preco da tabua de baixo — medido, 416 x 61 px. Na vista da prateleira a
+    // estante vai de y 192 a 815: quem avisa nao pode tapar o produto.
+    <div className="camada-cena anim-sobe fixed top-[6.1rem] left-3 z-[44] w-[min(22rem,calc(100vw-1.5rem))] md:top-[7.2rem] md:left-5">
       <div className="cartao flex items-start gap-3 p-3.5">
         <IconLayers size={19} className="mt-0.5 shrink-0 text-brasa" />
         <div className="min-w-0 flex-1">
@@ -288,11 +293,17 @@ export function LowPerfBanner() {
                 setSimpleMode(true)
                 dismissLowPerf()
               }}
-              className="btn-principal px-3.5 py-2 text-[12.5px]"
+              className="btn-secundario px-3.5 py-2 text-[12.5px]"
             >
               Ver em lista
             </button>
-            <button type="button" onClick={dismissLowPerf} className="btn-fantasma text-[12.5px]">
+            {/* Mesmo peso do outro: e um aviso, nao um bloqueio. Quem esta
+                vendo a cena rodar decide se ela esta boa o bastante. */}
+            <button
+              type="button"
+              onClick={dismissLowPerf}
+              className="btn-secundario px-3.5 py-2 text-[12.5px]"
+            >
               Continuar em 3D
             </button>
           </div>

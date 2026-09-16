@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
 import { useIsMobile } from '../hooks/useMedia'
+import { foiRebaixado, marcarRebaixado, tierDoAparelho } from '../lib/tier'
 import { useStore } from '../store/useStore'
 import { Atelier } from './Atelier'
 import { CameraRig } from './CameraRig'
@@ -64,32 +65,85 @@ function GuardaContexto() {
   return null
 }
 
-// Se o aparelho nao aguenta a cena, melhor oferecer o modo simples do que
-// deixar a pessoa numa pagina travada.
+// Carencia antes de medir: compilar shader e montar geometria sempre engasga.
+const CARENCIA = 5
+// 50 ms de quadro sao 20 fps. A conta e pela MEDIANA da janela, nao pela
+// media: um engasgo isolado nao condena o aparelho.
+const QUADRO_RUIM = 50
+
+/**
+ * Se o aparelho nao aguenta a cena, melhor oferecer o modo simples do que
+ * deixar a pessoa numa pagina travada. Mas o recuo e em degraus, e o primeiro
+ * nao recompila nada: so desenha menos pixel.
+ *
+ * A media anterior condenava quem tinha ido ao WhatsApp e voltado — que e a
+ * saida principal deste site. Parado em outro app, o rAF nao roda; o primeiro
+ * quadro na volta traz todo o tempo de fora e a janela inteira dava ~0 fps.
+ */
 function PerfWatch() {
   const reportLowPerf = useStore((s) => s.reportLowPerf)
-  const acc = useRef({ time: 0, frames: 0, strikes: 0, grace: 0 })
+  const setDpr = useThree((s) => s.setDpr)
+  const acc = useRef({ tempos: [], janela: 0, ruins: 0, avaliadas: 0, carencia: 0, degrau: 0 })
+
+  useEffect(() => {
+    const aoVoltar = () => {
+      if (document.visibilityState !== 'visible') return
+      // Na volta ainda ha textura e geometria para reenviar a GPU: medir agora
+      // mede o reenvio, nao o aparelho.
+      const a = acc.current
+      a.tempos = []
+      a.janela = 0
+      a.ruins = 0
+      a.avaliadas = 0
+      a.carencia = CARENCIA - 2
+    }
+    document.addEventListener('visibilitychange', aoVoltar)
+    return () => document.removeEventListener('visibilitychange', aoVoltar)
+  }, [])
 
   useFrame((_, delta) => {
     const a = acc.current
-    // Os primeiros segundos sempre engasgam (compilar shader, montar
-    // geometria). Medir ali daria alarme falso em aparelho bom.
-    if (a.grace < 5) {
-      a.grace += delta
+    if (a.carencia < CARENCIA) {
+      a.carencia += delta
       return
     }
-    a.time += delta
-    a.frames += 1
-    if (a.time < 2.5) return
-    const fps = a.frames / a.time
-    a.time = 0
-    a.frames = 0
-    if (fps < 20) {
-      a.strikes += 1
-      if (a.strikes >= 3) reportLowPerf()
-    } else {
-      a.strikes = 0
+    // Quadro absurdo e aba que voltou, alt-tab ou depurador aberto — nao e
+    // desempenho. Descarta e recomeca a janela.
+    if (delta > 0.25) {
+      a.tempos = []
+      a.janela = 0
+      return
     }
+
+    a.tempos.push(delta * 1000)
+    a.janela += delta
+    if (a.janela < 2) return
+
+    const ordenados = [...a.tempos].sort((x, y) => x - y)
+    const mediana = ordenados[Math.floor(ordenados.length / 2)]
+    a.tempos = []
+    a.janela = 0
+    a.avaliadas += 1
+    if (mediana > QUADRO_RUIM) a.ruins += 1
+    if (a.avaliadas < 4) return
+
+    const ruim = a.ruins >= 3
+    a.avaliadas = 0
+    a.ruins = 0
+    if (!ruim) return
+
+    // Degrau 1: menos pixel. Nao mexe em material nem em geometria, entao nao
+    // ha recompilacao — e costuma ser o que falta num aparelho no limite.
+    if (a.degrau === 0) {
+      a.degrau = 1
+      setDpr(1)
+      a.carencia = 0
+      return
+    }
+    // Degrau 2: cai de nivel e avisa. Fica guardado para a proxima visita
+    // comecar no degrau certo, em vez de repetir o engasgo da queda.
+    marcarRebaixado()
+    reportLowPerf()
   })
   return null
 }
@@ -134,7 +188,10 @@ function Scene({ quality }) {
 export function Experience() {
   const isMobile = useIsMobile()
   const lowPerf = useStore((s) => s.perfWarned)
-  const quality = isMobile || lowPerf ? 'baixa' : 'alta'
+  // Pelo APARELHO, nao pela largura da janela, e uma vez so: girar o celular
+  // nao pode trocar sombra nem antialias no meio do gesto.
+  const aparelho = useMemo(() => (foiRebaixado() ? 'baixa' : tierDoAparelho()), [])
+  const quality = lowPerf || aparelho === 'baixa' ? 'baixa' : 'alta'
 
   return (
     <Canvas
@@ -143,7 +200,13 @@ export function Experience() {
       // A borda macia vem de shadow-radius, no Lighting.
       shadows={quality === 'alta' ? 'percentage' : false}
       dpr={[1, quality === 'alta' ? 1.75 : 1.25]}
-      gl={{ antialias: quality === 'alta', powerPreference: 'high-performance' }}
+      // Coerente porque o nivel do aparelho nao muda depois de criado o
+      // renderer. Em aparelho de toque, 'default' deixa o sistema escolher a
+      // GPU integrada, que gasta menos bateria e aquece menos.
+      gl={{
+        antialias: aparelho === 'alta',
+        powerPreference: aparelho === 'alta' ? 'high-performance' : 'default',
+      }}
       // Em retrato o campo horizontal encolhe muito: um fov maior evita
       // ter de afastar a camera ate a cena virar uma maquete distante.
       camera={{ position: [0.22, 1.66, 2.5], fov: isMobile ? 50 : 38, near: 0.08, far: 30 }}

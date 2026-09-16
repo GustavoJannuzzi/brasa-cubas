@@ -121,6 +121,18 @@ export function Experience() {
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping
         gl.toneMappingExposure = 1.08
+
+        // O navegador in-app (WKWebView) derruba o contexto ao voltar de outro
+        // app — e a saida principal deste site e justamente ir ao WhatsApp e
+        // voltar. Sem isto, a cena fica preta atras do menu, sem aviso nenhum.
+        const tela = gl.domElement
+        tela.addEventListener('webglcontextlost', (e) => {
+          e.preventDefault()
+          useStore.getState().setGl3d('perdido')
+        })
+        tela.addEventListener('webglcontextrestored', () => {
+          useStore.getState().setGl3d('ok')
+        })
       }}
       style={{ position: 'fixed', inset: 0, touchAction: 'none' }}
     >

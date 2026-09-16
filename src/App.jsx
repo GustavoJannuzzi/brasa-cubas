@@ -1,6 +1,9 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { temWebGL } from './lib/webgl'
 import { useStore } from './store/useStore'
-import { Experience } from './three/Experience'
+import { Experience } from './three/experienceLazy'
+import { Aviso3D } from './ui/Aviso3D'
+import { Boundary3D } from './ui/Boundary3D'
 import { Header, MobileNav } from './ui/Header'
 import { Loader, Onboarding } from './ui/Intro'
 import {
@@ -40,17 +43,41 @@ function PainelAtivo() {
 
 export default function App() {
   const simpleMode = useStore((s) => s.simpleMode)
+  const gl3d = useStore((s) => s.gl3d)
+  const setGl3d = useStore((s) => s.setGl3d)
+  const setSimpleMode = useStore((s) => s.setSimpleMode)
+  const setAssetsReady = useStore((s) => s.setAssetsReady)
+  // Trocar esta chave remonta o Canvas: e o "tentar de novo" depois de o
+  // contexto WebGL cair.
+  const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
     // O CSS usa isso para devolver a rolagem normal da pagina no modo simples.
     document.body.dataset.modo = simpleMode ? 'simples' : 'atelie'
   }, [simpleMode])
 
+  useEffect(() => {
+    // Canvas com o contexto perdido nao fica transparente: o Chrome composita
+    // um canvas opaco sem backing como BRANCO (medido), e o cabecalho, que e
+    // texto claro, some. O CSS usa isto para esconder o canvas morto e deixar
+    // aparecer o carvao do body — o mesmo fundo do loader.
+    document.body.dataset.gl = gl3d
+  }, [gl3d])
+
+  useEffect(() => {
+    // Antes de montar o Canvas: sem WebGL, o 3D nunca desenharia o primeiro
+    // quadro e a pessoa ficaria presa no loader. Vai direto para a lista.
+    if (temWebGL()) return
+    setGl3d('indisponivel')
+    setSimpleMode(true)
+  }, [setGl3d, setSimpleMode])
+
   if (simpleMode) {
     return (
       <>
         <SimpleMode />
         <PainelAtivo />
+        <Aviso3D />
         <Toasts />
       </>
     )
@@ -58,7 +85,19 @@ export default function App() {
 
   return (
     <>
-      <Experience />
+      {gl3d !== 'indisponivel' && (
+        <Boundary3D
+          key={tentativa}
+          onErro={() => {
+            setGl3d('perdido')
+            setAssetsReady(true)
+          }}
+        >
+          <Suspense fallback={null}>
+            <Experience />
+          </Suspense>
+        </Boundary3D>
+      )}
       <div className="vinheta" aria-hidden="true" />
 
       <Header />
@@ -70,6 +109,12 @@ export default function App() {
 
       <PainelAtivo />
 
+      <Aviso3D
+        onTentarDeNovo={() => {
+          setGl3d('ok')
+          setTentativa((n) => n + 1)
+        }}
+      />
       <LowPerfBanner />
       <Onboarding />
       <Loader />

@@ -40,6 +40,15 @@
     background: var(--color-porcelana);
   }
 
+  /* Contexto WebGL perdido: o canvas nao volta a ser transparente, o navegador
+     composita branco por baixo do cabecalho de texto claro. Escondido (e nao
+     removido, para o evento de restauracao ainda chegar), quem aparece e o
+     carvao do body. */
+  body[data-gl='perdido'] canvas,
+  body[data-gl='indisponivel'] canvas {
+    visibility: hidden;
+  }
+
   h1,
   h2,
   h3 {
@@ -179,6 +188,17 @@
   }
 }
 
+/* Barra do loader quando ainda nao ha o que medir: anda de um lado ao outro em
+   vez de fingir uma porcentagem. */
+@keyframes anda-barra {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(240%);
+  }
+}
+
 @keyframes entra-gaveta {
   from {
     transform: translateX(24px);
@@ -202,6 +222,12 @@
 .anim-gaveta {
   animation: entra-gaveta 0.32s var(--ease-suave) both;
 }
+/* Barra indeterminada: um terco da largura indo e voltando. Diz "estou
+   trabalhando" sem afirmar quanto falta. */
+.barra-andando {
+  width: 40%;
+  animation: anda-barra 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .anim-pulso,
@@ -210,6 +236,13 @@
   .anim-gaveta {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
+  }
+  /* Parada, a barra de 40% voltaria a insinuar "falta pouco". Cheia e apagada
+     ela so diz "estou carregando". */
+  .barra-andando {
+    animation: none;
+    width: 100%;
+    opacity: 0.45;
   }
 }
 

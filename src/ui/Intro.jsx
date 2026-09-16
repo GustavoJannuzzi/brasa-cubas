@@ -5,29 +5,50 @@ import { useStore } from '../store/useStore'
 import { IconArrow, IconLayers } from './Icons'
 import { PieceThumb } from './PieceThumb'
 
+// Depois deste tempo sem o primeiro quadro, o loader para de esperar em
+// silencio e oferece a lista como caminho principal. Em aparelho sem GPU (ou
+// com renderizador por software) o quadro pode nunca vir.
+const DEMORA = 12000
+
 /**
  * Tela de entrada. Enquanto a cena monta, ela ja diz o que este site e e o
  * que da para fazer aqui — quem desistir antes de entrar sai sabendo.
+ *
+ * A barra nao finge progresso: ou esta indeterminada ("estou montando"), ou
+ * cheia ("pronto"). A versao anterior subia sozinha ate 92% e parava la, o que
+ * prometia que faltava pouco mesmo quando nada estava acontecendo.
  */
 export function Loader() {
   const assetsReady = useStore((s) => s.assetsReady)
   const entered = useStore((s) => s.entered)
   const enter = useStore((s) => s.enter)
   const setSimpleMode = useStore((s) => s.setSimpleMode)
-  const [progress, setProgress] = useState(8)
+  const gl3d = useStore((s) => s.gl3d)
+  const [demorou, setDemorou] = useState(false)
 
   useEffect(() => {
-    if (assetsReady) {
-      setProgress(100)
-      return
-    }
-    const id = setInterval(() => setProgress((p) => Math.min(92, p + 6 + Math.random() * 8)), 130)
-    return () => clearInterval(id)
+    if (assetsReady) return
+    const id = setTimeout(() => setDemorou(true), DEMORA)
+    return () => clearTimeout(id)
   }, [assetsReady])
 
   if (entered) return null
 
-  const pronto = assetsReady && progress >= 100
+  const pronto = assetsReady && gl3d === 'ok'
+  const emApuros = (demorou && !pronto) || gl3d !== 'ok'
+
+  const verLista = () => {
+    setSimpleMode(true)
+    enter()
+  }
+
+  const status = pronto
+    ? 'Ateliê pronto'
+    : gl3d !== 'ok'
+      ? 'Este navegador não abre o 3D'
+      : demorou
+        ? 'O 3D está demorando neste aparelho'
+        : 'Montando o ateliê…'
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-carvao px-6 text-center">
@@ -51,32 +72,52 @@ export function Loader() {
 
         <div className="mt-8 h-0.5 w-48 overflow-hidden rounded-full bg-porcelana/15">
           <span
-            className="block h-full rounded-full bg-brasa-clara"
-            style={{ width: `${progress}%`, transition: 'width .3s var(--ease-suave)' }}
+            className={`block h-full rounded-full bg-brasa-clara ${pronto ? 'w-full' : 'barra-andando'}`}
+            style={{ transition: 'width .3s var(--ease-suave)' }}
           />
         </div>
 
-        <button
-          type="button"
-          onClick={enter}
-          disabled={!pronto}
-          className="btn-principal mt-6 w-full max-w-64 disabled:opacity-45"
-        >
-          {pronto ? 'Entrar no ateliê' : 'Preparando a bancada…'}
-          {pronto && <IconArrow size={16} />}
-        </button>
+        <p role="status" aria-live="polite" className="mt-3 text-[12.5px] text-porcelana/60">
+          {status}
+        </p>
 
-        <button
-          type="button"
-          onClick={() => {
-            setSimpleMode(true)
-            enter()
-          }}
-          className="mt-3 flex items-center gap-1.5 text-[12.5px] text-porcelana/50 underline underline-offset-2 hover:text-porcelana/80"
-        >
-          <IconLayers size={14} />
-          ou ver o catálogo como lista, sem 3D
-        </button>
+        {emApuros ? (
+          <>
+            <button type="button" onClick={verLista} className="btn-principal mt-5 w-full max-w-64">
+              <IconLayers size={16} />
+              Ver o catálogo em lista
+            </button>
+            <button
+              type="button"
+              onClick={enter}
+              disabled={!pronto}
+              className="mt-3 text-[12.5px] text-porcelana/50 underline underline-offset-2 disabled:no-underline disabled:opacity-45 hover:text-porcelana/80"
+            >
+              {pronto ? 'Entrar no ateliê mesmo assim' : 'Continuar esperando o 3D'}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={enter}
+              disabled={!pronto}
+              className="btn-principal mt-5 w-full max-w-64 disabled:opacity-45"
+            >
+              {pronto ? 'Entrar no ateliê' : 'Preparando a bancada…'}
+              {pronto && <IconArrow size={16} />}
+            </button>
+
+            <button
+              type="button"
+              onClick={verLista}
+              className="mt-3 flex items-center gap-1.5 text-[12.5px] text-porcelana/50 underline underline-offset-2 hover:text-porcelana/80"
+            >
+              <IconLayers size={14} />
+              ou ver o catálogo como lista, sem 3D
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

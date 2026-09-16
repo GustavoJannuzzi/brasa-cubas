@@ -149,8 +149,13 @@ export function OrientationBar() {
   const toggleHotspots = useStore((s) => s.toggleHotspots)
   const toggleSimpleMode = useStore((s) => s.toggleSimpleMode)
   const focusedProduct = useStore((s) => s.focusedProduct)
+  const gl3d = useStore((s) => s.gl3d)
 
   if (!entered) return null
+
+  // Sem cena desenhando, dizer onde a camera esta e oferecer "voltar para a
+  // visao geral" e mentira: nao ha nada para ver. Fica so a saida para a lista.
+  const desenhando = gl3d === 'ok'
 
   const peca = focusedProduct ? products.find((p) => p.id === focusedProduct)?.name : null
   const lugar = peca ?? LUGARES[view] ?? LUGARES.home
@@ -158,37 +163,41 @@ export function OrientationBar() {
 
   return (
     <div className="fixed top-[3.4rem] left-3 z-20 flex items-center gap-1 md:top-[4.4rem] md:left-5">
-      <span
-        className="max-w-[9.5rem] truncate rounded-full bg-carvao/55 px-3 py-1.5 text-[11.5px] font-medium text-porcelana/90 md:max-w-none"
-        style={{ backdropFilter: 'blur(6px)' }}
-      >
-        <span className="md:hidden">{lugarCurto}</span>
-        <span className="hidden md:inline">{lugar}</span>
-      </span>
+      {desenhando && (
+        <>
+          <span
+            className="max-w-[9.5rem] truncate rounded-full bg-carvao/55 px-3 py-1.5 text-[11.5px] font-medium text-porcelana/90 md:max-w-none"
+            style={{ backdropFilter: 'blur(6px)' }}
+          >
+            <span className="md:hidden">{lugarCurto}</span>
+            <span className="hidden md:inline">{lugar}</span>
+          </span>
 
-      {view !== 'home' && (
-        <button
-          type="button"
-          onClick={() => goTo('home')}
-          title="Voltar para a visão geral"
-          aria-label="Voltar para a visão geral"
-          className="grid h-8 w-8 place-items-center rounded-full bg-carvao/55 text-porcelana/80 transition-colors hover:text-porcelana"
-          style={{ backdropFilter: 'blur(6px)' }}
-        >
-          <IconHome size={16} />
-        </button>
+          {view !== 'home' && (
+            <button
+              type="button"
+              onClick={() => goTo('home')}
+              title="Voltar para a visão geral"
+              aria-label="Voltar para a visão geral"
+              className="grid h-8 w-8 place-items-center rounded-full bg-carvao/55 text-porcelana/80 transition-colors hover:text-porcelana"
+              style={{ backdropFilter: 'blur(6px)' }}
+            >
+              <IconHome size={16} />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={toggleHotspots}
+            title={showHotspots ? 'Esconder marcadores' : 'Mostrar marcadores'}
+            aria-label={showHotspots ? 'Esconder marcadores' : 'Mostrar marcadores'}
+            className="hidden h-8 w-8 place-items-center rounded-full bg-carvao/55 text-porcelana/80 transition-colors hover:text-porcelana md:grid"
+            style={{ backdropFilter: 'blur(6px)' }}
+          >
+            {showHotspots ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+          </button>
+        </>
       )}
-
-      <button
-        type="button"
-        onClick={toggleHotspots}
-        title={showHotspots ? 'Esconder marcadores' : 'Mostrar marcadores'}
-        aria-label={showHotspots ? 'Esconder marcadores' : 'Mostrar marcadores'}
-        className="hidden h-8 w-8 place-items-center rounded-full bg-carvao/55 text-porcelana/80 transition-colors hover:text-porcelana md:grid"
-        style={{ backdropFilter: 'blur(6px)' }}
-      >
-        {showHotspots ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-      </button>
 
       <button
         type="button"

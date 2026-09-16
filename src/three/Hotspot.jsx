@@ -76,7 +76,11 @@ function Hotspot({ spot }) {
 
 export function Hotspots() {
   const showHotspots = useStore((s) => s.showHotspots)
-  if (!showHotspots) return null
+  // Quando o contexto WebGL cai, o canvas para de desenhar mas estes rotulos
+  // sao DOM (drei Html): continuariam pendurados sobre o vazio preto, e
+  // clicaveis, mandando a camera para um lugar que ninguem ve. Somem com a cena.
+  const gl3d = useStore((s) => s.gl3d)
+  if (!showHotspots || gl3d !== 'ok') return null
   return (
     <>
       {hotspots.map((spot) => (

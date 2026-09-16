@@ -1,11 +1,17 @@
 import { useMemo, useState } from 'react'
 import { categories, gallery, products } from '../data/products'
 import { faq, howToOrder, studio } from '../data/studio'
-import { money, priceLabel } from '../lib/format'
+import { money, plural, priceLabel } from '../lib/format'
 import { cartMessage, plainHello } from '../lib/whatsapp'
 import { useCartSummary, useStore } from '../store/useStore'
 import { IconArrow, IconCube, IconInstagram, IconMail, IconPlus, IconWhatsapp } from './Icons'
 import { PieceThumb } from './PieceThumb'
+
+const SECOES = [
+  ['#produtos', 'Produtos'],
+  ['#encomendar', 'Como encomendar'],
+  ['#contato', 'Contato'],
+]
 
 // Mesma informacao do ateliê 3D, em uma pagina que rola.
 // Existe para conexao fraca, aparelho antigo, leitor de tela e para quem
@@ -14,7 +20,7 @@ export function SimpleMode() {
   const toggleSimpleMode = useStore((s) => s.toggleSimpleMode)
   const addToCart = useStore((s) => s.addToCart)
   const openPanel = useStore((s) => s.openPanel)
-  const { lines, total, isEstimate } = useCartSummary()
+  const { lines, count, total, isEstimate } = useCartSummary()
   const [filter, setFilter] = useState('todos')
 
   const lista = useMemo(
@@ -25,39 +31,71 @@ export function SimpleMode() {
   return (
     <div className="min-h-svh bg-porcelana pb-28">
       <header className="sticky top-0 z-20 border-b border-carvao/10 bg-porcelana/95" style={{ backdropFilter: 'blur(8px)' }}>
-        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3 sm:gap-3">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brasa text-porcelana">
             <span className="font-display text-[15px] leading-none">bc</span>
           </span>
-          <span className="leading-tight">
-            <span className="block font-display text-[17px] text-carvao">{studio.name}</span>
-            <span className="block text-[11px] text-carvao/55">{studio.tagline}</span>
+          {/* min-w-0 + truncate: sem isso o nome quebrava em duas linhas em
+              tela de 375px e empurrava os botoes para fora. */}
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate font-display text-[17px] text-carvao">{studio.name}</span>
+            <span className="block truncate text-[11px] text-carvao/55">{studio.tagline}</span>
           </span>
-          <nav className="ml-auto hidden items-center gap-1 sm:flex" aria-label="Seções da página">
-            {[
-              ['#produtos', 'Produtos'],
-              ['#encomendar', 'Como encomendar'],
-              ['#contato', 'Contato'],
-            ].map(([href, label]) => (
-              <a
-                key={href}
-                href={href}
-                className="rounded-full px-3 py-2 text-[12.5px] font-medium text-carvao/65 hover:bg-carvao/6 hover:text-carvao"
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            <nav className="hidden items-center gap-1 sm:flex" aria-label="Seções da página">
+              {SECOES.map(([href, label]) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="rounded-full px-3 py-2 text-[12.5px] font-medium text-carvao/65 hover:bg-carvao/6 hover:text-carvao"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+
+            {count > 0 && (
+              <button
+                type="button"
+                onClick={() => openPanel('carrinho')}
+                className="btn-secundario px-3.5 py-2 text-[12.5px] whitespace-nowrap"
               >
-                {label}
-              </a>
-            ))}
-          </nav>
-          <button
-            type="button"
-            onClick={toggleSimpleMode}
-            className="btn-secundario ml-auto shrink-0 px-3.5 py-2 text-[12.5px] whitespace-nowrap sm:ml-1"
-          >
-            <IconCube size={15} />
-            <span className="hidden sm:inline">Ver o ateliê em 3D</span>
-            <span className="sm:hidden">Ver em 3D</span>
-          </button>
+                Pedido ({count})
+              </button>
+            )}
+
+            {/* Com o "Pedido (n)" ao lado nao cabem dois botoes escritos em
+                375px. Aqui a lista e o que a pessoa escolheu: o 3D fica em
+                icone, com nome para leitor de tela. */}
+            <button
+              type="button"
+              onClick={toggleSimpleMode}
+              aria-label="Ver o ateliê em 3D"
+              className="btn-secundario px-3 py-2 text-[12.5px] whitespace-nowrap sm:px-3.5"
+            >
+              <IconCube size={15} />
+              <span className="hidden sm:inline">Ver o ateliê em 3D</span>
+            </button>
+          </div>
         </div>
+
+        {/* No celular os links de secao sumiam (hidden sm:flex): chegar ao
+            contato exigia rolar a pagina inteira. Faixa rolavel, que cabe em
+            tela estreita sem empurrar o resto do cabecalho. */}
+        <nav
+          className="rolagem-fina flex gap-1.5 overflow-x-auto border-t border-carvao/10 px-4 py-2 sm:hidden"
+          aria-label="Seções da página"
+        >
+          {SECOES.map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              className="shrink-0 rounded-full border border-carvao/12 bg-creme px-3 py-1.5 text-[12.5px] font-medium text-carvao/70"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 [&_section]:scroll-mt-20">
@@ -212,13 +250,27 @@ export function SimpleMode() {
 
       {lines.length > 0 && (
         <div className="area-segura-b fixed inset-x-0 bottom-0 z-30 border-t border-carvao/10 bg-creme px-4 pt-3">
-          <div className="mx-auto flex max-w-3xl items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-[12px] text-carvao/55">
-                {lines.length} {lines.length === 1 ? 'peça' : 'peças'} · {isEstimate ? 'estimativa' : 'total'}
-              </p>
-              <p className="text-[17px] font-semibold text-carvao">{money(total)}</p>
-            </div>
+          <div className="mx-auto flex max-w-3xl items-center gap-2">
+            {/* Isto era so um rotulo, e o unico caminho daqui era o WhatsApp.
+                Quem tocou "Adicionar" duas vezes numa lembrancinha (40 un,
+                R$ 480) so corrigia voltando ao 3D — justamente o que pesava,
+                e o motivo de estar no modo simples. Agora abre o pedido, que
+                da para revisar, mudar quantidade e remover. */}
+            <button
+              type="button"
+              onClick={() => openPanel('carrinho')}
+              className="btn-secundario min-w-0 flex-1 justify-start px-3.5 py-2 text-left"
+            >
+              <span className="min-w-0">
+                {/* "estimativa" na linha do rotulo: junto do valor, jogava o
+                    numero para uma terceira linha em 375px. */}
+                <span className="block text-[12px] font-normal text-carvao/55">
+                  Ver pedido · {plural(count, 'peça', 'peças')}
+                  {isEstimate && ' · estimativa'}
+                </span>
+                <span className="block text-[16px] font-semibold text-carvao">{money(total)}</span>
+              </span>
+            </button>
             <a
               href={cartMessage(lines, total, isEstimate)}
               target="_blank"

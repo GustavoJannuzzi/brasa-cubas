@@ -1,6 +1,6 @@
 import { useIsMobile } from '../../hooks/useMedia'
 import { studio } from '../../data/studio'
-import { money } from '../../lib/format'
+import { money, plural } from '../../lib/format'
 import { cartMessage } from '../../lib/whatsapp'
 import { useCartSummary, useStore } from '../../store/useStore'
 import { IconArrow, IconMinus, IconPlus, IconTrash, IconWhatsapp } from '../Icons'
@@ -12,11 +12,18 @@ function Linha({ line }) {
   const removeFromCart = useStore((s) => s.removeFromCart)
   const openProduct = useStore((s) => s.openProduct)
   const isMobile = useIsMobile()
+  // No modo simples nao ha cena para enquadrar: apontar a camera so mexeria
+  // num 3D que ninguem esta vendo.
+  const simpleMode = useStore((s) => s.simpleMode)
   const { product, qty, subtotal } = line
 
   return (
     <li className="cartao flex gap-3 p-3">
-      <button type="button" onClick={() => openProduct(product.id, { focus: !isMobile })} aria-label={`Ver ${product.name}`}>
+      <button
+        type="button"
+        onClick={() => openProduct(product.id, { focus: !isMobile && !simpleMode })}
+        aria-label={`Ver ${product.name}`}
+      >
         <PieceThumb piece={product.piece} size={58} />
       </button>
 
@@ -69,7 +76,7 @@ export function CartPanel() {
   const closePanel = useStore((s) => s.closePanel)
   const openPanel = useStore((s) => s.openPanel)
   const clearCart = useStore((s) => s.clearCart)
-  const { lines, total, isEstimate } = useCartSummary()
+  const { lines, count, total, isEstimate } = useCartSummary()
 
   const maiorPrazo = lines.reduce((max, line) => Math.max(max, line.product.leadDays), 0)
 
@@ -94,7 +101,9 @@ export function CartPanel() {
   return (
     <Panel
       title="Seu pedido"
-      subtitle={`${lines.length} ${lines.length === 1 ? 'peça' : 'peças'} · nada é cobrado pelo site`}
+      // Contava linhas: 39 lembrancinhas apareciam como "1 peça", contra as
+      // "39 peças" da barra de baixo. Quem conta peca conta unidade.
+      subtitle={`${plural(count, 'peça', 'peças')} · nada é cobrado pelo site`}
       onClose={closePanel}
       footer={
         <div className="mb-3 grid gap-2 md:mb-0">

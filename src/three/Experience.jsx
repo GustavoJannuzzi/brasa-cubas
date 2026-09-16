@@ -36,6 +36,34 @@ function CameraFov() {
   return null
 }
 
+// O navegador in-app (WKWebView) derruba o contexto ao voltar de outro app — e
+// a saida principal deste site e justamente ir ao WhatsApp e voltar. Sem isto,
+// a cena fica preta atras do menu, sem aviso nenhum.
+function GuardaContexto() {
+  const gl = useThree((s) => s.gl)
+
+  useEffect(() => {
+    const tela = gl.domElement
+    const perdeu = (e) => {
+      e.preventDefault()
+      useStore.getState().setGl3d('perdido')
+    }
+    const voltou = () => useStore.getState().setGl3d('ok')
+
+    tela.addEventListener('webglcontextlost', perdeu)
+    tela.addEventListener('webglcontextrestored', voltou)
+    return () => {
+      // Sair para o modo lista desmonta o Canvas, e o R3F derruba o contexto ao
+      // descartar o renderer. Sem tirar o ouvinte antes, essa perda planejada
+      // acendia a faixa de "o 3D parou de desenhar" numa pagina sem 3D nenhum.
+      tela.removeEventListener('webglcontextlost', perdeu)
+      tela.removeEventListener('webglcontextrestored', voltou)
+    }
+  }, [gl])
+
+  return null
+}
+
 // Se o aparelho nao aguenta a cena, melhor oferecer o modo simples do que
 // deixar a pessoa numa pagina travada.
 function PerfWatch() {
@@ -98,6 +126,7 @@ function Scene({ quality }) {
       <CameraFov />
       <SceneReady />
       <PerfWatch />
+      <GuardaContexto />
     </>
   )
 }
@@ -121,18 +150,6 @@ export function Experience() {
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping
         gl.toneMappingExposure = 1.08
-
-        // O navegador in-app (WKWebView) derruba o contexto ao voltar de outro
-        // app — e a saida principal deste site e justamente ir ao WhatsApp e
-        // voltar. Sem isto, a cena fica preta atras do menu, sem aviso nenhum.
-        const tela = gl.domElement
-        tela.addEventListener('webglcontextlost', (e) => {
-          e.preventDefault()
-          useStore.getState().setGl3d('perdido')
-        })
-        tela.addEventListener('webglcontextrestored', () => {
-          useStore.getState().setGl3d('ok')
-        })
       }}
       style={{ position: 'fixed', inset: 0, touchAction: 'none' }}
     >

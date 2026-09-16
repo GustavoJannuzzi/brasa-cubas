@@ -83,7 +83,10 @@ export default function App() {
       <>
         <SimpleMode />
         <PainelAtivo />
-        <Aviso3D />
+        {/* Na lista so vale avisar que o aparelho nao abre o 3D. Dizer que ele
+            "parou de desenhar" para quem escolheu a lista e assustar sem
+            motivo: nao ha cena nenhuma nesta pagina. */}
+        {gl3d === 'indisponivel' && <Aviso3D />}
         <Toasts />
       </>
     )

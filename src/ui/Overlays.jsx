@@ -322,9 +322,20 @@ export function Toasts() {
       {toasts.map((t) => (
         <span
           key={t.id}
-          className="anim-sobe rounded-full bg-carvao px-4 py-2.5 text-[13px] font-medium text-porcelana shadow-lg"
+          className="anim-sobe flex max-w-full items-center gap-3 rounded-full bg-carvao px-4 py-2.5 text-[13px] font-medium text-porcelana shadow-lg"
         >
-          {t.text}
+          <span className="min-w-0">{t.texto}</span>
+          {t.acao && (
+            // O conteiner ignora ponteiro para nao roubar clique da cena; o
+            // botao precisa receber de volta, senao o desfazer nao clica.
+            <button
+              type="button"
+              onClick={t.acao.aoClicar}
+              className="pointer-events-auto -mr-1.5 shrink-0 rounded-full px-2 py-0.5 font-semibold text-brasa-clara underline underline-offset-2"
+            >
+              {t.acao.rotulo}
+            </button>
+          )}
         </span>
       ))}
     </div>

@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { productById } from '../data/products'
 import { hotspots, panelToHotspot } from '../data/scene'
+import { money } from '../lib/format'
 
 let toastSeq = 0
 
@@ -105,15 +106,32 @@ export const useStore = create(
         const product = productById(id)
         if (!product) return
         const amount = Math.max(qty ?? product.minQty, product.minQty)
+        let total = amount
+        let jaEstava = false
         set((s) => {
           const existing = s.cart.find((line) => line.id === id)
+          jaEstava = Boolean(existing)
+          total = existing ? existing.qty + amount : amount
           return {
             cart: existing
-              ? s.cart.map((line) => (line.id === id ? { ...line, qty: line.qty + amount } : line))
+              ? s.cart.map((line) => (line.id === id ? { ...line, qty: total } : line))
               : [...s.cart, { id, qty: amount }],
           }
         })
-        get().toast(`${product.name} no pedido`)
+
+        // A regra tem de aparecer no proprio aviso. A lembrancinha anuncia
+        // "a partir de R$ 12" e um toque em Adicionar poe 20 unidades e
+        // R$ 240 — quem nao ve a conta so descobre no carrinho, e a confianca
+        // quebra justamente ali. Um segundo toque leva a 40 e R$ 480.
+        const valor = money(product.price * total)
+        get().toast(
+          jaEstava
+            ? `${product.name}: agora são ${total} ${product.unit} · ${valor}`
+            : product.minQty > 1
+              ? `${product.name}: ${total} ${product.unit} (mínimo do pedido) · ${valor}`
+              : `${product.name} no pedido · ${valor}`,
+          { chave: `carrinho:${id}` },
+        )
       },
       setQty: (id, qty) => {
         const product = productById(id)
@@ -122,8 +140,26 @@ export const useStore = create(
           cart: s.cart.map((line) => (line.id === id ? { ...line, qty: Math.max(min, qty) } : line)),
         }))
       },
-      removeFromCart: (id) => set((s) => ({ cart: s.cart.filter((line) => line.id !== id) })),
-      clearCart: () => set({ cart: [] }),
+      // Remover e limpar sao destrutivos e ficam a um toque de "Continuar
+      // escolhendo": guardam o pedido anterior e oferecem a volta.
+      removeFromCart: (id) => {
+        const anterior = get().cart
+        const product = productById(id)
+        set({ cart: anterior.filter((line) => line.id !== id) })
+        get().toast(`${product?.name ?? 'Peça'} saiu do pedido`, {
+          chave: 'carrinho:desfazer',
+          acao: { rotulo: 'Desfazer', aoClicar: () => set({ cart: anterior }) },
+        })
+      },
+      clearCart: () => {
+        const anterior = get().cart
+        if (!anterior.length) return
+        set({ cart: [] })
+        get().toast('Pedido limpo', {
+          chave: 'carrinho:desfazer',
+          acao: { rotulo: 'Desfazer', aoClicar: () => set({ cart: anterior }) },
+        })
+      },
 
       // --- rascunho do orcamento (sobrevive a recarga da pagina) ---
       quote: {
@@ -181,10 +217,21 @@ export const useStore = create(
 
       // --- avisos curtos ---
       toasts: [],
-      toast: (text) => {
+      /**
+       * `chave` faz o aviso do mesmo assunto SUBSTITUIR o anterior em vez de
+       * empilhar: tres toques rapidos em Adicionar enchiam a tela de avisos
+       * iguais. `acao` e o botao de desfazer, e ele merece mais tempo de tela
+       * do que um aviso que so informa.
+       */
+      toast: (texto, { chave, acao } = {}) => {
         const id = ++toastSeq
-        set((s) => ({ toasts: [...s.toasts, { id, text }] }))
-        setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 2600)
+        set((s) => ({
+          toasts: [...s.toasts.filter((t) => !chave || t.chave !== chave), { id, texto, chave, acao }],
+        }))
+        setTimeout(
+          () => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+          acao ? 6000 : 2600,
+        )
       },
     }),
     {

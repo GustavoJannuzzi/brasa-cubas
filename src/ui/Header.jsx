@@ -83,7 +83,9 @@ export function Header() {
           className={`relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-medium transition-colors ${
             panel === 'carrinho' ? 'bg-porcelana text-carvao' : 'text-porcelana hover:bg-porcelana/12'
           }`}
-          aria-label={`Pedido: ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`}
+          // Mesma palavra e mesma conta do selo, do subtitulo do painel e da
+          // barra do modo lista: unidades, nao linhas.
+          aria-label={`Pedido: ${cartCount} ${cartCount === 1 ? 'peça' : 'peças'}`}
         >
           <IconCart size={19} />
           <span className="hidden sm:inline">Pedido</span>

@@ -20,7 +20,7 @@ function Marca({ onClick }) {
       </span>
       <span className="leading-tight">
         <span className="block font-display text-[17px] text-porcelana">{studio.name}</span>
-        <span className="block text-[11px] text-porcelana/60">{studio.tagline}</span>
+        <span className="block text-[11px] text-porcelana/80">{studio.tagline}</span>
       </span>
     </button>
   )
@@ -44,7 +44,13 @@ export function Header() {
       {/* fundo em degradê para o menu ler sobre a cena sem virar uma barra opaca */}
       <div
         className="pointer-events-none absolute inset-0 -z-10"
-        style={{ background: 'linear-gradient(to bottom, rgb(28 21 18 / 0.78), transparent)' }}
+        // O degrade some rapido demais: na linha do texto o alfa caia para
+        // ~0,39 e o menu ficava em 3,87:1 sobre a cena clara. Segurar 0,58 ate
+        // depois do texto leva para 5,14:1 sem virar barra opaca.
+        style={{
+          background:
+            'linear-gradient(to bottom, rgb(28 21 18 / 0.82) 0%, rgb(28 21 18 / 0.58) 64%, transparent 100%)',
+        }}
       />
 
       <Marca onClick={home} />
@@ -59,7 +65,10 @@ export function Header() {
             className={`rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors ${
               panel === item.id
                 ? 'bg-porcelana text-carvao'
-                : 'text-porcelana/80 hover:bg-porcelana/12 hover:text-porcelana'
+                : // Porcelana cheia: a /80 sobre o degrade dava 3,24:1 na linha
+                  // do texto. Cheia da 5,02:1 sem precisar escurecer mais o
+                  // fundo e virar uma barra opaca sobre a cena.
+                  'text-porcelana hover:bg-porcelana/12'
             }`}
           >
             {item.label}
@@ -72,7 +81,7 @@ export function Header() {
           type="button"
           onClick={() => openPanel('carrinho')}
           className={`relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-medium transition-colors ${
-            panel === 'carrinho' ? 'bg-porcelana text-carvao' : 'text-porcelana/85 hover:bg-porcelana/12'
+            panel === 'carrinho' ? 'bg-porcelana text-carvao' : 'text-porcelana hover:bg-porcelana/12'
           }`}
           aria-label={`Pedido: ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`}
         >
@@ -90,7 +99,7 @@ export function Header() {
           onClick={toggleSimpleMode}
           title="Ver como lista, sem 3D"
           aria-label="Ver como lista, sem 3D"
-          className="hidden rounded-full p-2 text-porcelana/70 transition-colors hover:bg-porcelana/12 hover:text-porcelana md:block"
+          className="hidden rounded-full p-2 text-porcelana/85 transition-colors hover:bg-porcelana/12 hover:text-porcelana md:block"
         >
           <IconLayers size={19} />
         </button>
@@ -100,7 +109,7 @@ export function Header() {
           onClick={() => openPanel('ajuda')}
           title="Como navegar"
           aria-label="Como navegar"
-          className="rounded-full p-2 text-porcelana/70 transition-colors hover:bg-porcelana/12 hover:text-porcelana"
+          className="rounded-full p-2 text-porcelana/85 transition-colors hover:bg-porcelana/12 hover:text-porcelana"
         >
           <IconHelp size={19} />
         </button>

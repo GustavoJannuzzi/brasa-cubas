@@ -56,7 +56,7 @@ function Etiqueta({ product, position, onOpen }) {
           <span className="line-clamp-2 text-xs leading-tight font-medium whitespace-normal text-carvao">
             {product.name}
           </span>
-          <span className="block text-sm font-semibold text-brasa">{priceLabel(product)}</span>
+          <span className="block text-sm font-semibold text-brasa-texto">{priceLabel(product)}</span>
         </button>
       </div>
     </Html>

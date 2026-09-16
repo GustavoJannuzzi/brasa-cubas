@@ -14,7 +14,7 @@ function Pergunta({ item, aberta, onToggle }) {
         className="flex w-full items-start gap-3 py-3 text-left"
       >
         <span className="min-w-0 flex-1 text-[13.5px] leading-snug font-medium text-carvao">{item.q}</span>
-        <span className="mt-0.5 shrink-0 text-carvao/40">
+        <span className="mt-0.5 shrink-0 text-carvao/55">
           {aberta ? <IconMinus size={16} /> : <IconPlus size={16} />}
         </span>
       </button>
@@ -68,7 +68,7 @@ export function ProcessPanel() {
           ['Pagamento', '50% + 50%'],
         ].map(([label, value]) => (
           <div key={label} className="rounded-xl bg-carvao/5 px-3 py-2.5">
-            <dt className="text-[11px] font-semibold tracking-wide text-carvao/50 uppercase">{label}</dt>
+            <dt className="text-[11px] font-semibold tracking-wide text-carvao/70 uppercase">{label}</dt>
             <dd className="mt-0.5 text-[13.5px] font-medium text-carvao">{value}</dd>
           </div>
         ))}

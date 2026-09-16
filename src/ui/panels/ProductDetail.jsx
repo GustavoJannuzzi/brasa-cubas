@@ -11,7 +11,7 @@ import { PieceThumb } from '../PieceThumb'
 function Ficha({ icon: Icon, children }) {
   return (
     <li className="flex items-start gap-2 text-[12.5px] leading-snug text-carvao/70">
-      <Icon size={15} className="mt-px shrink-0 text-carvao/45" />
+      <Icon size={15} className="mt-px shrink-0 text-carvao/55" />
       <span>{children}</span>
     </li>
   )
@@ -42,7 +42,7 @@ export function ProductDetail() {
       footer={
         <div className="mb-3 flex flex-col gap-2 md:mb-0">
           <div className="flex items-center justify-between text-[13px]">
-            <span className="text-carvao/60">
+            <span className="text-carvao/70">
               {plural(qty, 'peça', 'peças')}
               {product.from && ' · estimativa'}
             </span>
@@ -78,8 +78,8 @@ export function ProductDetail() {
           </button>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[22px] leading-none font-semibold text-brasa">{priceLabel(product)}</p>
-          <p className="mt-1 text-[12px] text-carvao/55">
+          <p className="text-[22px] leading-none font-semibold text-brasa-texto">{priceLabel(product)}</p>
+          <p className="mt-1 text-[12px] text-carvao/70">
             por {product.unit}
             {product.minQty > 1 && ` · pedido mínimo de ${product.minQty}`}
           </p>
@@ -129,7 +129,7 @@ export function ProductDetail() {
             </button>
           </div>
           {product.minQty > 1 && (
-            <span className="text-[12px] text-carvao/55">o mínimo é {product.minQty} unidades</span>
+            <span className="text-[12px] text-carvao/70">o mínimo é {product.minQty} unidades</span>
           )}
         </div>
       </div>
@@ -140,7 +140,7 @@ export function ProductDetail() {
           <button
             type="button"
             onClick={() => openPanel('orcamento')}
-            className="font-semibold text-brasa underline"
+            className="font-semibold text-brasa-texto underline"
           >
             Peça um orçamento
           </button>{' '}

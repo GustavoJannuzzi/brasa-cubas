@@ -34,12 +34,12 @@ function Linha({ line }) {
             type="button"
             onClick={() => removeFromCart(product.id)}
             aria-label={`Remover ${product.name}`}
-            className="-mt-1 -mr-1 shrink-0 rounded-full p-1.5 text-carvao/40 transition-colors hover:bg-carvao/6 hover:text-brasa"
+            className="-mt-1 -mr-1 shrink-0 rounded-full p-1.5 text-carvao/55 transition-colors hover:bg-carvao/6 hover:text-brasa"
           >
             <IconTrash size={15} />
           </button>
         </div>
-        <p className="mt-0.5 text-[12px] text-carvao/55">
+        <p className="mt-0.5 text-[12px] text-carvao/70">
           {money(product.price)} por {product.unit}
           {product.from && ' (a partir de)'}
         </p>
@@ -85,7 +85,7 @@ export function CartPanel() {
       <Panel title="Seu pedido" onClose={closePanel}>
         <div className="py-6 text-center">
           <p className="font-display text-[19px] text-carvao">Nada no pedido ainda</p>
-          <p className="mx-auto mt-2 max-w-xs text-[13.5px] leading-relaxed text-carvao/60">
+          <p className="mx-auto mt-2 max-w-xs text-[13.5px] leading-relaxed text-carvao/70">
             Monte seu pedido escolhendo peças do catálogo. Nada é cobrado aqui: o pedido vira uma
             conversa no WhatsApp com a Isabela.
           </p>
@@ -108,7 +108,7 @@ export function CartPanel() {
       footer={
         <div className="mb-3 grid gap-2 md:mb-0">
           <div className="flex items-baseline justify-between">
-            <span className="text-[13px] text-carvao/60">{isEstimate ? 'Estimativa' : 'Total'}</span>
+            <span className="text-[13px] text-carvao/70">{isEstimate ? 'Estimativa' : 'Total'}</span>
             <span className="text-[19px] font-semibold text-carvao">{money(total)}</span>
           </div>
           <a
@@ -120,7 +120,7 @@ export function CartPanel() {
             <IconWhatsapp size={18} />
             Fechar pedido no WhatsApp
           </a>
-          <p className="text-center text-[11.5px] text-carvao/50">
+          <p className="text-center text-[11.5px] text-carvao/70">
             Abre uma conversa com o pedido escrito. Você confirma antes de pagar qualquer coisa.
           </p>
         </div>

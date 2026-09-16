@@ -160,7 +160,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
           )}
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-lg md:text-xl">{title}</h2>
-            {subtitle && <p className="mt-0.5 text-[13px] leading-snug text-carvao/60">{subtitle}</p>}
+            {subtitle && <p className="mt-0.5 text-[13px] leading-snug text-carvao/70">{subtitle}</p>}
           </div>
           <button type="button" onClick={onClose} aria-label="Fechar" className="btn-fantasma shrink-0">
             <IconClose size={18} />

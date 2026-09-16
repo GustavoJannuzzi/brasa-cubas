@@ -183,7 +183,7 @@ export function Onboarding() {
       className="fixed inset-0 z-[45] flex items-end justify-center bg-carvao/45 p-4 md:items-center"
     >
       <div className="anim-sobe w-full max-w-md rounded-2xl bg-porcelana p-5 shadow-[var(--shadow-painel)]">
-        <span className="text-[11px] font-semibold tracking-wide text-brasa uppercase">
+        <span className="text-[11px] font-semibold tracking-wide text-brasa-texto uppercase">
           {tela + 1} de {TELAS.length}
         </span>
         <h2 id="onboarding-titulo" className="mt-1.5 text-[20px] leading-snug">
@@ -198,7 +198,7 @@ export function Onboarding() {
               finishOnboarding()
               startTour()
             }}
-            className="mt-3 text-[13px] font-medium text-brasa underline underline-offset-2"
+            className="mt-3 text-[13px] font-medium text-brasa-texto underline underline-offset-2"
           >
             Prefiro um tour guiado pelos cinco pontos
           </button>

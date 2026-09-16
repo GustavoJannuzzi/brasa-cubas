@@ -36,9 +36,9 @@ export function GalleryPanel() {
             <div className="p-3.5">
               <div className="flex items-baseline justify-between gap-2">
                 <h3 className="text-[15px] leading-snug">{item.title}</h3>
-                <span className="shrink-0 text-[12px] text-carvao/45">{item.year}</span>
+                <span className="shrink-0 text-[12px] text-carvao/55">{item.year}</span>
               </div>
-              <p className="mt-0.5 text-[12px] font-medium text-brasa">{item.kind}</p>
+              <p className="mt-0.5 text-[12px] font-medium text-brasa-texto">{item.kind}</p>
               <p className="mt-1.5 text-[13px] leading-relaxed text-carvao/70">{item.text}</p>
             </div>
           </li>

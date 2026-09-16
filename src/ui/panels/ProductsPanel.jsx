@@ -23,11 +23,11 @@ function Cartao({ product }) {
         <PieceThumb piece={product.piece} size={70} />
         <span className="min-w-0 flex-1">
           <span className="block text-[15px] leading-snug font-medium text-carvao">{product.name}</span>
-          <span className="mt-0.5 block text-[12.5px] leading-snug text-carvao/60">{product.short}</span>
+          <span className="mt-0.5 block text-[12.5px] leading-snug text-carvao/70">{product.short}</span>
           <span className="mt-1.5 flex items-baseline gap-1.5">
-            <span className="text-[15px] font-semibold text-brasa">{priceLabel(product)}</span>
+            <span className="text-[15px] font-semibold text-brasa-texto">{priceLabel(product)}</span>
             {product.minQty > 1 && (
-              <span className="text-[11px] text-carvao/50">mín. {product.minQty} un</span>
+              <span className="text-[11px] text-carvao/70">mín. {product.minQty} un</span>
             )}
           </span>
         </span>
@@ -46,7 +46,7 @@ function Cartao({ product }) {
         <button
           type="button"
           onClick={() => addToCart(product.id)}
-          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12.5px] font-medium text-brasa transition-colors hover:bg-brasa/8"
+          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12.5px] font-medium text-brasa-texto transition-colors hover:bg-brasa/8"
         >
           <IconPlus size={15} />
           Adicionar
@@ -106,10 +106,10 @@ export function ProductsPanel() {
         ))}
       </ul>
 
-      <p className="mt-4 rounded-xl bg-carvao/5 px-3.5 py-3 text-[12.5px] leading-relaxed text-carvao/65">
+      <p className="mt-4 rounded-xl bg-carvao/5 px-3.5 py-3 text-[12.5px] leading-relaxed text-carvao/70">
         Os valores são de tabela, para a peça como está na foto. Personalização de cor, tamanho
         ou quantidade muda o preço — nesse caso vale{' '}
-        <button type="button" onClick={() => openPanel('orcamento')} className="font-semibold text-brasa underline">
+        <button type="button" onClick={() => openPanel('orcamento')} className="font-semibold text-brasa-texto underline">
           pedir um orçamento
         </button>
         .

@@ -6,6 +6,13 @@
   --color-creme: #fbf8f2;
   --color-brasa: #c2582d;
   --color-brasa-clara: #e07a4f;
+  /* A brasa vale como cor de OBJETO (marcador, icone, barra), que so precisa
+     de 3:1. Como texto ou como fundo de texto ela da 3,96:1 sobre a porcelana,
+     abaixo dos 4,5:1 — e o hover clareava para 2,65:1, piorando. Este tom
+     passa em 4,52:1 com o menor desvio possivel do vermelho da marca, e o
+     hover escurece (5,44:1). */
+  --color-brasa-texto: #b3512a;
+  --color-brasa-hover: #9f4825;
   --color-barro: #8a5a44;
   --color-carvao: #2b2320;
   --color-carvao-suave: #4a3f39;
@@ -61,8 +68,11 @@
     letter-spacing: -0.01em;
   }
 
+  /* O anel de foco aparece sobre os dois fundos do site: a porcelana dos
+     paineis e o carvao do cabecalho. A brasa-clara dava 2,65:1 na porcelana e
+     sumia; este tom da 4,53:1 la e 3,03:1 no escuro. */
   :focus-visible {
-    outline: 2px solid var(--color-brasa-clara);
+    outline: 2px solid var(--color-brasa-texto);
     outline-offset: 2px;
   }
 
@@ -99,10 +109,10 @@
 
 @layer components {
   .btn-principal {
-    @apply btn bg-brasa text-porcelana;
+    @apply btn bg-brasa-texto text-porcelana;
   }
   .btn-principal:hover {
-    background-color: var(--color-brasa-clara);
+    background-color: var(--color-brasa-hover);
   }
   .btn-principal:active {
     transform: scale(0.97);
@@ -134,7 +144,7 @@
   }
 
   .etiqueta {
-    @apply mb-1.5 block text-xs font-semibold tracking-wide text-carvao/55 uppercase;
+    @apply mb-1.5 block text-xs font-semibold tracking-wide text-carvao/70 uppercase;
   }
 
   .cartao {
@@ -146,7 +156,10 @@
      madeira e da parede, entao precisa de fundo proprio para ler. Mesmo
      acabamento do rotulo dos pontos da cena (Hotspot.jsx). */
   .etiqueta-peca {
-    @apply block rounded-lg border border-carvao/10 bg-creme/95 px-2.5 py-1 text-center text-xs leading-tight whitespace-nowrap;
+    /* Fundo opaco, e nao creme/95: a etiqueta flutua sobre a cena, e onde o 3D
+       e escuro o chip caia para rgb(240,236,231) e o preco ficava em 4,33:1.
+       Plaquinha de preco tem de ler sobre qualquer coisa que passe atras. */
+    @apply block rounded-lg border border-carvao/10 bg-creme px-2.5 py-1 text-center text-xs leading-tight whitespace-nowrap;
     box-shadow: var(--shadow-cartao);
     backdrop-filter: blur(4px);
     transition:

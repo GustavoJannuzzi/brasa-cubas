@@ -49,7 +49,7 @@ function Progresso({ step }) {
   return (
     <div className="mb-4">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-[12px] font-semibold tracking-wide text-carvao/55 uppercase">
+        <span className="text-[12px] font-semibold tracking-wide text-carvao/70 uppercase">
           Passo {step + 1} de {PASSOS.length}
         </span>
         <span className="text-[12.5px] font-medium text-carvao/70">{PASSOS[step]}</span>
@@ -317,12 +317,12 @@ export function QuotePanel() {
               onChange={(e) => setQuoteField('eventDate', e.target.value)}
             />
             {passou && (
-              <p className="mt-1.5 rounded-lg bg-brasa/10 px-3 py-2 text-[12px] leading-relaxed text-brasa">
+              <p className="mt-1.5 rounded-lg bg-brasa/10 px-3 py-2 text-[12px] leading-relaxed text-erro">
                 {formatDateBR(quote.eventDate)} já passou. Confere o ano?
               </p>
             )}
             {quote.eventDate && !passou && !apertado && !incerto && (
-              <p className="mt-1.5 text-[12px] text-carvao/55">
+              <p className="mt-1.5 text-[12px] text-carvao/70">
                 {formatDateBR(quote.eventDate)} — {quandoE(diasAteEvento)}, dá tempo tranquilo.
               </p>
             )}
@@ -333,12 +333,12 @@ export function QuotePanel() {
               </p>
             )}
             {apertado && (
-              <p className="mt-1.5 rounded-lg bg-brasa/10 px-3 py-2 text-[12px] leading-relaxed text-brasa">
+              <p className="mt-1.5 rounded-lg bg-brasa/10 px-3 py-2 text-[12px] leading-relaxed text-erro">
                 {tipoNoTexto} costuma levar {prazoEmTexto(prazo)} e {quandoE(diasAteEvento)}. Fica
                 apertado, mas mande o pedido: dependendo da agenda eu consigo encaixar.
               </p>
             )}
-            <p className="mt-1.5 text-[12px] text-carvao/50">Não tem data ainda? Pode deixar em branco.</p>
+            <p className="mt-1.5 text-[12px] text-carvao/70">Não tem data ainda? Pode deixar em branco.</p>
           </div>
 
           <div>
@@ -354,7 +354,7 @@ export function QuotePanel() {
             />
           </div>
 
-          <p className="rounded-xl bg-carvao/5 px-3.5 py-3 text-[12.5px] leading-relaxed text-carvao/65">
+          <p className="rounded-xl bg-carvao/5 px-3.5 py-3 text-[12.5px] leading-relaxed text-carvao/70">
             Tem foto de referência? Manda junto no WhatsApp depois de enviar o resumo — é o que mais
             ajuda a acertar a peça de primeira.
           </p>
@@ -413,7 +413,7 @@ export function QuotePanel() {
             {mostraErro('contact') && <Erro id="q-contact-erro">{erros.contact}</Erro>}
           </div>
 
-          <p className="text-[12px] leading-relaxed text-carvao/55">
+          <p className="text-[12px] leading-relaxed text-carvao/70">
             Seus dados vão só para o ateliê responder o orçamento. Nada de lista de e-mail.{' '}
             <button type="button" onClick={() => openPanel('processo')} className="underline">
               Ver como funciona a encomenda

@@ -13,9 +13,9 @@ function Canal({ icon: Icon, label, value, href, destaque }) {
         destaque ? 'bg-brasa text-porcelana' : 'cartao text-carvao hover:bg-carvao/4'
       }`}
     >
-      <Icon size={20} className={destaque ? 'text-porcelana/80' : 'text-carvao/45'} />
+      <Icon size={20} className={destaque ? 'text-porcelana/80' : 'text-carvao/55'} />
       <span className="min-w-0 flex-1">
-        <span className={`block text-[11px] font-semibold tracking-wide uppercase ${destaque ? 'text-porcelana/70' : 'text-carvao/50'}`}>
+        <span className={`block text-[11px] font-semibold tracking-wide uppercase ${destaque ? 'text-porcelana/70' : 'text-carvao/70'}`}>
           {label}
         </span>
         <span className="block truncate text-[14px] font-medium">{value}</span>
@@ -59,7 +59,7 @@ export function ContactPanel() {
         <Canal icon={IconTruck} label="Entrega" value={studio.shipping} />
       </div>
 
-      <p className="mt-4 rounded-xl bg-carvao/5 px-3.5 py-3 text-[12.5px] leading-relaxed text-carvao/65">
+      <p className="mt-4 rounded-xl bg-carvao/5 px-3.5 py-3 text-[12.5px] leading-relaxed text-carvao/70">
         O ateliê é um espaço de trabalho, não uma loja de rua — visita só com hora marcada. Para
         retirada em Porto Alegre, combinamos o ponto pelo WhatsApp.
       </p>

@@ -39,7 +39,7 @@ export function SimpleMode() {
               tela de 375px e empurrava os botoes para fora. */}
           <span className="min-w-0 leading-tight">
             <span className="block truncate font-display text-[17px] text-carvao">{studio.name}</span>
-            <span className="block truncate text-[11px] text-carvao/55">{studio.tagline}</span>
+            <span className="block truncate text-[11px] text-carvao/70">{studio.tagline}</span>
           </span>
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
             <nav className="hidden items-center gap-1 sm:flex" aria-label="Seções da página">
@@ -47,7 +47,7 @@ export function SimpleMode() {
                 <a
                   key={href}
                   href={href}
-                  className="rounded-full px-3 py-2 text-[12.5px] font-medium text-carvao/65 hover:bg-carvao/6 hover:text-carvao"
+                  className="rounded-full px-3 py-2 text-[12.5px] font-medium text-carvao/70 hover:bg-carvao/6 hover:text-carvao"
                 >
                   {label}
                 </a>
@@ -120,7 +120,7 @@ export function SimpleMode() {
 
         <section id="produtos" className="border-t border-carvao/10 py-8">
           <h2 className="text-[22px]">Produtos</h2>
-          <p className="mt-1 text-[13.5px] text-carvao/60">
+          <p className="mt-1 text-[13.5px] text-carvao/70">
             {products.length} peças. Valores de tabela; personalização sai por orçamento.
           </p>
 
@@ -147,8 +147,8 @@ export function SimpleMode() {
                   <PieceThumb piece={product.piece} size={76} />
                   <div className="min-w-0 flex-1">
                     <h3 className="text-[15px] leading-snug">{product.name}</h3>
-                    <p className="mt-1 text-[15px] font-semibold text-brasa">{priceLabel(product)}</p>
-                    <p className="text-[11.5px] text-carvao/50">
+                    <p className="mt-1 text-[15px] font-semibold text-brasa-texto">{priceLabel(product)}</p>
+                    <p className="text-[11.5px] text-carvao/70">
                       {product.sizeCm} · {product.leadDays} dias
                       {product.minQty > 1 && ` · mín. ${product.minQty}`}
                     </p>
@@ -200,7 +200,7 @@ export function SimpleMode() {
                 />
                 <div className="p-3.5">
                   <h3 className="text-[14.5px]">{item.title}</h3>
-                  <p className="mt-0.5 text-[12px] font-medium text-brasa">
+                  <p className="mt-0.5 text-[12px] font-medium text-brasa-texto">
                     {item.kind} · {item.year}
                   </p>
                   <p className="mt-1.5 text-[13px] leading-relaxed text-carvao/70">{item.text}</p>
@@ -224,7 +224,7 @@ export function SimpleMode() {
 
         <section id="contato" className="border-t border-carvao/10 py-8">
           <h2 className="text-[22px]">Falar com o ateliê</h2>
-          <p className="mt-1 text-[13.5px] text-carvao/60">
+          <p className="mt-1 text-[13.5px] text-carvao/70">
             {studio.hours} · {studio.answerTime}
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
@@ -244,7 +244,7 @@ export function SimpleMode() {
         </section>
       </main>
 
-      <footer className="border-t border-carvao/10 py-6 text-center text-[12px] text-carvao/50">
+      <footer className="border-t border-carvao/10 py-6 text-center text-[12px] text-carvao/70">
         {studio.name} · {studio.city} · {studio.email}
       </footer>
 
@@ -264,7 +264,7 @@ export function SimpleMode() {
               <span className="min-w-0">
                 {/* "estimativa" na linha do rotulo: junto do valor, jogava o
                     numero para uma terceira linha em 375px. */}
-                <span className="block text-[12px] font-normal text-carvao/55">
+                <span className="block text-[12px] font-normal text-carvao/70">
                   Ver pedido · {plural(count, 'peça', 'peças')}
                   {isEstimate && ' · estimativa'}
                 </span>

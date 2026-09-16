@@ -79,7 +79,7 @@ function Hotspot({ spot }) {
           >
             <span className="block text-[12px] font-medium">{spot.label}</span>
             <span
-              className={`hidden text-[10.5px] sm:block ${active ? 'text-porcelana/75' : 'text-carvao/55'}`}
+              className={`hidden text-[10.5px] sm:block ${active ? 'text-porcelana/80' : 'text-carvao/70'}`}
             >
               {spot.hint}
             </span>

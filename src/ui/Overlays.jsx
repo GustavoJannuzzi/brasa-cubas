@@ -53,7 +53,7 @@ export function HeroCard() {
           type="button"
           onClick={() => setFechado(true)}
           aria-label="Fechar apresentação"
-          className="absolute top-1.5 right-1.5 rounded-full p-1.5 text-carvao/35 hover:bg-carvao/6 hover:text-carvao"
+          className="absolute top-1.5 right-1.5 rounded-full p-1.5 text-carvao/55 hover:bg-carvao/6 hover:text-carvao"
         >
           <IconClose size={15} />
         </button>
@@ -61,7 +61,7 @@ export function HeroCard() {
         <p className="pr-7 font-display text-[15px] leading-snug text-carvao md:text-[18px]">
           Peças de porcelana fria, modeladas à mão sob encomenda
         </p>
-        <p className="mt-1 pr-2 text-[11.5px] leading-snug text-carvao/65 md:mt-1.5 md:text-[12.5px] md:leading-relaxed">
+        <p className="mt-1 pr-2 text-[11.5px] leading-snug text-carvao/70 md:mt-1.5 md:text-[12.5px] md:leading-relaxed">
           A partir de {money(PRECO_MINIMO)} · {studio.answerTime.toLowerCase()}
         </p>
 
@@ -111,13 +111,13 @@ export function FocusedProductBar() {
           type="button"
           onClick={clearFocus}
           aria-label="Parar de destacar a peça"
-          className="absolute top-1.5 right-1.5 rounded-full p-1.5 text-carvao/35 hover:bg-carvao/6 hover:text-carvao"
+          className="absolute top-1.5 right-1.5 rounded-full p-1.5 text-carvao/55 hover:bg-carvao/6 hover:text-carvao"
         >
           <IconClose size={15} />
         </button>
 
         <p className="pr-7 text-[14px] leading-snug font-medium text-carvao">{product.name}</p>
-        <p className="mt-0.5 text-[13px] font-semibold text-brasa">{priceLabel(product)}</p>
+        <p className="mt-0.5 text-[13px] font-semibold text-brasa-texto">{priceLabel(product)}</p>
 
         <div className="mt-2.5 flex gap-2">
           <button
@@ -233,7 +233,7 @@ export function TourBar() {
       <div className="rounded-2xl bg-porcelana/96 p-4 shadow-[var(--shadow-painel)]" style={{ backdropFilter: 'blur(6px)' }}>
         <div className="flex items-center gap-2">
           <IconSparkle size={16} className="text-brasa" />
-          <span className="text-[11px] font-semibold tracking-wide text-brasa uppercase">
+          <span className="text-[11px] font-semibold tracking-wide text-brasa-texto uppercase">
             Tour · {tourStep + 1} de {hotspots.length}
           </span>
           <button type="button" onClick={stopTour} className="btn-fantasma ml-auto -mr-2 text-[12.5px]">
@@ -242,7 +242,7 @@ export function TourBar() {
         </div>
 
         <p className="mt-1.5 font-display text-[17px] text-carvao">{spot.title}</p>
-        <p className="mt-0.5 text-[13px] text-carvao/65">{spot.hint}</p>
+        <p className="mt-0.5 text-[13px] text-carvao/70">{spot.hint}</p>
 
         <div className="mt-3 flex gap-2">
           <button
@@ -278,7 +278,7 @@ export function LowPerfBanner() {
         <IconLayers size={19} className="mt-0.5 shrink-0 text-brasa" />
         <div className="min-w-0 flex-1">
           <p className="text-[13.5px] font-medium text-carvao">A cena está pesada neste aparelho</p>
-          <p className="mt-0.5 text-[12.5px] leading-snug text-carvao/65">
+          <p className="mt-0.5 text-[12.5px] leading-snug text-carvao/70">
             Posso mostrar o mesmo conteúdo em lista, que abre leve e rola normal.
           </p>
           <div className="mt-2.5 flex gap-2">

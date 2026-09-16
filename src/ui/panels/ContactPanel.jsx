@@ -6,10 +6,18 @@ import { Panel } from '../Panel'
 
 function Canal({ icon: Icon, label, value, href, destaque }) {
   const Tag = href ? 'a' : 'div'
+  // `min-w-0` vai na LINHA, e nao so no bloco de texto que ja o tinha: a linha
+  // e item de uma grade de coluna unica, e a largura da coluna e ditada pelo
+  // minimo automatico do item mais largo. Com `min-width: auto`, o valor em
+  // `truncate` (que traz `white-space: nowrap`, cujo minimo e o texto inteiro)
+  // fazia a coluna valer 459 px dentro de uma folha de 375 no celular: as cinco
+  // linhas saiam 116 px pela direita, cortando telefone, e-mail e o @ do
+  // Instagram. Precisa valer para TODAS as linhas — consertar uma so nao muda
+  // nada, porque as outras continuam forcando a coluna. Medido antes e depois.
   return (
     <Tag
       {...(href ? { href, target: href.startsWith('http') ? '_blank' : undefined, rel: 'noreferrer' } : {})}
-      className={`flex items-center gap-3 rounded-xl px-3.5 py-3 transition-colors ${
+      className={`flex min-w-0 items-center gap-3 rounded-xl px-3.5 py-3 transition-colors ${
         destaque ? 'bg-brasa text-porcelana' : 'cartao text-carvao hover:bg-carvao/4'
       }`}
     >

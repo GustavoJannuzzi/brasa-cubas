@@ -1,9 +1,10 @@
-# Status — 15/09/2026
+# Status — 16/09/2026
 
-A rodada de melhorias foi **terminada e verificada na tela**. O que esta página
-guarda agora: o que mudou, o que foi medido, o que ficou pendente de decisão do
-dono e as divergências entre os dados fictícios daqui e os fatos já verificados
-da Isabela (no projeto pai).
+Duas rodadas terminadas e **verificadas na tela**: a refatoração 3D (fase 1) e
+os quinze primeiros itens do raio-x de UX (fase 2), cada um medido no navegador
+antes de virar commit. O que esta página guarda: o que mudou, o que foi medido,
+o que ficou pendente e as divergências entre os dados fictícios daqui e os
+fatos já verificados da Isabela (no projeto pai).
 
 ## 1. Refatoração: feito e verificado
 
@@ -71,27 +72,59 @@ em baixa, e nenhum furo de parede nem no pior caso de vento.**
 
 ### Custo (medido, não estimado)
 
-| | Desktop 1440×900, alta | Celular 375×812, baixa |
-| --- | --- | --- |
-| Triângulos visíveis | ~302 mil | ~227 mil |
-| Por quadro | ~593 mil (sombra redesenha quase tudo) | ~227 mil (sem sombra) |
-| Draw calls | ~377 | ~130 |
-| fps (GPU Intel UHD, máquina ocupada) | 21–24 | 29–40 |
+O gargalo apontado aqui na fase 1 — as peças de cerâmica, ~199 mil triângulos,
+sem versão leve — **foi resolvido na fase 2**. As 19 peças da cena agora custam:
 
-As plantas são ~76 mil triângulos em alta (a estimativa antiga dizia 60 mil). O
-gargalo, porém, são **as peças de cerâmica: ~199 mil triângulos**, e o arranjo de
-rosas sozinho tem 59 mil. As peças não têm versão leve, como as plantas têm.
+| | Nível `foco` (geometria antiga) | `alta` | `baixa` |
+| --- | --- | --- | --- |
+| Triângulos das 19 peças | 205.216 | **79.908** (−61%) | **44.436** (−78%) |
+| Arranjo de rosas sozinho | 61.568 | 21.552 | 11.616 |
 
-## 2. Pendências de decisão
+`foco` sobrou só para a peça em destaque, que é a única de que a câmera chega
+perto o bastante para facetar. Desenhado por quadro depois da mudança: 287.372
+triângulos em 295 chamadas no desktop, e 59.326 em 108 no celular.
 
-- **Desempenho**: congelar o mapa de sombra numa cena quase parada, dar versão
-  leve às peças e ver o `PerfWatch` (ele disparou "a cena está pesada" num
-  desktop com Intel UHD). Nada disso foi aplicado.
+## 2. Fase 2: os quinze do topo, feitos
+
+Um commit por item, cada um com a medição no corpo da mensagem. Em ordem:
+plano B quando o 3D falha (carga sob demanda, limite de erro, contexto
+perdido) · painel aberto vira endereço, com o voltar do navegador fechando o
+painel · data do evento aceitando a data apertada, com prazo por tipo de peça ·
+vista livre, com a volta à visão geral funcionando depois de arrastar · modo
+lista podendo revisar e editar o pedido · erros do orçamento com foco,
+`aria-*` e contraste · controle de foco (fundo inerte, foco que volta) ·
+arrasto que não abre mais painel sem querer · etiqueta de preço pendurada sob a
+tábua · contraste AA em nove pontos medidos · `touch-action` nas camadas da
+cena · nível de detalhe das peças · qualidade pelo aparelho com recuo em
+degraus · pedido mínimo visível no aviso, com desfazer.
+
+**Decisão tomada com o dono:** o vermelho da marca ganhou um tom próprio para
+texto, `--color-brasa-texto` #b3512a (4,52:1), com o menor desvio possível do
+#c2582d — que continua em marcador, ícone e barra de progresso, onde 3:1 basta.
+
+## 3. Pendências
+
+**Sem prova no meu ambiente — precisam de aparelho de verdade:**
+
+- **Pinça sobre a UI** (`touch-action: pan-y` nas camadas): o toque sintético do
+  CDP ignora `touch-action`. Forcei `none` na camada e a página ampliou do mesmo
+  jeito, o que mostra que a ferramenta não passa pelo portão do Chrome. Pelo
+  mesmo motivo, o "escala de 1 a 5" anotado no raio-x também não era prova de
+  comportamento: o defeito se sustenta pela especificação.
+- **PerfWatch sob carga**: não dá para forçar queda de fps honesta aqui. A
+  lógica (descarte de quadro acima de 0,25 s, carência ao voltar de outro app,
+  mediana em janelas de 2 s, recuo em degraus) está escrita e comentada, mas o
+  comportamento em aparelho lento é pendência.
+
+**Decisões e escopo:**
+
+- **Nível "média" para tablet** (`P08`): ficou de fora. Tablet cai em "baixa"
+  por ser aparelho de toque, que é o lado seguro. Um terceiro nível mexeria em
+  planta, luz e sombra ao mesmo tempo.
 - **Vazio à direita**: onde o retorno da parede termina, certos ângulos mostram
   o fundo escuro fora do cômodo.
-- **Raio-x de UX (fase 2)**: auditoria feita com as skills e os fluxos
-  percorridos no navegador (desktop e celular). A lista priorizada, com prints,
-  vai separada — nada dela foi implementado.
+- **Resto do raio-x**: os quinze eram o topo de 172 achados (1 de severidade 4,
+  22 de severidade 3). O restante segue na lista.
 
 ## 3. Divergências de dados (não trocar sem confirmar)
 
@@ -129,3 +162,14 @@ Cuidados que valem para quem for testar:
 3. Em dev, depois de um HMR o Vite serve o módulo com `?t=...`. Um script de
    teste que importe `/src/store/useStore.js` sem essa query pega **outra
    instância** do store, e nada do que ele mandar chega no app.
+4. **Cor com opacidade no Tailwind v4 volta como `oklab(...)`.** Ler os três
+   números de `getComputedStyle` como se fossem R, G e B dá preto, e a conta de
+   contraste sai errada — foi assim que uma primeira medição me enganou. Pintar
+   a cor num canvas de 1×1 e ler o pixel resolve oklab, alfa e composição de uma
+   vez, com o próprio navegador fazendo a conversão.
+5. **O toque sintético do CDP ignora `touch-action`.** Teste de pinça naquele
+   caminho não prova nada; confirmei forçando `touch-action: none` e vendo a
+   página ampliar assim mesmo.
+6. `touch-action` **não é herdado**: ler o valor da folha responde "auto" mesmo
+   com o pai restringindo. O navegador cruza a cadeia de ancestrais no momento
+   do gesto — é a cadeia que precisa ser lida.

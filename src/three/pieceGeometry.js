@@ -16,10 +16,15 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 // GPU de celular: custo de vertice e de rasterizacao por detalhe que nao
 // aparece.
 //
-// `foco` existe so para a peca em destaque, a unica de que a camera chega
-// perto o bastante para facetar.
+// Existiu aqui um nivel `foco`, com a subdivisao antiga, para a peca em
+// destaque nao facetar no close-up. Comparado na tela, com a camera parada e
+// so a malha mudando, ele PIOROU a peca: em 16x12 a petala fica tao lisa que
+// as petalas vizinhas se fundem numa bolota, e em 10x7 a aresta poligonal
+// separa uma da outra. Faz sentido — menos subdivisao da normais mais
+// distintas entre faces vizinhas, e e essa quebra de luz que desenha a dobra
+// da petala, que e o que porcelana fria modelada a mao tem. Custava 75 ms
+// sincronos e 1,9 MB por peca destacada, entao saiu.
 const NIVEIS = {
-  foco: { petala: [16, 12], esfera: [16, 12], cilindro: 16, haste: 8, cone: 14, lathe: 26 },
   alta: { petala: [10, 7], esfera: [16, 12], cilindro: 16, haste: 6, cone: 14, lathe: 24 },
   baixa: { petala: [8, 5], esfera: [12, 8], cilindro: 12, haste: 4, cone: 10, lathe: 16 },
 }

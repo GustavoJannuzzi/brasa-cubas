@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useReducedMotion } from '../hooks/useMedia'
 import { buildPiece, pieceHeight, pieceRadius } from './pieceGeometry'
 
 const GROUP_MATERIAL = {
@@ -39,14 +40,14 @@ export function CeramicPiece({
 }) {
   const group = useRef()
   const [hovered, setHovered] = useState(false)
+  const reduzida = useReducedMotion()
 
-  // A peca em destaque ganha a geometria cheia: e a unica de que a camera
-  // chega perto o bastante para a petala facetar. O resto da cena fica no
-  // nivel do aparelho.
-  const built = useMemo(
-    () => buildPiece(piece, { qualidade: highlighted ? 'foco' : quality }),
-    [piece, highlighted, quality],
-  )
+  // Uma unica geometria por peca e nivel, inclusive no destaque. A versao
+  // cheia que o destaque usava custava 75 ms sincronos — engasgo no exato
+  // quadro em que a camera se aproxima — e deixava ~1,9 MB no cache por peca
+  // destacada. E, comparada na tela, ela lia PIOR: veja o comentario dos
+  // niveis em pieceGeometry.js.
+  const built = useMemo(() => buildPiece(piece, { qualidade: quality }), [piece, quality])
 
   const materials = useMemo(() => {
     const made = {}
@@ -78,7 +79,21 @@ export function CeramicPiece({
     g.position.y = THREE.MathUtils.lerp(g.position.y, position[1] + target.current.lift, k)
     const s = THREE.MathUtils.lerp(g.scale.x / scale, target.current.grow, k) * scale
     g.scale.setScalar(s)
-    if (highlighted) g.rotation.y += delta * 0.35
+
+    if (highlighted && !reduzida) {
+      g.rotation.y += delta * 0.35
+    } else if (Math.abs(g.rotation.y - rotation[1]) > 0.002) {
+      // Ao sair do destaque a peca ficava TORTA para sempre: o prop `rotation`
+      // nao muda entre renders, entao o R3F nao o reaplica, e ninguem zerava o
+      // que o giro somou. Traz de volta pela volta mais curta — sem a
+      // normalizacao, uma peca que girou tres voltas desenrolaria as tres.
+      const volta = Math.PI * 2
+      let dif = (g.rotation.y - rotation[1]) % volta
+      if (dif > Math.PI) dif -= volta
+      if (dif < -Math.PI) dif += volta
+      g.rotation.y = THREE.MathUtils.lerp(rotation[1] + dif, rotation[1], k)
+      if (Math.abs(g.rotation.y - rotation[1]) < 0.004) g.rotation.y = rotation[1]
+    }
   })
 
   const setHover = (value) => {

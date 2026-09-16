@@ -292,6 +292,14 @@ export const useStore = create(
         ...atual,
         ...guardado,
         cart: (guardado?.cart ?? []).filter((line) => productById(line.id)),
+        // O rascunho vem campo a campo POR CIMA do inicial, nunca no lugar
+        // dele. Espalhar o objeto guardado inteiro deixava sumir todo campo que
+        // nao estivesse la — e o painel de orcamento le `quote.kind.trim()`
+        // direto, entao um rascunho de forma antiga (campo acrescentado depois,
+        // gravacao truncada) derrubava a arvore inteira do React: tela branca,
+        // que sobrevive a recarga porque o estado ruim fica guardado. Medido:
+        // com `quote: {}` no localStorage, zero nos e zero texto na pagina.
+        quote: { ...atual.quote, ...(guardado?.quote ?? {}) },
       }),
     },
   ),

@@ -25,23 +25,15 @@ function Hotspot({ spot }) {
 
   return (
     <group position={spot.position}>
-      {/* Clicar no objeto tambem funciona, nao so no marcador:
-          e o gesto que a pessoa tenta primeiro. */}
-      <mesh
-        onClick={(e) => {
-          if (e.delta > 6) return
-          e.stopPropagation()
-          openPanel(spot.panel)
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation()
-          document.body.style.cursor = 'pointer'
-        }}
-        onPointerOut={() => (document.body.style.cursor = '')}
-        visible={false}
-      >
-        <sphereGeometry args={[0.13, 8, 6]} />
-      </mesh>
+      {/* Havia aqui uma esfera invisivel de 13 cm de raio, para "clicar no
+          objeto". Ela nao ficava sobre objeto nenhum — flutuava no ar, na
+          posicao do marcador — e, com stopPropagation, ROUBAVA o clique de
+          quem estivesse atras dela na linha de visada: clicar no telefone
+          abria o orcamento. Medida na tela, ela cobria de 88 a 372 px de
+          diametro conforme a vista, contra um icone de 36 px; na vista da
+          prateleira, um terco da largura da tela.
+          Quem responde pelo toque agora e o proprio rotulo (alvo em pixel,
+          previsivel) e os objetos da cena, que ja sao clicaveis um a um. */}
 
       {/* Marcador em coluna: ponto em cima, rotulo embaixo. Rotulo ao lado
           estourava a borda da tela em retrato, e para o lado errado. */}
@@ -55,7 +47,9 @@ function Hotspot({ spot }) {
           tabIndex={-1}
           {...semArrasto}
           aria-label={`${spot.label}: ${spot.hint}`}
-          className="flex flex-col items-center gap-1"
+          // p-1 sem deslocar o desenho: o icone tem 36 px e o alvo de toque
+          // passa de 44 com a folga, agora que a esfera saiu.
+          className="-m-1 flex flex-col items-center gap-1 p-1"
         >
           {/* `isolate` cria contexto de empilhamento proprio para o -z-10 do
               pulso ficar atras do icone sem sumir atras da cena. */}

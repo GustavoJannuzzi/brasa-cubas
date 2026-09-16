@@ -89,6 +89,16 @@ export function QuotePanel() {
   const [step, setStep] = useState(0)
   const [sent, setSent] = useState(false)
   const [touched, setTouched] = useState(false)
+  const [copiado, setCopiado] = useState(false)
+  const resumo = useRef(null)
+  // Lido so no primeiro render: o rascunho sobrevive a recarga, e reabrir o
+  // painel com tudo preenchido, sem dizer nada, parece um formulario de outra
+  // pessoa.
+  const [veioDeRascunho, setVeioDeRascunho] = useState(() =>
+    ['kind', 'qty', 'eventDate', 'colors', 'details', 'name', 'contact'].some((campo) =>
+      String(quote[campo] ?? '').trim(),
+    ),
+  )
 
   // O minimo e HOJE, e nao hoje + prazo. O aviso ao lado convida a mandar a
   // data apertada ("dependendo da agenda eu consigo encaixar") e o seletor
@@ -146,9 +156,23 @@ export function QuotePanel() {
   const copiar = async () => {
     try {
       await navigator.clipboard.writeText(quoteText(quote))
+      setCopiado(true)
+      setTimeout(() => setCopiado(false), 1500)
       toast('Pedido copiado')
     } catch {
-      toast('Não consegui copiar. Selecione o texto abaixo.')
+      // A mensagem antiga mandava "selecionar o texto abaixo", e o texto esta
+      // ACIMA dos botoes — mandava olhar para o lugar errado. Em vez de
+      // instruir, seleciona: dai basta o copiar do proprio aparelho.
+      const alvo = resumo.current
+      if (alvo) {
+        const faixa = document.createRange()
+        faixa.selectNodeContents(alvo)
+        const selecao = window.getSelection()
+        selecao.removeAllRanges()
+        selecao.addRange(faixa)
+        alvo.scrollIntoView({ block: 'center' })
+      }
+      toast('Não consegui copiar sozinho — deixei o texto selecionado')
     }
   }
 
@@ -162,7 +186,10 @@ export function QuotePanel() {
           </p>
         </div>
 
-        <pre className="rolagem-fina mt-4 max-h-56 overflow-auto rounded-xl border border-carvao/10 bg-creme p-3.5 text-[12.5px] leading-relaxed whitespace-pre-wrap text-carvao/80">
+        <pre
+          ref={resumo}
+          className="rolagem-fina mt-4 max-h-56 overflow-auto rounded-xl border border-carvao/10 bg-creme p-3.5 text-[12.5px] leading-relaxed whitespace-pre-wrap text-carvao/80"
+        >
           {quoteText(quote)}
         </pre>
 
@@ -176,9 +203,11 @@ export function QuotePanel() {
               <IconMail size={17} />
               Por e-mail
             </a>
+            {/* O retorno fica no proprio botao: um aviso que some em 2,6 s e
+                facil de perder justo em quem esta conferindo o resumo. */}
             <button type="button" onClick={copiar} className="btn-secundario">
-              <IconCopy size={17} />
-              Copiar
+              {copiado ? <IconCheck size={17} className="text-salvia" /> : <IconCopy size={17} />}
+              {copiado ? 'Copiado' : 'Copiar'}
             </button>
           </div>
         </div>
@@ -240,6 +269,23 @@ export function QuotePanel() {
 
       {step === 0 && (
         <div className="grid gap-4">
+          {veioDeRascunho && (
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-carvao/5 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-carvao/70">
+              Continuando o rascunho que você deixou.
+              <button
+                type="button"
+                onClick={() => {
+                  resetQuote()
+                  setVeioDeRascunho(false)
+                  setTouched(false)
+                  setStep(0)
+                }}
+                className="font-semibold text-brasa-texto underline"
+              >
+                Começar do zero
+              </button>
+            </p>
+          )}
           {/* Os chips e o campo livre respondem pela mesma pergunta: o erro
               pertence ao grupo, nao a um dos dois. */}
           <div

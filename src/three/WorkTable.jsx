@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { table } from '../data/scene'
+import { useStore } from '../store/useStore'
 import { CeramicPiece } from './CeramicPiece'
 import { roundedBox, roundedCylinder } from './shapes'
 import { matTexture, tableWoodTexture } from './textures'
@@ -23,6 +24,38 @@ const DECOR = {
 }
 
 const METAL = { color: '#3f3a36', roughness: 0.4, metalness: 0.4 }
+
+/**
+ * Caixa invisivel que torna um objeto da bancada clicavel.
+ *
+ * A Ajuda promete "tocar direto no objeto tambem funciona", mas o telefone e o
+ * caderno nao tinham area nenhuma: so o marcador flutuante abria o painel, e
+ * quem tentava o gesto obvio — tocar na coisa — nao conseguia nada.
+ */
+function AreaClicavel({ position, args, rotation = [0, 0, 0], painel, nome }) {
+  const openPanel = useStore((s) => s.openPanel)
+  return (
+    <mesh
+      position={position}
+      rotation={rotation}
+      visible={false}
+      name={nome}
+      onClick={(e) => {
+        // Mesmo limite de arrasto dos outros alvos da cena.
+        if (e.delta > 6) return
+        e.stopPropagation()
+        openPanel(painel)
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation()
+        document.body.style.cursor = 'pointer'
+      }}
+      onPointerOut={() => (document.body.style.cursor = '')}
+    >
+      <boxGeometry args={args} />
+    </mesh>
+  )
+}
 
 // Perfil da cupula da lampada. Lathe e nao cone aberto: o cone de face unica
 // desaparece quando a camera passa por tras dele, e a borda fica sem espessura.
@@ -206,6 +239,22 @@ export function WorkTable({ quality = 'alta' }) {
       <Lampada position={[-0.94, TOP, -0.28]} />
       <Telefone position={[0.6, TOP, -0.32]} />
       <Banqueta position={[-0.2, 0, 0.9]} />
+
+      {/* O telefone abre o contato e o caderno abre o orcamento — os mesmos
+          destinos dos marcadores que flutuam sobre eles. */}
+      <AreaClicavel
+        position={[0.6, TOP + 0.05, -0.32]}
+        args={[0.2, 0.13, 0.17]}
+        painel="contato"
+        nome="area-telefone"
+      />
+      <AreaClicavel
+        position={[0.38, TOP + 0.03, 0.14]}
+        args={[0.26, 0.08, 0.2]}
+        rotation={[0, -0.14, 0]}
+        painel="orcamento"
+        nome="area-caderno"
+      />
     </group>
   )
 }

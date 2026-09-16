@@ -2,6 +2,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useIsMobile } from '../hooks/useMedia'
 import { IconBack, IconClose } from './Icons'
 
+// O id do rAF de devolucao de foco vive no MODULO, nao na instancia.
+//
+// Trocar de painel troca de INSTANCIA — PainelAtivo renderiza PANELS[panel], e
+// tipos diferentes na mesma posicao desmontam e montam. O React roda todos os
+// cleanups antes de todos os efeitos novos, entao com o id guardado num
+// useRef o painel que entrava cancelava um id zero (ref recem-criado), e o rAF
+// do painel que SAIU disparava um quadro depois e levava o foco para o botao
+// do cabecalho — atras da gaveta recem-aberta. Quem usa teclado abria o
+// orcamento e o Tab seguinte continuava pelo menu, nao pelos campos.
+let devolucaoPendente = 0
+
 /**
  * Contêiner dos conteudos do site.
  * No desktop e uma gaveta a direita, que deixa a cena visivel ao lado.
@@ -13,10 +24,8 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
   const sheet = useRef(null)
   const [drag, setDrag] = useState(0)
   const gesture = useRef(null)
-  // Quem tinha o foco antes de o painel abrir, e o rAF que devolve o foco a
-  // essa pessoa quando ele fecha.
+  // Quem tinha o foco antes de o painel abrir.
   const quemAbriu = useRef(null)
-  const devolucao = useRef(0)
 
   useEffect(() => {
     const onKey = (e) => {
@@ -33,11 +42,9 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
     // Guarda quem tinha o foco e devolve ao fechar. Sem isto, cada painel
     // fechado jogava o teclado de volta ao comeco da pagina, e quem navega
     // assim perdia o lugar a cada ida e volta.
-    // Cancela uma devolucao agendada por um cleanup anterior. Em
-    // desenvolvimento o StrictMode monta, limpa e remonta: sem isto, o
-    // requestAnimationFrame daquele cleanup disparava depois e arrancava o
-    // foco de dentro do painel recem-aberto.
-    cancelAnimationFrame(devolucao.current)
+    // Cancela uma devolucao agendada por um cleanup anterior — do StrictMode
+    // OU de outro painel. Ver o comentario de `devolucaoPendente`.
+    cancelAnimationFrame(devolucaoPendente)
 
     const candidato = document.activeElement
     // Numa remontagem o foco ja esta dentro do painel; guardar isso como "quem
@@ -55,7 +62,10 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
       // Depois do commit, e nao dentro dele: no celular o fundo fica inerte
       // enquanto a folha existe, e o React remove o painel antes de tirar o
       // inert do irmao. Focar ali dentro era engolido, e o foco caia no body.
-      devolucao.current = requestAnimationFrame(() => {
+      devolucaoPendente = requestAnimationFrame(() => {
+        // Se a essa altura o foco ja esta dentro de um dialogo, outro painel
+        // assumiu: devolver agora seria roubar dele.
+        if (document.activeElement?.closest?.('[role="dialog"]')) return
         if (alvo && document.contains(alvo) && !alvo.closest('[inert]')) {
           alvo.focus({ preventScroll: true })
         }

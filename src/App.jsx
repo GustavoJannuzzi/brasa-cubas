@@ -97,10 +97,10 @@ export default function App() {
       <>
         <SimpleMode />
         <PainelAtivo />
-        {/* Na lista so vale avisar que o aparelho nao abre o 3D. Dizer que ele
-            "parou de desenhar" para quem escolheu a lista e assustar sem
-            motivo: nao ha cena nenhuma nesta pagina. */}
-        {gl3d === 'indisponivel' && <Aviso3D />}
+        {/* Sem aviso de 3D aqui. Mesmo o "este navegador nao abre o 3D" ficava
+            preso na tela, sem dispensar, e seu unico botao — "Ver em lista" —
+            nao fazia nada, porque a lista ja e esta pagina. A propria lista e
+            a resposta. */}
         <Toasts />
       </>
     )
@@ -134,16 +134,24 @@ export default function App() {
         <TourBar />
         <MobileNav />
 
-        <Aviso3D
-          onTentarDeNovo={() => {
-            setGl3d('ok')
-            setTentativa((n) => n + 1)
-          }}
-        />
-        <LowPerfBanner />
       </div>
 
-      <PainelAtivo />
+      {/* Camadas de topo, fora do involucro inerte. Aviso3D e LowPerfBanner
+          desenham POR CIMA do painel; dentro do inert eles apareciam no
+          celular com um painel aberto mas com os botoes mortos — e o alerta
+          de contexto perdido, que e justamente o caso de quem volta do
+          WhatsApp, nunca era anunciado. */}
+      <Aviso3D
+        onTentarDeNovo={() => {
+          setGl3d('ok')
+          setTentativa((n) => n + 1)
+        }}
+      />
+      <LowPerfBanner />
+      {/* Antes de entrar, o painel tambem e fundo: com um link #orcamento o
+          dialogo montava atras do loader e roubava o foco para um formulario
+          invisivel. */}
+      {entered && <PainelAtivo />}
       <Onboarding />
       <Loader />
       <Toasts />

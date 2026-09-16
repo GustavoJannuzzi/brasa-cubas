@@ -118,7 +118,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
           type="button"
           aria-label="Fechar"
           onClick={onClose}
-          className="fixed inset-0 z-30 bg-carvao/35"
+          className="camada-cena fixed inset-0 z-30 bg-carvao/35"
           style={{ backdropFilter: 'blur(1px)' }}
         />
       )}
@@ -135,6 +135,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
             : 'anim-gaveta fixed top-[4.75rem] right-4 bottom-4 z-40 flex w-[27rem] flex-col overflow-hidden rounded-2xl bg-porcelana outline-none'
         }
         style={{
+          touchAction: 'pan-y',
           boxShadow: 'var(--shadow-painel)',
           transform: drag ? `translateY(${drag}px)` : undefined,
           transition: gesture.current ? 'none' : 'transform 0.25s var(--ease-suave)',

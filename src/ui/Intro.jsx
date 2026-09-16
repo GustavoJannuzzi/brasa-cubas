@@ -51,7 +51,7 @@ export function Loader() {
         : 'Montando o ateliê…'
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-carvao px-6 text-center">
+    <div className="camada-cena fixed inset-0 z-50 flex flex-col items-center justify-center bg-carvao px-6 text-center">
       <div className="anim-sobe flex w-full max-w-sm flex-col items-center">
         <div className="mb-6 flex gap-1.5">
           {products.slice(2, 5).map((p, i) => (
@@ -180,7 +180,7 @@ export function Onboarding() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-titulo"
-      className="fixed inset-0 z-[45] flex items-end justify-center bg-carvao/45 p-4 md:items-center"
+      className="camada-cena fixed inset-0 z-[45] flex items-end justify-center bg-carvao/45 p-4 md:items-center"
     >
       <div className="anim-sobe w-full max-w-md rounded-2xl bg-porcelana p-5 shadow-[var(--shadow-painel)]">
         <span className="text-[11px] font-semibold tracking-wide text-brasa-texto uppercase">

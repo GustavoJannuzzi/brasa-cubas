@@ -18,7 +18,7 @@ export function Aviso3D({ onTentarDeNovo }) {
   return (
     <div
       role="status"
-      className="anim-sobe fixed top-[3.4rem] left-1/2 z-[48] w-[min(28rem,calc(100vw-1.5rem))] -translate-x-1/2 md:top-[4.4rem]"
+      className="camada-cena anim-sobe fixed top-[3.4rem] left-1/2 z-[48] w-[min(28rem,calc(100vw-1.5rem))] -translate-x-1/2 md:top-[4.4rem]"
     >
       <div className="cartao flex items-start gap-3 p-4">
         <IconLayers size={19} className="mt-0.5 shrink-0 text-brasa" />

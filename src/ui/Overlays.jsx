@@ -44,7 +44,7 @@ export function HeroCard() {
   if (!entered || !onboardingDone || panel || focusedProduct || tourStep >= 0 || fechado) return null
 
   return (
-    <div className="anim-sobe fixed right-3 bottom-[4.4rem] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[22rem]">
+    <div className="anim-sobe fixed right-3 bottom-[4.4rem] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[22rem] camada-cena">
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] md:p-4"
         style={{ backdropFilter: 'blur(6px)' }}
@@ -102,7 +102,7 @@ export function FocusedProductBar() {
   if (!product) return null
 
   return (
-    <div className="anim-sobe fixed right-3 bottom-[4.4rem] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[24rem]">
+    <div className="anim-sobe fixed right-3 bottom-[4.4rem] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[24rem] camada-cena">
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)]"
         style={{ backdropFilter: 'blur(6px)' }}
@@ -165,7 +165,7 @@ export function OrientationBar() {
   const lugarCurto = vistaLivre ? 'Vista livre' : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home)
 
   return (
-    <div className="fixed top-[3.4rem] left-3 z-20 flex items-center gap-1 md:top-[4.4rem] md:left-5">
+    <div className="camada-cena fixed top-[3.4rem] left-3 z-20 flex items-center gap-1 md:top-[4.4rem] md:left-5">
       {desenhando && (
         <>
           <span
@@ -229,7 +229,7 @@ export function TourBar() {
   const ultimo = tourStep === hotspots.length - 1
 
   return (
-    <div className="anim-sobe fixed bottom-[4.75rem] left-3 right-3 z-30 md:bottom-5 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
+    <div className="camada-cena anim-sobe fixed bottom-[4.75rem] left-3 right-3 z-30 md:bottom-5 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
       <div className="rounded-2xl bg-porcelana/96 p-4 shadow-[var(--shadow-painel)]" style={{ backdropFilter: 'blur(6px)' }}>
         <div className="flex items-center gap-2">
           <IconSparkle size={16} className="text-brasa" />
@@ -273,7 +273,7 @@ export function LowPerfBanner() {
   if (!lowPerf) return null
 
   return (
-    <div className="anim-sobe fixed top-[3.4rem] left-1/2 z-[44] w-[min(26rem,calc(100vw-1.5rem))] -translate-x-1/2 md:top-[4.4rem]">
+    <div className="camada-cena anim-sobe fixed top-[3.4rem] left-1/2 z-[44] w-[min(26rem,calc(100vw-1.5rem))] -translate-x-1/2 md:top-[4.4rem]">
       <div className="cartao flex items-start gap-3 p-3.5">
         <IconLayers size={19} className="mt-0.5 shrink-0 text-brasa" />
         <div className="min-w-0 flex-1">

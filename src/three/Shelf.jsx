@@ -39,7 +39,7 @@ function Etiqueta({ product, position, onOpen }) {
   })
 
   return (
-    <Html position={position} zIndexRange={[18, 0]} style={{ pointerEvents: 'auto' }} aria-hidden="true">
+    <Html position={position} zIndexRange={[18, 0]} style={{ pointerEvents: 'auto', touchAction: 'pan-y' }} aria-hidden="true">
       {/* Sem `center`: o ponto projetado e o canto da etiqueta. O translate
           horizontal centraliza na vaga e deixa a etiqueta CRESCER para baixo,
           longe da peca. */}

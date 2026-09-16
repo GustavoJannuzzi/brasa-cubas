@@ -40,7 +40,7 @@ export function Header() {
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-30 flex items-center gap-3 px-3 py-2.5 md:px-5 md:py-3">
+    <header className="camada-cena fixed inset-x-0 top-0 z-30 flex items-center gap-3 px-3 py-2.5 md:px-5 md:py-3">
       {/* fundo em degradê para o menu ler sobre a cena sem virar uma barra opaca */}
       <div
         className="pointer-events-none absolute inset-0 -z-10"
@@ -137,7 +137,7 @@ export function MobileNav() {
 
   return (
     <nav
-      className="area-segura-b fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-porcelana/10 bg-carvao/92 px-1 pt-1 md:hidden"
+      className="camada-cena area-segura-b fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-porcelana/10 bg-carvao/92 px-1 pt-1 md:hidden"
       style={{ backdropFilter: 'blur(8px)' }}
       aria-label="Seções do site"
     >

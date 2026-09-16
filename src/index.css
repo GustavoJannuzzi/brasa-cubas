@@ -86,6 +86,19 @@
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
+/* Camada de UI que fica POR CIMA da cena.
+   No ateliê a pinça e da camera. So o canvas tinha touch-action, e qualquer
+   gesto que encostasse num rotulo, no cartao ou na folha virava zoom da pagina
+   inteira — medido: visualViewport.scale foi de 1 a 5 pincando sobre o cartao,
+   e dali o menu fixo sai do lugar e nao ha como voltar.
+   `pan-y` tira o zoom e mantem a rolagem dentro dos paineis. Nao e
+   `manipulation`: esse ainda permite pinca. E nao e maximum-scale na meta
+   viewport, que tiraria o zoom tambem do modo lista — que e justamente a saida
+   de quem precisa ampliar. */
+@utility camada-cena {
+  touch-action: pan-y;
+}
+
 @utility rolagem-fina {
   scrollbar-width: thin;
   scrollbar-color: var(--color-porcelana-escura) transparent;

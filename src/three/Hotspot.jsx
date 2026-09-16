@@ -9,11 +9,19 @@ function Hotspot({ spot }) {
   const discovered = useStore((s) => s.discovered.includes(spot.id))
   const active = useStore((s) => s.panel === spot.panel)
   const isTourTarget = useStore((s) => s.tourStep >= 0 && hotspots[s.tourStep]?.id === spot.id)
+  const view = useStore((s) => s.view)
   const Icon = hotspotIcons[spot.icon]
   const semArrasto = useCliqueSemArrasto((e) => {
     e.stopPropagation()
     openPanel(spot.panel)
   })
+
+  // Um marcador nao convida para onde a pessoa ja esta. Na vista da
+  // prateleira, o rotulo "Produtos · 11 pecas com preco" ficava por cima da
+  // etiqueta de preco de uma peca — medido em 116 x 22 px a 900 de altura e
+  // 116 x 37 px a 720. O painel continua a um toque no menu, na peca e na
+  // etiqueta. Durante o tour o marcador fica, porque ali ele e o assunto.
+  if (view === spot.view && !isTourTarget) return null
 
   return (
     <group position={spot.position}>

@@ -27,6 +27,11 @@ const FILLER = [
 
 // Sem distanceFactor de proposito: escalar com a distancia deixava a etiqueta
 // ilegivel de longe e gigante no close-up da peca. Tamanho de tela e constante.
+//
+// Pendurada ABAIXO da quina da tabua, como etiqueta de gondola. Centralizada na
+// quina (como era antes, com `center`), a metade de cima subia por cima do
+// produto: nas pecas baixas — porta-joias, ima, lembrancinha — o proprio preco
+// escondia a peca que ele anuncia.
 function Etiqueta({ product, position, onOpen }) {
   const semArrasto = useCliqueSemArrasto((e) => {
     e.stopPropagation()
@@ -34,14 +39,26 @@ function Etiqueta({ product, position, onOpen }) {
   })
 
   return (
-    <Html position={position} center zIndexRange={[18, 0]} style={{ pointerEvents: 'auto' }} aria-hidden="true">
-      {/* Fora do caminho do teclado, como os marcadores: a etiqueta e DOM
-          solto sobre a cena e continua focavel mesmo fora do quadro. O
-          catalogo lista as mesmas pecas, com nome e preco. */}
-      <button type="button" tabIndex={-1} {...semArrasto} className="etiqueta-peca">
-        <span className="block max-w-[12rem] truncate font-medium text-carvao">{product.name}</span>
-        <span className="block text-sm font-semibold text-brasa">{priceLabel(product)}</span>
-      </button>
+    <Html position={position} zIndexRange={[18, 0]} style={{ pointerEvents: 'auto' }} aria-hidden="true">
+      {/* Sem `center`: o ponto projetado e o canto da etiqueta. O translate
+          horizontal centraliza na vaga e deixa a etiqueta CRESCER para baixo,
+          longe da peca. */}
+      <div style={{ transform: 'translate(-50%, 0)' }}>
+        {/* Fora do caminho do teclado, como os marcadores: a etiqueta e DOM
+            solto sobre a cena e continua focavel mesmo fora do quadro. O
+            catalogo lista as mesmas pecas, com nome e preco. */}
+        {/* Largura travada no BOTAO, nao no nome: o passo entre vagas encolhe
+            com a altura da janela, e a 720 px de altura ele fica em 143 px.
+            Com 132 px de etiqueta sobra vao entre vizinhas ate la. */}
+        <button type="button" tabIndex={-1} {...semArrasto} className="etiqueta-peca w-[8.25rem]">
+          {/* Duas linhas no maximo: sem o corte, nome comprido em coluna
+              estreita empilha quatro linhas e a etiqueta vira um bloco. */}
+          <span className="line-clamp-2 text-xs leading-tight font-medium whitespace-normal text-carvao">
+            {product.name}
+          </span>
+          <span className="block text-sm font-semibold text-brasa">{priceLabel(product)}</span>
+        </button>
+      </div>
     </Html>
   )
 }
@@ -72,7 +89,9 @@ function ProdutoNaPrateleira({ product, showTag }) {
       {(showTag || hovered) && (
         <Etiqueta
           product={product}
-          position={[base[0], base[1] + 0.02, shelf.z + shelf.depth / 2 + 0.02]}
+          // base[1] e o TOPO da tabua. Desce a espessura inteira mais 12 mm
+          // para pendurar sob a quina, e fica quase rente a face da frente.
+          position={[base[0], base[1] - shelf.thickness - 0.012, shelf.z + shelf.depth / 2 + 0.005]}
           onOpen={() => openProduct(product.id)}
         />
       )}

@@ -90,12 +90,15 @@ export const shelfSlotPosition = (slot) => [
 export const plants = [
   // chao
   { id: 'costela-frente', kind: 'costela', position: [-1.15, 0, 1.35], rotation: [0, 0.6, 0], scale: 1.15, seed: 3 },
-  // Movida e aumentada depois da revisao do celular: em [-1.3, 0, -1.2] ela
-  // ficava DENTRO do quadro de abertura mas atras da bancada — "esta ali atras,
-  // quase nao da para ver". Medido: o raio da camera ate ela batia no tapete de
-  // corte do tampo. Agora vai para o canto do fundo, onde a linha de visada
-  // passa por cima da bancada, e cresce um pouco para se ler a distancia.
-  { id: 'costela-fundo', kind: 'costela', position: [-1.58, 0, -1.42], rotation: [0, -0.7, 0], scale: 0.85, seed: 17 },
+  // Movida, aumentada e agora LEVANTADA, depois da revisao do celular.
+  // Mover de lado nao resolveu, e a conta explica por que nao ia resolver: a
+  // visada da camera do celular ([1.9, 1.62, 2.4]) ate aqui cruza a borda de
+  // tras do tampo (z -0.52) em x -0.76 — DENTRO da largura da mesa (+-1.1),
+  // mesmo a planta estando fora dela. Para a folhagem limpar o tampo (0.78) ela
+  // precisa comecar acima de ~0.52. A alavanca e altura, nao lado.
+  // y = stand.h * scale, como na samambaia: o banquinho e montado do tampo
+  // (y 0 local) para baixo ate -h, e o grupo ainda aplica a escala.
+  { id: 'costela-fundo', kind: 'costela', position: [-1.58, 0.391, -1.42], rotation: [0, -0.7, 0], scale: 0.85, seed: 17, stand: { h: 0.46, r: 0.15 } },
   // x 1.44: em 1.5 a folha mais aberta furava o retorno da parede direita
   // (2,9 cm) quando o vento chegava na amplitude maxima.
   { id: 'espada-janela', kind: 'espada', position: [1.44, 0, -1.05], rotation: [0, -0.4, 0], scale: 1.05, seed: 8 },

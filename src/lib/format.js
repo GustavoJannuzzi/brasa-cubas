@@ -19,11 +19,14 @@ export const formatDateBR = (iso) => {
   return `${d}/${m}/${y}`
 }
 
-// Data minima que o ateliê consegue atender, em formato de input[type=date].
-export const minEventDate = (leadDays) => {
+// Hoje em data LOCAL, no formato do input[type=date]. Com toISOString a data
+// sairia em UTC: depois das 21h em Brasilia o "hoje" ja seria amanha, e o
+// seletor passaria a bloquear o dia de hoje.
+export const hojeISO = () => {
   const d = new Date()
-  d.setDate(d.getDate() + leadDays)
-  return d.toISOString().slice(0, 10)
+  const mes = String(d.getMonth() + 1).padStart(2, '0')
+  const dia = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mes}-${dia}`
 }
 
 export const daysUntil = (iso) => {

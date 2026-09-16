@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { studio } from '../../data/studio'
-import { daysUntil, formatDateBR, minEventDate } from '../../lib/format'
+import { daysUntil, formatDateBR, hojeISO, plural } from '../../lib/format'
+import { diasDeReferencia, prazoDoTipo, prazoEmTexto, tetoDoPrazo } from '../../lib/prazo'
 import { quoteMailto, quoteMessage, quoteText } from '../../lib/whatsapp'
 import { useStore } from '../../store/useStore'
 import { IconArrow, IconBack, IconCheck, IconCopy, IconMail, IconWhatsapp } from '../Icons'
@@ -22,6 +23,10 @@ const CONTATOS = [
 ]
 
 const PASSOS = ['O que você precisa', 'Para quando', 'Como te encontro']
+
+// "faltam 1 dias" era o que saia antes. Hoje e amanha nem se dizem com numero.
+const quandoE = (dias) =>
+  dias === 0 ? 'é hoje' : dias === 1 ? 'é amanhã' : `faltam ${plural(dias, 'dia', 'dias')}`
 
 function Progresso({ step }) {
   return (
@@ -56,9 +61,24 @@ export function QuotePanel() {
   const [sent, setSent] = useState(false)
   const [touched, setTouched] = useState(false)
 
-  const dataMinima = useMemo(() => minEventDate(studio.minLeadDays), [])
+  // O minimo e HOJE, e nao hoje + prazo. O aviso ao lado convida a mandar a
+  // data apertada ("dependendo da agenda eu consigo encaixar") e o seletor
+  // bloqueava justamente essa data: quem tem festa em sete dias — caso comum
+  // de topo de bolo — acabava mandando sem data nenhuma.
+  const dataMinima = useMemo(() => hojeISO(), [])
   const diasAteEvento = daysUntil(quote.eventDate)
-  const apertado = diasAteEvento != null && diasAteEvento < studio.minLeadDays
+  // Prazo do tipo escolhido, nao um numero unico para tudo: lembrancinha leva
+  // 25 dias e caneca leva 10.
+  const prazo = useMemo(() => prazoDoTipo(quote.kind), [quote.kind])
+  const referencia = diasDeReferencia(prazo)
+  // A data pode ter ficado para tras no rascunho salvo de outra visita.
+  const passou = diasAteEvento != null && diasAteEvento < 0
+  const naFrente = diasAteEvento != null && diasAteEvento >= 0
+  const apertado = naFrente && diasAteEvento < referencia
+  // Tipo sem familia so tem faixa (10 a 25 dias). Dizer "da tempo tranquilo"
+  // com 12 dias seria prometer o piso da faixa como se fosse o teto.
+  const incerto = naFrente && !apertado && diasAteEvento < tetoDoPrazo(prazo)
+  const tipoNoTexto = prazo.dias != null ? quote.kind.trim() : 'Encomenda personalizada'
 
   const contato = CONTATOS.find((c) => c.id === quote.contactKind) ?? CONTATOS[0]
 
@@ -243,15 +263,26 @@ export function QuotePanel() {
               value={quote.eventDate}
               onChange={(e) => setQuoteField('eventDate', e.target.value)}
             />
-            {quote.eventDate && !apertado && (
+            {passou && (
+              <p className="mt-1.5 rounded-lg bg-brasa/10 px-3 py-2 text-[12px] leading-relaxed text-brasa">
+                {formatDateBR(quote.eventDate)} já passou. Confere o ano?
+              </p>
+            )}
+            {quote.eventDate && !passou && !apertado && !incerto && (
               <p className="mt-1.5 text-[12px] text-carvao/55">
-                {formatDateBR(quote.eventDate)} — {diasAteEvento} dias, dá tempo tranquilo.
+                {formatDateBR(quote.eventDate)} — {quandoE(diasAteEvento)}, dá tempo tranquilo.
+              </p>
+            )}
+            {incerto && (
+              <p className="mt-1.5 text-[12px] leading-relaxed text-carvao/70">
+                {tipoNoTexto} leva {prazoEmTexto(prazo)} e {quandoE(diasAteEvento)}. Dá para tentar:
+                mande o pedido que eu confirmo na agenda.
               </p>
             )}
             {apertado && (
               <p className="mt-1.5 rounded-lg bg-brasa/10 px-3 py-2 text-[12px] leading-relaxed text-brasa">
-                Faltam {diasAteEvento} dias, e a produção costuma levar {studio.minLeadDays}. Mande
-                o pedido de qualquer jeito: dependendo da agenda eu consigo encaixar.
+                {tipoNoTexto} costuma levar {prazoEmTexto(prazo)} e {quandoE(diasAteEvento)}. Fica
+                apertado, mas mande o pedido: dependendo da agenda eu consigo encaixar.
               </p>
             )}
             <p className="mt-1.5 text-[12px] text-carvao/50">Não tem data ainda? Pode deixar em branco.</p>

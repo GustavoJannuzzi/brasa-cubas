@@ -175,8 +175,20 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
         )}
 
         <header className="flex shrink-0 items-start gap-2 border-b border-carvao/10 px-4 py-3 md:px-5 md:py-4">
+          {/* Voltar e Fechar em 44x44, o minimo de alvo de toque (o seletor de
+              quantidade do carrinho ja tinha ido para 44 no MI-08); estavam em
+              42x34, em TODOS os paineis. A caixa cresce de verdade, e nao so a
+              area de toque por pseudo-elemento, porque a sonda mede com
+              getBoundingClientRect, que nao enxerga pseudo-elemento: ela seguiria
+              dizendo 42x34 com o toque ja em 44. O -my-1.5 devolve a altura que a
+              caixa ganhou, para o cabecalho nao crescer. */}
           {onBack && (
-            <button type="button" onClick={onBack} aria-label="Voltar" className="btn-fantasma -ml-1 shrink-0">
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Voltar"
+              className="btn-fantasma -my-1.5 -ml-1 h-11 w-11 shrink-0 p-0"
+            >
               <IconBack size={18} />
             </button>
           )}
@@ -184,7 +196,12 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
             <h2 className="truncate text-lg md:text-xl">{title}</h2>
             {subtitle && <p className="mt-0.5 text-[13px] leading-snug text-carvao/70">{subtitle}</p>}
           </div>
-          <button type="button" onClick={onClose} aria-label="Fechar" className="btn-fantasma shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="btn-fantasma -my-1.5 h-11 w-11 shrink-0 p-0"
+          >
             <IconClose size={18} />
           </button>
         </header>

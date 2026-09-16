@@ -50,11 +50,17 @@ function Linha({ line }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-2">
           <p className="min-w-0 flex-1 text-[14px] leading-snug font-medium text-carvao">{product.name}</p>
+          {/* 44x44 como o seletor de quantidade logo abaixo (MI-08); estava em
+              27x27 — o menor alvo de toque do site, na mesma tela do seletor que
+              ja tinha sido corrigido. As margens negativas devolvem o espaco que
+              a caixa ganhou, para o icone ficar no mesmo lugar e a linha do nome
+              nao crescer. A sobra de baixo cai sobre o texto do preco, que nao e
+              clicavel, e fica acima do seletor: nao rouba toque de ninguem. */}
           <button
             type="button"
             onClick={() => removeFromCart(product.id)}
             aria-label={`Remover ${product.name}`}
-            className="-mt-1 -mr-1 shrink-0 rounded-full p-1.5 text-carvao/55 transition-colors hover:bg-carvao/6 hover:text-brasa"
+            className="-my-3 -mr-3 grid h-11 w-11 shrink-0 place-items-center rounded-full text-carvao/55 transition-colors hover:bg-carvao/6 hover:text-brasa"
           >
             <IconTrash size={15} />
           </button>

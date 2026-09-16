@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
-import { useIsMobile } from '../hooks/useMedia'
+import { useIsMobile, useReducedMotion } from '../hooks/useMedia'
 import { foiRebaixado, limparRebaixamento, marcarRebaixado, tierDoAparelho } from '../lib/tier'
 import { useStore } from '../store/useStore'
 import { Atelier } from './Atelier'
@@ -203,6 +203,14 @@ function PerfWatch({ aoBaixarDpr }) {
 
 function Scene({ quality, aoBaixarDpr }) {
   const alta = quality === 'alta'
+  // Com `prefers-reduced-motion`, a poeira para de flutuar — mas continua na
+  // tela. Medido: com reducao pedida e o vento das plantas ja em zero, 1,43%
+  // dos pixels ainda mudavam a cada 700 ms; escondendo este unico `Points` da
+  // cena a diferenca ia a ZERO, e devolvendo-o voltava a 1,48%. Era a unica
+  // coisa que ainda animava contra o pedido de quem navega assim.
+  // Parar em vez de sumir segue a decisao que o projeto ja tomou nos outros
+  // quatro lugares — o pulso do marcador, por exemplo, vira anel estatico.
+  const reduzido = useReducedMotion()
   return (
     <>
       <color attach="background" args={['#1c1512']} />
@@ -224,7 +232,7 @@ function Scene({ quality, aoBaixarDpr }) {
         scale={[1.4, 1.3, 1.9]}
         position={[0.92, 1.26, -0.85]}
         size={alta ? 2.2 : 1.6}
-        speed={0.22}
+        speed={reduzido ? 0 : 0.22}
         opacity={0.5}
         color="#ffe6c0"
       />

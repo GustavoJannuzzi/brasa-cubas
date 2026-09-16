@@ -4,7 +4,7 @@ import { daysUntil, formatDateBR, hojeISO, plural } from '../../lib/format'
 import { diasDeReferencia, prazoDoTipo, prazoEmTexto, tetoDoPrazo } from '../../lib/prazo'
 import { quoteMailto, quoteMessage, quoteText } from '../../lib/whatsapp'
 import { useStore } from '../../store/useStore'
-import { IconArrow, IconBack, IconCheck, IconCopy, IconMail, IconWhatsapp } from '../Icons'
+import { IconAlert, IconArrow, IconBack, IconCheck, IconCopy, IconMail, IconWhatsapp } from '../Icons'
 import { Panel } from '../Panel'
 
 const TIPOS = [
@@ -27,6 +27,23 @@ const PASSOS = ['O que você precisa', 'Para quando', 'Como te encontro']
 // "faltam 1 dias" era o que saia antes. Hoje e amanha nem se dizem com numero.
 const quandoE = (dias) =>
   dias === 0 ? 'é hoje' : dias === 1 ? 'é amanhã' : `faltam ${plural(dias, 'dia', 'dias')}`
+
+// Qual campo cobrar primeiro em cada passo, na ordem em que aparecem na tela.
+const CAMPOS_DO_PASSO = { 0: ['kind', 'qty'], 2: ['name', 'contact'] }
+
+/**
+ * Mensagem de erro de um campo. Leva icone alem da cor — cor sozinha nao
+ * comunica — e um id, para o campo aponta-la por aria-describedby e o leitor
+ * de tela ler o motivo junto do campo.
+ */
+function Erro({ id, children }) {
+  return (
+    <p id={id} className="mt-1.5 flex items-start gap-1.5 text-[12px] leading-snug text-erro">
+      <IconAlert size={14} className="mt-px shrink-0" />
+      <span>{children}</span>
+    </p>
+  )
+}
 
 function Progresso({ step }) {
   return (
@@ -91,9 +108,24 @@ export function QuotePanel() {
 
   const passoValido = step === 0 ? !erros.kind && !erros.qty : step === 1 ? true : !erros.name && !erros.contact
 
+  // So cobra depois de tentar avancar: marcar tudo de vermelho antes de a
+  // pessoa escrever qualquer coisa e agressivo.
+  const mostraErro = (campo) => touched && Boolean(erros[campo])
+
   const avancar = () => {
     setTouched(true)
-    if (!passoValido) return
+    if (!passoValido) {
+      // Sem isto, o toque em "Continuar" parecia nao fazer nada: no celular a
+      // mensagem nascia fora da vista, muitas vezes atras do teclado, e a
+      // pessoa achava que o formulario tinha travado.
+      const primeiro = (CAMPOS_DO_PASSO[step] ?? []).find((campo) => erros[campo])
+      if (primeiro) {
+        const campo = document.getElementById(`q-${primeiro}`)
+        campo?.focus({ preventScroll: true })
+        campo?.scrollIntoView({ block: 'center' })
+      }
+      return
+    }
     setTouched(false)
     if (step < PASSOS.length - 1) setStep(step + 1)
     else setSent(true)
@@ -176,7 +208,12 @@ export function QuotePanel() {
       footer={
         <div className="mb-3 flex items-center gap-2 md:mb-0">
           {step > 0 && (
-            <button type="button" onClick={() => setStep(step - 1)} className="btn-secundario shrink-0">
+            <button
+              type="button"
+              onClick={() => setStep(step - 1)}
+              aria-label="Voltar ao passo anterior"
+              className="btn-secundario shrink-0"
+            >
               <IconBack size={16} />
             </button>
           )}
@@ -191,8 +228,16 @@ export function QuotePanel() {
 
       {step === 0 && (
         <div className="grid gap-4">
-          <div>
-            <span className="etiqueta">Que tipo de peça?</span>
+          {/* Os chips e o campo livre respondem pela mesma pergunta: o erro
+              pertence ao grupo, nao a um dos dois. */}
+          <div
+            role="group"
+            aria-labelledby="q-kind-titulo"
+            aria-describedby={mostraErro('kind') ? 'q-kind-erro' : undefined}
+          >
+            <span className="etiqueta" id="q-kind-titulo">
+              Que tipo de peça?
+            </span>
             <div className="flex flex-wrap gap-1.5">
               {TIPOS.map((tipo) => (
                 <button
@@ -211,13 +256,19 @@ export function QuotePanel() {
               ))}
             </div>
             <input
+              id="q-kind"
               className="campo mt-2"
               placeholder="ou escreva com suas palavras"
               value={quote.kind}
               onChange={(e) => setQuoteField('kind', e.target.value)}
               aria-label="Tipo de peça"
+              aria-invalid={mostraErro('kind') || undefined}
+              // Tambem no campo, e nao so no grupo: o foco pousa aqui, e
+              // descricao de grupo nao e anunciada de forma confiavel nessa
+              // hora — o leitor diria "invalido" sem dizer por que.
+              aria-describedby={mostraErro('kind') ? 'q-kind-erro' : undefined}
             />
-            {touched && erros.kind && <p className="mt-1.5 text-[12px] text-brasa">{erros.kind}</p>}
+            {mostraErro('kind') && <Erro id="q-kind-erro">{erros.kind}</Erro>}
           </div>
 
           <div>
@@ -230,8 +281,10 @@ export function QuotePanel() {
               placeholder="ex.: 1 topo e 40 lembrancinhas"
               value={quote.qty}
               onChange={(e) => setQuoteField('qty', e.target.value)}
+              aria-invalid={mostraErro('qty') || undefined}
+              aria-describedby={mostraErro('qty') ? 'q-qty-erro' : undefined}
             />
-            {touched && erros.qty && <p className="mt-1.5 text-[12px] text-brasa">{erros.qty}</p>}
+            {mostraErro('qty') && <Erro id="q-qty-erro">{erros.qty}</Erro>}
           </div>
 
           <div>
@@ -320,8 +373,10 @@ export function QuotePanel() {
               autoComplete="name"
               value={quote.name}
               onChange={(e) => setQuoteField('name', e.target.value)}
+              aria-invalid={mostraErro('name') || undefined}
+              aria-describedby={mostraErro('name') ? 'q-name-erro' : undefined}
             />
-            {touched && erros.name && <p className="mt-1.5 text-[12px] text-brasa">{erros.name}</p>}
+            {mostraErro('name') && <Erro id="q-name-erro">{erros.name}</Erro>}
           </div>
 
           <div>
@@ -344,6 +399,7 @@ export function QuotePanel() {
               ))}
             </div>
             <input
+              id="q-contact"
               className="campo"
               type={contato.type}
               inputMode={contato.id === 'whatsapp' ? 'tel' : undefined}
@@ -351,8 +407,10 @@ export function QuotePanel() {
               value={quote.contact}
               onChange={(e) => setQuoteField('contact', e.target.value)}
               aria-label={contato.label}
+              aria-invalid={mostraErro('contact') || undefined}
+              aria-describedby={mostraErro('contact') ? 'q-contact-erro' : undefined}
             />
-            {touched && erros.contact && <p className="mt-1.5 text-[12px] text-brasa">{erros.contact}</p>}
+            {mostraErro('contact') && <Erro id="q-contact-erro">{erros.contact}</Erro>}
           </div>
 
           <p className="text-[12px] leading-relaxed text-carvao/55">

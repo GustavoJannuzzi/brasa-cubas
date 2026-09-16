@@ -176,6 +176,14 @@ export const IconHelp = (p) => (
   </Svg>
 )
 
+export const IconAlert = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7.6v5" />
+    <circle cx="12" cy="16.3" r="0.9" fill="currentColor" stroke="none" />
+  </Svg>
+)
+
 export const IconHome = (p) => (
   <Svg {...p}>
     <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9.5Z" />

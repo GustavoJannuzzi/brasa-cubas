@@ -10,6 +10,10 @@
   --color-carvao: #2b2320;
   --color-carvao-suave: #4a3f39;
   --color-salvia: #8fa089;
+  /* Vermelho de erro. A brasa (#c2582d) da 3,96:1 sobre a porcelana, abaixo do
+     minimo de 4,5:1 para texto pequeno; este da 5,03:1. Mesma familia de cor,
+     so mais fechado — nao e um vermelho de alerta de sistema. */
+  --color-erro: #a94b24;
 
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { studio } from '../../data/studio'
 import { daysUntil, formatDateBR, hojeISO, plural } from '../../lib/format'
 import { diasDeReferencia, prazoDoTipo, prazoEmTexto, tetoDoPrazo } from '../../lib/prazo'
@@ -46,8 +46,20 @@ function Erro({ id, children }) {
 }
 
 function Progresso({ step }) {
+  const titulo = useRef(null)
+
+  useEffect(() => {
+    // Trocar de passo nao movia o foco nem anunciava nada: quem usa leitor de
+    // tela apertava "Continuar" e nao sabia que tinha avancado, nem para onde.
+    titulo.current?.focus({ preventScroll: true })
+  }, [step])
+
   return (
     <div className="mb-4">
+      {/* Invisivel na tela: quem enxerga ja tem a barra e o rotulo do passo. */}
+      <h3 ref={titulo} tabIndex={-1} className="sr-only outline-none">
+        Passo {step + 1} de {PASSOS.length}: {PASSOS[step]}
+      </h3>
       <div className="mb-2 flex items-center justify-between">
         <span className="text-[12px] font-semibold tracking-wide text-carvao/70 uppercase">
           Passo {step + 1} de {PASSOS.length}

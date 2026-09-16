@@ -278,7 +278,10 @@ export function LowPerfBanner() {
     // pilha de pratos, mini arranjo, potinho) e embaixo cobria as etiquetas de
     // preco da tabua de baixo — medido, 416 x 61 px. Na vista da prateleira a
     // estante vai de y 192 a 815: quem avisa nao pode tapar o produto.
-    <div className="camada-cena anim-sobe fixed top-[6.1rem] left-3 z-[44] w-[min(22rem,calc(100vw-1.5rem))] md:top-[7.2rem] md:left-5">
+    <div
+      role="status"
+      className="camada-cena anim-sobe fixed top-[6.1rem] left-3 z-[44] w-[min(22rem,calc(100vw-1.5rem))] md:top-[7.2rem] md:left-5"
+    >
       <div className="cartao flex items-start gap-3 p-3.5">
         <IconLayers size={19} className="mt-0.5 shrink-0 text-brasa" />
         <div className="min-w-0 flex-1">
@@ -315,10 +318,17 @@ export function LowPerfBanner() {
 
 export function Toasts() {
   const toasts = useStore((s) => s.toasts)
-  if (!toasts.length) return null
 
+  // Sempre montado, mesmo vazio: uma regiao viva so e anunciada de forma
+  // confiavel se ja existia no DOM quando o texto chega. Montada junto com o
+  // aviso, o leitor de tela costuma perder a primeira mensagem — e aqui a
+  // primeira mensagem e "20 un (minimo do pedido) · R$ 240".
   return (
-    <div className="pointer-events-none fixed bottom-[8.5rem] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6">
+    <div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-none fixed bottom-[8.5rem] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6"
+    >
       {toasts.map((t) => (
         <span
           key={t.id}

@@ -21,23 +21,30 @@ export const productMessage = (product, qty) =>
     ].join('\n'),
   )
 
-export const cartMessage = (lines, total, isEstimate) =>
-  link(
-    [
-      `Oi! Vim pelo site do ateliê e montei um pedido:`,
-      ``,
-      ...lines.map(
-        (line) => `• ${line.qty}× ${line.product.name} — ${money(line.subtotal)}`,
-      ),
-      ``,
-      `${isEstimate ? 'Estimativa' : 'Total'}: ${money(total)}`,
-      isEstimate ? `(algumas peças são "a partir de", então o valor final depende da personalização)` : ``,
-      ``,
-      `Pode confirmar prazo e forma de pagamento?`,
-    ]
-      .filter(Boolean)
-      .join('\n'),
-  )
+// O texto do pedido existe separado do link do WhatsApp: se o navegador in-app
+// nao repassar o wa.me para o aplicativo — e ele as vezes nao repassa —, o
+// pedido montado precisa ter outra saida. E o mesmo conteudo em copiar e em
+// e-mail, como ja acontecia no orcamento.
+export const cartText = (lines, total, isEstimate) =>
+  [
+    `Oi! Vim pelo site do ateliê e montei um pedido:`,
+    ``,
+    ...lines.map((line) => `• ${line.qty}× ${line.product.name} — ${money(line.subtotal)}`),
+    ``,
+    `${isEstimate ? 'Estimativa' : 'Total'}: ${money(total)}`,
+    isEstimate ? `(algumas peças são "a partir de", então o valor final depende da personalização)` : ``,
+    ``,
+    `Pode confirmar prazo e forma de pagamento?`,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+export const cartMessage = (lines, total, isEstimate) => link(cartText(lines, total, isEstimate))
+
+export const cartMailto = (lines, total, isEstimate) =>
+  `mailto:${studio.email}?subject=${encodeURIComponent('Pedido pelo site do ateliê')}&body=${encodeURIComponent(
+    cartText(lines, total, isEstimate),
+  )}`
 
 // Texto do orcamento. Mesmo conteudo usado no "copiar" e no e-mail,
 // para o usuario nunca ficar sem saida se nao usar WhatsApp.

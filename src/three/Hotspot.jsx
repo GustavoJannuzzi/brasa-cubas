@@ -57,8 +57,10 @@ function Hotspot({ spot }) {
           aria-label={`${spot.label}: ${spot.hint}`}
           className="flex flex-col items-center gap-1"
         >
+          {/* `isolate` cria contexto de empilhamento proprio para o -z-10 do
+              pulso ficar atras do icone sem sumir atras da cena. */}
           <span
-            className={`relative grid h-9 w-9 place-items-center rounded-full border transition-colors ${
+            className={`relative isolate grid h-9 w-9 place-items-center rounded-full border transition-colors ${
               active
                 ? 'border-brasa bg-brasa text-porcelana'
                 : 'border-carvao/10 bg-creme/92 text-brasa'
@@ -66,7 +68,11 @@ function Hotspot({ spot }) {
             style={{ backdropFilter: 'blur(4px)' }}
           >
             {(!discovered || isTourTarget) && (
-              <span className="anim-pulso absolute inset-0 rounded-full bg-brasa-clara/70" />
+              // Atras do icone: elemento posicionado pinta por cima de um nao
+              // posicionado, entao o disco cobria justamente o desenho que diz
+              // "sou a prateleira" — e cobria mais ainda no marcador AINDA NAO
+              // descoberto, que e quando ele mais precisa ser lido.
+              <span className="anim-pulso absolute inset-0 -z-10 rounded-full bg-brasa-clara/70" />
             )}
             {Icon ? <Icon size={17} /> : null}
           </span>

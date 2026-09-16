@@ -113,8 +113,13 @@ export function ProductDetail() {
               type="button"
               onClick={() => setQty((q) => Math.max(product.minQty, q - 1))}
               disabled={qty <= product.minQty}
-              className="grid h-10 w-10 place-items-center rounded-full text-carvao/70 disabled:opacity-30"
-              aria-label="Diminuir quantidade"
+              // 44 px: alvo de toque minimo.
+              className="grid h-11 w-11 place-items-center rounded-full text-carvao/70 disabled:opacity-30"
+              aria-label={
+                qty <= product.minQty
+                  ? `Diminuir: já está no mínimo de ${product.minQty}`
+                  : 'Diminuir quantidade'
+              }
             >
               <IconMinus size={16} />
             </button>
@@ -122,7 +127,7 @@ export function ProductDetail() {
             <button
               type="button"
               onClick={() => setQty((q) => q + 1)}
-              className="grid h-10 w-10 place-items-center rounded-full text-carvao/70"
+              className="grid h-11 w-11 place-items-center rounded-full text-carvao/70"
               aria-label="Aumentar quantidade"
             >
               <IconPlus size={16} />

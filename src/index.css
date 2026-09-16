@@ -267,6 +267,13 @@
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
   }
+  /* Parado, o pulso vira um disco salmao solido em cima do marcador. Vira
+     anel: continua dizendo "olhe aqui" sem tapar o icone. */
+  .anim-pulso {
+    background: transparent;
+    border: 2px solid var(--color-brasa);
+    opacity: 0.9;
+  }
   /* Parada, a barra de 40% voltaria a insinuar "falta pouco". Cheia e apagada
      ela so diz "estou carregando". */
   .barra-andando {

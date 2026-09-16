@@ -17,3 +17,13 @@ npm-debug.log*
 # sistema operacional
 .DS_Store
 Thumbs.db
+
+# Originais das fotos (9,5 MB). O site nao precisa deles para rodar: o que vai
+# ao ar sao os recortes processados em public/fotos, com 392 KB no total. Peso
+# que entra no historico do git nunca mais sai, e a procedencia das capturas de
+# referencia e desconhecida — entao os originais ficam so no disco.
+#
+# A BARRA INICIAL NAO E ENFEITE: sem ela o padrao casa com qualquer diretorio
+# chamado `fotos` em qualquer nivel, e levava junto o `public/fotos`, que e
+# exatamente o que precisa ir ao ar. Ancorado na raiz, pega so os originais.
+/fotos

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
@@ -11,6 +11,7 @@ import { Hotspots } from './Hotspot'
 import { Lighting } from './Lighting'
 import { Pinboard } from './Pinboard'
 import { Plants } from './Plants'
+import { Quadros } from './Quadros'
 import { Shelf } from './Shelf'
 import { WorkTable } from './WorkTable'
 
@@ -221,6 +222,14 @@ function Scene({ quality, aoBaixarDpr }) {
       <WorkTable quality={quality} />
       <Shelf quality={quality} />
       <Pinboard />
+      {/* Suspense CURTO, so em volta das fotos. A cena inteira nao pode
+          suspender: o SceneReady vive aqui do lado, e se o useFrame dele parar
+          enquanto as imagens chegam, `assetsReady` nunca dispara e quem chegou
+          fica presa no loader para sempre. Assim o comodo aparece completo e as
+          molduras entram quando as fotos terminam de carregar. */}
+      <Suspense fallback={null}>
+        <Quadros />
+      </Suspense>
       <Plants quality={quality} />
       <Hotspots />
 

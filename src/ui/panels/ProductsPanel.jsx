@@ -33,11 +33,15 @@ function Cartao({ product }) {
         </span>
       </button>
 
+      {/* Os dois botoes do rodape do cartao em 44 de altura, o minimo de alvo de
+          toque (MI-08). Estavam em 39 (py-2.5), e sao 22 alvos: a maior parte
+          da lista de alvos pequenos do site. min-h-11 no lugar do padding porque
+          o items-center ja centraliza, e py-3 daria 43, ainda abaixo. */}
       <div className="flex border-t border-carvao/8">
         <button
           type="button"
           onClick={() => focusProductIn3D(product.id)}
-          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12.5px] font-medium text-carvao/70 transition-colors hover:bg-carvao/5"
+          className="flex min-h-11 flex-1 items-center justify-center gap-1.5 text-[12.5px] font-medium text-carvao/70 transition-colors hover:bg-carvao/5"
         >
           <IconCube size={15} />
           Ver na prateleira
@@ -46,7 +50,7 @@ function Cartao({ product }) {
         <button
           type="button"
           onClick={() => addToCart(product.id)}
-          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12.5px] font-medium text-brasa-texto transition-colors hover:bg-brasa/8"
+          className="flex min-h-11 flex-1 items-center justify-center gap-1.5 text-[12.5px] font-medium text-brasa-texto transition-colors hover:bg-brasa/8"
         >
           <IconPlus size={15} />
           Adicionar

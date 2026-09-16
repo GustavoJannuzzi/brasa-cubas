@@ -260,10 +260,12 @@ export function CartPanel() {
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <button type="button" onClick={() => openPanel('produtos')} className="btn-fantasma -ml-1">
+        {/* 44 de altura, como o seletor de quantidade e o Remover. Estavam em 30
+            e 29: os menores alvos que sobravam no carrinho. */}
+        <button type="button" onClick={() => openPanel('produtos')} className="btn-fantasma -ml-1 min-h-11">
           Continuar escolhendo
         </button>
-        <button type="button" onClick={clearCart} className="btn-fantasma text-[13px]">
+        <button type="button" onClick={clearCart} className="btn-fantasma min-h-11 text-[13px]">
           Limpar
         </button>
       </div>

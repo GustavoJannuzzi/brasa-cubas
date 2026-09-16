@@ -7,11 +7,13 @@ import { Panel } from '../Panel'
 function Pergunta({ item, aberta, onToggle }) {
   return (
     <li className="border-b border-carvao/10 last:border-0">
+      {/* 44 de altura, o minimo de alvo de toque. A pergunta de uma linha dava
+          43: py-3 mais o texto de 13,5 px. */}
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={aberta}
-        className="flex w-full items-start gap-3 py-3 text-left"
+        className="flex min-h-11 w-full items-start gap-3 py-3 text-left"
       >
         <span className="min-w-0 flex-1 text-[13.5px] leading-snug font-medium text-carvao">{item.q}</span>
         <span className="mt-0.5 shrink-0 text-carvao/55">

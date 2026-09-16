@@ -31,6 +31,7 @@ export function CameraRig() {
   const view = useStore((s) => s.view)
   const focusedProduct = useStore((s) => s.focusedProduct)
   const entered = useStore((s) => s.entered)
+  const cameraSeq = useStore((s) => s.cameraSeq)
   const isMobile = useIsMobile()
   const reduced = useReducedMotion()
   const ultimoToque = useRef(0)
@@ -74,11 +75,18 @@ export function CameraRig() {
     const marca = () => {
       ultimoToque.current = performance.now()
     }
-    c.addEventListener('controlstart', marca)
+    // 'controlstart' so vem de gesto de quem esta olhando — a biblioteca nao o
+    // dispara em movimento programatico. Dali em diante a camera esta onde a
+    // pessoa deixou, e nao no enquadramento que o site escolheu.
+    const assumiu = () => {
+      marca()
+      useStore.getState().setVistaLivre(true)
+    }
+    c.addEventListener('controlstart', assumiu)
     c.addEventListener('control', marca)
     c.addEventListener('controlend', marca)
     return () => {
-      c.removeEventListener('controlstart', marca)
+      c.removeEventListener('controlstart', assumiu)
       c.removeEventListener('control', marca)
       c.removeEventListener('controlend', marca)
     }
@@ -96,7 +104,12 @@ export function CameraRig() {
 
     ultimoToque.current = performance.now()
     c.setLookAt(...framing.position, ...framing.target, !reduced)
-  }, [view, focusedProduct, entered, isMobile, reduced])
+    // De volta a um enquadramento conhecido: o rotulo pode voltar a dizer onde
+    // a camera esta.
+    useStore.getState().setVistaLivre(false)
+    // cameraSeq nas dependencias e o que faz "voltar para a visao geral"
+    // funcionar quando a vista ja e 'home' e so a camera saiu do lugar.
+  }, [view, focusedProduct, entered, isMobile, reduced, cameraSeq])
 
   useFrame((state, delta) => {
     const c = controls.current

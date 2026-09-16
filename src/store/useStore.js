@@ -19,7 +19,15 @@ export const useStore = create(
       view: 'home',
       // Produto em foco na cena (peca destacada na prateleira).
       focusedProduct: null,
-      goTo: (view) => set({ view, focusedProduct: null }),
+      // Conta quantas vezes alguem PEDIU um enquadramento. Pedir 'home' estando
+      // em 'home' nao muda `view`, entao o efeito do CameraRig nao rodava: quem
+      // se perdia arrastando apertava voltar e nada acontecia.
+      cameraSeq: 0,
+      // Verdadeiro depois que a pessoa mexeu na camera por conta propria: o
+      // rotulo nao pode seguir afirmando que ela esta na visao geral.
+      vistaLivre: false,
+      setVistaLivre: (vistaLivre) => set((s) => (s.vistaLivre === vistaLivre ? s : { vistaLivre })),
+      goTo: (view) => set((s) => ({ view, focusedProduct: null, cameraSeq: s.cameraSeq + 1 })),
 
       // --- paineis ---
       // null | produtos | produto | orcamento | galeria | processo | contato | carrinho | ajuda
@@ -28,7 +36,11 @@ export const useStore = create(
 
       openPanel: (panel) => {
         const spot = panelToHotspot[panel]
-        set({ panel, view: spot ? spot.view : get().view })
+        set((s) => ({
+          panel,
+          view: spot ? spot.view : s.view,
+          cameraSeq: spot ? s.cameraSeq + 1 : s.cameraSeq,
+        }))
         if (spot) get().discover(spot.id)
       },
 
@@ -38,17 +50,24 @@ export const useStore = create(
       // No celular o painel ocupa quase a tela inteira, entao quem chama passa
       // focus: false — mover a camera atras de uma folha opaca nao serve de nada.
       openProduct: (id, { focus = true } = {}) =>
-        set({
+        set((s) => ({
           panel: 'produto',
           selectedProduct: id,
           focusedProduct: focus ? id : null,
-          view: focus ? 'prateleira' : get().view,
-        }),
+          view: focus ? 'prateleira' : s.view,
+          cameraSeq: focus ? s.cameraSeq + 1 : s.cameraSeq,
+        })),
 
       // Fecha o painel e destaca a peca na prateleira. E a acao
       // "ver na prateleira": aqui o 3D e o conteudo, nao a decoracao.
       focusProductIn3D: (id) =>
-        set({ focusedProduct: id, selectedProduct: id, view: 'prateleira', panel: null }),
+        set((s) => ({
+          focusedProduct: id,
+          selectedProduct: id,
+          view: 'prateleira',
+          panel: null,
+          cameraSeq: s.cameraSeq + 1,
+        })),
 
       clearFocus: () => set({ focusedProduct: null, selectedProduct: null }),
 
@@ -65,17 +84,17 @@ export const useStore = create(
       tourStep: -1,
       startTour: () => {
         const first = hotspots[0]
-        set({ tourStep: 0, panel: null, view: first.view })
+        set((s) => ({ tourStep: 0, panel: null, view: first.view, cameraSeq: s.cameraSeq + 1 }))
         get().discover(first.id)
       },
       nextTourStep: () => {
         const next = get().tourStep + 1
         if (next >= hotspots.length) {
-          set({ tourStep: -1, view: 'home' })
+          set((s) => ({ tourStep: -1, view: 'home', cameraSeq: s.cameraSeq + 1 }))
           return
         }
         const spot = hotspots[next]
-        set({ tourStep: next, view: spot.view })
+        set((s) => ({ tourStep: next, view: spot.view, cameraSeq: s.cameraSeq + 1 }))
         get().discover(spot.id)
       },
       stopTour: () => set({ tourStep: -1 }),

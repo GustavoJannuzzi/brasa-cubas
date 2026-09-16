@@ -150,6 +150,7 @@ export function OrientationBar() {
   const toggleSimpleMode = useStore((s) => s.toggleSimpleMode)
   const focusedProduct = useStore((s) => s.focusedProduct)
   const gl3d = useStore((s) => s.gl3d)
+  const vistaLivre = useStore((s) => s.vistaLivre)
 
   if (!entered) return null
 
@@ -158,8 +159,10 @@ export function OrientationBar() {
   const desenhando = gl3d === 'ok'
 
   const peca = focusedProduct ? products.find((p) => p.id === focusedProduct)?.name : null
-  const lugar = peca ?? LUGARES[view] ?? LUGARES.home
-  const lugarCurto = peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home
+  // Quem arrastou nao esta mais no enquadramento do preset nem em cima da
+  // peca. Afirmar o contrario era o que deixava a pessoa perdida sem saber.
+  const lugar = vistaLivre ? 'Vista livre' : (peca ?? LUGARES[view] ?? LUGARES.home)
+  const lugarCurto = vistaLivre ? 'Vista livre' : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home)
 
   return (
     <div className="fixed top-[3.4rem] left-3 z-20 flex items-center gap-1 md:top-[4.4rem] md:left-5">
@@ -173,7 +176,7 @@ export function OrientationBar() {
             <span className="hidden md:inline">{lugar}</span>
           </span>
 
-          {view !== 'home' && (
+          {(view !== 'home' || vistaLivre) && (
             <button
               type="button"
               onClick={() => goTo('home')}

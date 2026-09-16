@@ -155,6 +155,10 @@ export const useStore = create(
       onboardingDone: false,
       finishOnboarding: () => set({ onboardingDone: true }),
       replayOnboarding: () => set({ onboardingDone: false }),
+      // Link que chega direto num painel (#orcamento na bio) pula o tutorial.
+      // Nao persiste de proposito: quem voltar depois pela home ainda ve.
+      pulouOnboarding: false,
+      pularOnboarding: () => set({ pulouOnboarding: true }),
 
       // --- avisos curtos ---
       toasts: [],

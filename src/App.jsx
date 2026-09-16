@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useState } from 'react'
+import { useRotaHash } from './hooks/useRotaHash'
 import { temWebGL } from './lib/webgl'
 import { useStore } from './store/useStore'
 import { Experience } from './three/experienceLazy'
@@ -50,6 +51,11 @@ export default function App() {
   // Trocar esta chave remonta o Canvas: e o "tentar de novo" depois de o
   // contexto WebGL cair.
   const [tentativa, setTentativa] = useState(0)
+
+  // O painel aberto vira endereco (#orcamento, #produto/topo-casal-jardim):
+  // o voltar do navegador fecha o painel em vez de sair do site, e da para
+  // mandar um link que abre direto no orcamento ou numa peca.
+  useRotaHash()
 
   useEffect(() => {
     // O CSS usa isso para devolver a rolagem normal da pagina no modo simples.

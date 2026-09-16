@@ -144,6 +144,7 @@ const TELAS = [
 export function Onboarding() {
   const entered = useStore((s) => s.entered)
   const onboardingDone = useStore((s) => s.onboardingDone)
+  const pulouOnboarding = useStore((s) => s.pulouOnboarding)
   const finishOnboarding = useStore((s) => s.finishOnboarding)
   const startTour = useStore((s) => s.startTour)
   const [tela, setTela] = useState(0)
@@ -152,7 +153,7 @@ export function Onboarding() {
     if (!onboardingDone) setTela(0)
   }, [onboardingDone])
 
-  if (!entered || onboardingDone) return null
+  if (!entered || onboardingDone || pulouOnboarding) return null
 
   const ultima = tela === TELAS.length - 1
 

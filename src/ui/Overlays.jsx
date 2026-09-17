@@ -233,8 +233,12 @@ export function OrientationBar() {
     <div className="camada-cena fixed top-[3.4rem] left-[max(0.75rem,env(safe-area-inset-left))] z-20 flex items-center gap-1 md:top-[4.4rem] md:left-[max(1.25rem,env(safe-area-inset-left))]">
       {desenhando && (
         <>
+          {/* Texto cheio, e nao a 90%: sobre as partes claras da cena (mural no
+              celular, quadro da parede direita no desktop) o fundo real da tela
+              — cena, degrade do cabecalho e vinheta — deixava 4,53:1, no limite.
+              Cheio da 5,18 no mesmo fundo. Mesmo ajuste que o menu ja recebeu. */}
           <span
-            className="max-w-[9.5rem] truncate rounded-full bg-carvao/55 px-3 py-1.5 text-[11.5px] font-medium text-porcelana/90 md:max-w-none"
+            className="max-w-[9.5rem] truncate rounded-full bg-carvao/55 px-3 py-1.5 text-[11.5px] font-medium text-porcelana md:max-w-none"
             style={{ backdropFilter: 'blur(6px)' }}
           >
             <span className="md:hidden">{lugarCurto}</span>

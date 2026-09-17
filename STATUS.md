@@ -126,17 +126,28 @@ do repositório; aqui vai o mapa por tema (commit de referência entre parêntes
   ponteiro (`2f06fc7`); marcadores sem colisão (`2789494`, `55ec943`); foto de
   perto com rótulo, casa e Esc (`237eb64`, `20792c0`).
 - **Carregamento**: a cena monta numa transição e a lista responde durante o
-  carregamento (`3954971`); aviso de demora na hora (`a08b97e`).
+  carregamento (`3954971`); aviso de demora na hora (`a08b97e`); cópia de
+  primitiva sem montar a geometria padrão e sonda única de WebGL — A/B intercalado
+  com CPU 4×: "Entrar" de 15,0 para 13,5 s de mediana (`d93a0e2`, `39a0815`);
+  arquivos com hash em cache de um ano (`8491514`).
 - **Resiliência**: foto que falha não derruba o 3D (`9178233`); pacote do 3D que
   não baixa com retentativa real (`1d03a81`); estado guardado com tipo errado
   (`4c23aa4`); limites de erro no painel e na raiz (`4c23aa4`, `162cfbe`); página
-  legível sem JavaScript (`d733858`, `854a7ef`).
+  legível sem JavaScript (`d733858`, `854a7ef`); reserva com conteúdo quando o
+  app não sobe (`8837e9c`); armazenamento cheio (`5e68107`); luz e sombras de volta
+  depois de o contexto WebGL cair (`2a18e57`); página traduzida pelo navegador
+  (`366aea5`, `7862f39`); aparelho só com WebGL1 vai para a lista (`56e2d3d`).
+- **Desempenho contínuo**: com movimento reduzido a cena para de desenhar quando
+  nada muda, e a pausa virou prop do Canvas (`fbd8b10`); passada do mouse refaz a
+  sombra por 0,75 s em vez de 3,5 s (`fbd8b10`).
 - **Acessibilidade**: h1 e main no ateliê (`c8eb9fb`); anel de foco nos campos
   (`3a7fe8e`); contraste do card do WhatsApp e do rótulo da câmera (`a711610`,
   `3eddc1d`); autocomplete do contato (`d40128e`); tour anunciado e com foco
   (`112eed3`); aviso com Desfazer que espera o foco e confirma (`816be76`,
   `456cc81`); foco que não se perde quando o controle some (`1a737fb`, `57df8f1`,
-  `fd59f24`).
+  `fd59f24`); cores forçadas com contorno e seleção visível (`b31f13a`); teclado
+  do celular sem autocorreção no @ do Instagram (`b57cb32`); desfoque com prefixo
+  para o Safari do iOS 16/17 (`c7678be`).
 - **Pedido e orçamento**: mensagem com linhas em branco e rótulo do contato
   (`16744f8`, `b639650`); rascunho apagado tem desfazer (`23a4697`).
 - **Documentação e dados**: README conferido com o código e lista com fotos
@@ -145,8 +156,9 @@ do repositório; aqui vai o mapa por tema (commit de referência entre parêntes
 Ficaram para decisão do dono, com medida: alvos de toque de 44 px, barra do
 tour sobre os preços, celular deitado, texto colorido em caixa tingida (contraste
 entre 3,4 e 4,45:1), borda dos campos (1,33:1), "a partir de R$ 12", modo escuro
-forçado, voltar do Android na foto de perto — e as divergências de dados da
-seção 4.
+forçado, voltar do Android na foto de perto, cena desenhando parada no celular
+(movimento normal), navegadores suportados (iOS 16.4+ na prática), "Entrar" antes
+das plantas — e as divergências de dados da seção 4.
 
 ## 3. Pendências
 

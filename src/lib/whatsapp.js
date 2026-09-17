@@ -32,11 +32,14 @@ export const cartText = (lines, total, isEstimate) =>
     ...lines.map((line) => `• ${line.qty}× ${line.product.name} — ${money(line.subtotal)}`),
     ``,
     `${isEstimate ? 'Estimativa' : 'Total'}: ${money(total)}`,
-    isEstimate ? `(algumas peças são "a partir de", então o valor final depende da personalização)` : ``,
+    isEstimate ? `(algumas peças são "a partir de", então o valor final depende da personalização)` : null,
     ``,
     `Pode confirmar prazo e forma de pagamento?`,
   ]
-    .filter(Boolean)
+    // So tira a nota que nao se aplica. Com .filter(Boolean) saiam tambem as
+    // linhas em branco acima, e a mensagem chegava toda grudada (medido: 0 linhas
+    // em branco; o orcamento, que ja filtrava so null, tinha as dele).
+    .filter((row) => row !== null)
     .join('\n')
 
 export const cartMessage = (lines, total, isEstimate) => link(cartText(lines, total, isEstimate))

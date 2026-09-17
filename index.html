@@ -23,6 +23,19 @@
     />
     <meta property="og:locale" content="pt_BR" />
 
+    <!-- Sem JS o ateliê não monta e a página vira o texto do <noscript> abaixo.
+         O body do app é carvão e sem rolagem, e o texto é carvão: medido na
+         produção com JS desligado, a tela inteira ficava escura, sem nada
+         legível. Fora de @layer, esta regra ganha da base do app. -->
+    <noscript>
+      <style>
+        body {
+          overflow: auto;
+          background: #f7f1e8;
+        }
+      </style>
+    </noscript>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

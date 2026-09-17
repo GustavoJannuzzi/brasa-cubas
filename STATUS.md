@@ -1,4 +1,4 @@
-# Status — 16/09/2026
+# Status — 17/09/2026
 
 Duas rodadas terminadas e **verificadas na tela**: a refatoração 3D (fase 1) e
 os quinze primeiros itens do raio-x de UX (fase 2), cada um medido no navegador
@@ -109,6 +109,44 @@ degraus · pedido mínimo visível no aviso, com desfazer.
 **Decisão tomada com o dono:** o vermelho da marca ganhou um tom próprio para
 texto, `--color-brasa-texto` #b3512a (4,52:1), com o menor desvio possível do
 #c2582d — que continua em marcador, ícone e barra de progresso, onde 3:1 basta.
+
+## 2b. Revisão do celular e da resiliência (16 e 17/09)
+
+Laço de revisão com cada conserto medido antes e depois no navegador (CDP) e
+conferido na produção. O relatório completo, com números e capturas, ficou fora
+do repositório; aqui vai o mapa por tema (commit de referência entre parênteses).
+
+- **Celular, tablet e telas estreitas**: área segura do iPhone (`899b735`,
+  `fce0739`); cabeçalho de 768 a 960 numa linha (`2955546`, `f7368f6`); zoom de
+  página do Android até 228 px CSS (`beb9429`, `b75c8e1`); títulos e linhas que
+  quebram em vez de cortar (`142b614`); avisos que não cobrem cartão, folha nem
+  gaveta (`e28c666`, `fe65780`, `7518326`).
+- **Câmera e cena**: campo de visão por largura e com a gaveta aberta
+  (`3c67ad1`, `cc45996`); etiquetas em janela baixa (`f839561`); giro pelo tipo de
+  ponteiro (`2f06fc7`); marcadores sem colisão (`2789494`, `55ec943`); foto de
+  perto com rótulo, casa e Esc (`237eb64`, `20792c0`).
+- **Carregamento**: a cena monta numa transição e a lista responde durante o
+  carregamento (`3954971`); aviso de demora na hora (`a08b97e`).
+- **Resiliência**: foto que falha não derruba o 3D (`9178233`); pacote do 3D que
+  não baixa com retentativa real (`1d03a81`); estado guardado com tipo errado
+  (`4c23aa4`); limites de erro no painel e na raiz (`4c23aa4`, `162cfbe`); página
+  legível sem JavaScript (`d733858`, `854a7ef`).
+- **Acessibilidade**: h1 e main no ateliê (`c8eb9fb`); anel de foco nos campos
+  (`3a7fe8e`); contraste do card do WhatsApp e do rótulo da câmera (`a711610`,
+  `3eddc1d`); autocomplete do contato (`d40128e`); tour anunciado e com foco
+  (`112eed3`); aviso com Desfazer que espera o foco e confirma (`816be76`,
+  `456cc81`); foco que não se perde quando o controle some (`1a737fb`, `57df8f1`,
+  `fd59f24`).
+- **Pedido e orçamento**: mensagem com linhas em branco e rótulo do contato
+  (`16744f8`, `b639650`); rascunho apagado tem desfazer (`23a4697`).
+- **Documentação e dados**: README conferido com o código e lista com fotos
+  (`3a593d5`); contagem do marcador derivada do catálogo (`bfc80de`).
+
+Ficaram para decisão do dono, com medida: alvos de toque de 44 px, barra do
+tour sobre os preços, celular deitado, texto colorido em caixa tingida (contraste
+entre 3,4 e 4,45:1), borda dos campos (1,33:1), "a partir de R$ 12", modo escuro
+forçado, voltar do Android na foto de perto — e as divergências de dados da
+seção 4.
 
 ## 3. Pendências
 

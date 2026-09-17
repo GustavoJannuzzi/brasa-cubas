@@ -149,6 +149,15 @@
   .btn-principal:active {
     transform: scale(0.97);
   }
+  /* Cores forcadas (alto contraste do Windows): o navegador troca o fundo pela
+     cor da pagina, e o botao principal — que so tem fundo — virava texto solto.
+     Medido emulando `forced-colors: active`: "Continuar" do orcamento sem contorno
+     nenhum, ao lado dos secundarios, que tem borda. A borda so existe nesse modo. */
+  @media (forced-colors: active) {
+    .btn-principal {
+      border: 1px solid ButtonText;
+    }
+  }
 
   .btn-secundario {
     @apply btn border border-carvao/15 bg-creme text-carvao;
@@ -312,4 +321,20 @@
   background:
     radial-gradient(120% 90% at 50% 45%, transparent 45%, rgb(30 20 14 / 0.42) 100%),
     linear-gradient(to top, rgb(43 35 32 / 0.25), transparent 35%);
+}
+
+/* Cores forcadas: o estado "selecionado" dos filtros e das escolhas do orcamento
+   era so cor de fundo, e o navegador troca todo fundo pelo da pagina — medido
+   emulando `forced-colors: active`, com o mouse fora: "Todos" (aria-pressed) com a
+   mesma borda branca e o mesmo fundo preto das outras opcoes. Nesse modo o
+   selecionado usa as cores de selecao do proprio sistema. Fora das camadas de
+   proposito: dentro delas, o `bg-*` das utilidades ganharia. */
+@media (forced-colors: active) {
+  [aria-pressed='true'],
+  nav [aria-current='page'] {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
 }

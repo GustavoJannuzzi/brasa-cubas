@@ -26,8 +26,10 @@
     <!-- Sem JS o ateliê não monta e a página vira o texto do <noscript> abaixo.
          O body do app é carvão e sem rolagem, e o texto é carvão: medido na
          produção com JS desligado, a tela inteira ficava escura, sem nada
-         legível. Fora de @layer, esta regra ganha da base do app. -->
-    <noscript>
+         legível. Fora de @layer, esta regra ganha da base do app.
+         O mesmo estilo e o mesmo texto servem de reserva quando o app não sobe
+         com JS ligado (ver o script logo abaixo), por isso os ids e a classe. -->
+    <noscript id="estilo-sem-js">
       <style>
         body {
           overflow: auto;
@@ -35,25 +37,96 @@
         }
         /* O reset do Tailwind zera título e lista: sem isto os passos perdiam a
            numeração e "Como encomendar" tinha o tamanho do texto. */
-        noscript main h1 {
+        .sem-js h1 {
           margin: 0 0 0.75rem;
           font-size: 1.6rem;
           line-height: 1.2;
         }
-        noscript main h2 {
+        .sem-js h2 {
           margin: 1.5rem 0 0.5rem;
           font-size: 1.2rem;
         }
-        noscript main p,
-        noscript main ol {
+        .sem-js p,
+        .sem-js ol {
           margin: 0 0 0.75rem;
         }
-        noscript main ol {
+        .sem-js ol {
           padding-left: 1.25rem;
           list-style: decimal;
         }
       </style>
     </noscript>
+
+    <!-- Reserva para quando o app nao sobe com JS ligado: o arquivo principal nao
+         chegou (rede do celular caindo no meio da carga), foi bloqueado, ou o
+         navegador nao roda o codigo. Medido na producao bloqueando o index-*.js:
+         tela carvao, nenhum texto, para sempre. Fica no comeco do head para ouvir a
+         falha antes de o Vite inserir o script de entrada no fim dele. -->
+    <script>
+      ;(function () {
+        var mostrou = false
+        function mostrar() {
+          if (mostrou) return
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', mostrar)
+            return
+          }
+          var raiz = document.getElementById('root')
+          var estilo = document.getElementById('estilo-sem-js')
+          var conteudo = document.getElementById('conteudo-sem-js')
+          if (!raiz || raiz.firstChild || !estilo || !conteudo) return
+          mostrou = true
+
+          var molde = document.createElement('div')
+          molde.innerHTML = estilo.textContent
+          var css = molde.querySelector('style')
+          if (css) document.head.appendChild(css)
+
+          var caixa = document.createElement('div')
+          caixa.innerHTML = conteudo.textContent
+          // O aviso do noscript fala de JavaScript desligado; aqui o JS esta ligado.
+          var aviso = caixa.querySelector('em')
+          if (aviso && aviso.parentNode) {
+            var p = aviso.parentNode
+            p.innerHTML = ''
+            p.appendChild(document.createTextNode('O ateliê em 3D não carregou — às vezes é a conexão.'))
+            var botao = document.createElement('button')
+            botao.type = 'button'
+            botao.textContent = 'Tentar de novo'
+            botao.style.cssText =
+              'display: block; font: inherit; color: #2b2320; background: #fff; border: 1px solid #2b2320; border-radius: 999px; padding: 0.5rem 1rem; margin-top: 0.75rem; cursor: pointer'
+            botao.onclick = function () {
+              location.reload()
+            }
+            p.appendChild(botao)
+          }
+          raiz.parentNode.insertBefore(caixa, raiz.nextSibling)
+
+          // Chegou atrasado mas chegou: o app monta e a reserva sai.
+          if (window.MutationObserver) {
+            new MutationObserver(function (_, observador) {
+              if (!raiz.firstChild) return
+              observador.disconnect()
+              caixa.parentNode && caixa.parentNode.removeChild(caixa)
+              css && css.parentNode && css.parentNode.removeChild(css)
+            }).observe(raiz, { childList: true })
+          }
+        }
+        window.addEventListener(
+          'error',
+          function (e) {
+            var alvo = e.target
+            if (alvo && alvo.tagName === 'SCRIPT' && /\/assets\/index-/.test(alvo.src || '')) mostrar()
+          },
+          true
+        )
+        // Erro de sintaxe ou de execucao antes de o React montar nao dispara o
+        // evento acima. Quinze segundos cobrem com folga a carga de um celular
+        // lento (loader na tela aos 2,8 s com CPU 4x).
+        setTimeout(mostrar, 15000)
+        window.mostrarReservaDoAtelie = mostrar
+      })()
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -68,8 +141,8 @@
     <!-- Conteudo semantico para buscadores e para quem esta sem JS.
          A cena 3D e um canvas, logo invisivel para crawlers/leitores de tela:
          o "modo simples" dentro do app cobre o mesmo conteudo de forma acessivel. -->
-    <noscript>
-      <main style="font-family: Georgia, serif; max-width: 42rem; margin: 3rem auto; padding: 0 1.5rem; color: #2b2320">
+    <noscript id="conteudo-sem-js">
+      <main class="sem-js" style="font-family: Georgia, serif; max-width: 42rem; margin: 3rem auto; padding: 0 1.5rem; color: #2b2320">
         <h1>Brasa Cubas — Ateliê de porcelana fria</h1>
         <p>
           Peças de porcelana fria (biscuit) modeladas e pintadas à mão, sob encomenda:
@@ -87,6 +160,10 @@
       </main>
     </noscript>
 
+    <!-- Navegador sem modulo ES nao roda nada do app: reserva na hora. -->
+    <script nomodule>
+      window.mostrarReservaDoAtelie && window.mostrarReservaDoAtelie()
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -94,6 +94,7 @@ a cena:
 | Placa com o nome do ateliê dentro da cena | `Atelier.jsx` + `signTexture()` |
 | **Modo simples**: o mesmo conteúdo como página que rola, sem 3D | `src/ui/SimpleMode.jsx` |
 | Conteúdo semântico para buscadores e para quem está sem JS | `<noscript>` em `index.html` |
+| Reserva quando o app não sobe com JS ligado (arquivo principal que não chegou, navegador que não roda o código): o mesmo texto do `<noscript>` com "Tentar de novo" | script no começo do `<head>` de `index.html` |
 
 O modo simples não é um plano B escondido: está no carregamento ("ou ver o
 catálogo como lista"), no menu e é **sugerido automaticamente** quando a mediana
@@ -228,7 +229,8 @@ compartilhado aparece sem imagem de prévia.
 1. **`src/data/studio.js`** — WhatsApp, e-mail, Instagram, horário, prazos e
    condições de pagamento são fictícios (a cidade, Foz do Iguaçu, já é a real).
    O `<noscript>` do `index.html` **repete** WhatsApp, e-mail e o prazo de
-   resposta: trocar lá também.
+   resposta: trocar lá também (o mesmo texto aparece na reserva de quando o app
+   não carrega).
 2. **`src/data/products.js`** — os 11 produtos, preços, prazos e textos são
    inventados para o teste. As cores em `piece` controlam como a peça aparece
    em 3D e na miniatura.

@@ -45,6 +45,11 @@ export const useStore = create(
         set((s) => ({
           panel,
           view: spot ? spot.view : s.view,
+          // Painel com lugar na cena leva a camera ate la. A foto em close tem
+          // prioridade no CameraRig, e sem limpar aqui a camera ficava na foto
+          // com o rotulo dizendo "O telefone do ateliê" (medido abrindo Contato
+          // com um quadro em close, antes e depois de fechar o painel).
+          quadroFocado: spot ? null : s.quadroFocado,
           cameraSeq: spot ? s.cameraSeq + 1 : s.cameraSeq,
         }))
         if (spot) get().discover(spot.id)

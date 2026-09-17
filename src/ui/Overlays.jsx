@@ -211,6 +211,7 @@ export function OrientationBar() {
   const focusedProduct = useStore((s) => s.focusedProduct)
   const gl3d = useStore((s) => s.gl3d)
   const vistaLivre = useStore((s) => s.vistaLivre)
+  const quadroFocado = useStore((s) => s.quadroFocado)
 
   if (!entered) return null
 
@@ -221,8 +222,12 @@ export function OrientationBar() {
   const peca = focusedProduct ? products.find((p) => p.id === focusedProduct)?.name : null
   // Quem arrastou nao esta mais no enquadramento do preset nem em cima da
   // peca. Afirmar o contrario era o que deixava a pessoa perdida sem saber.
-  const lugar = vistaLivre ? 'Vista livre' : (peca ?? LUGARES[view] ?? LUGARES.home)
-  const lugarCurto = vistaLivre ? 'Vista livre' : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home)
+  // Foto em close vem antes da peca e da vista, na mesma ordem do CameraRig. Sem
+  // ela, a foto tocada a partir da visao geral dizia "Ateliê" e escondia o botao
+  // de casa (a vista seguia 'home'): medido em 375, a unica saida visivel era a
+  // aba "Ateliê", que ja parecia selecionada.
+  const lugar = vistaLivre ? 'Vista livre' : quadroFocado ? 'Foto de perto' : (peca ?? LUGARES[view] ?? LUGARES.home)
+  const lugarCurto = vistaLivre ? 'Vista livre' : quadroFocado ? 'Foto' : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home)
 
   return (
     <div className="camada-cena fixed top-[3.4rem] left-[max(0.75rem,env(safe-area-inset-left))] z-20 flex items-center gap-1 md:top-[4.4rem] md:left-[max(1.25rem,env(safe-area-inset-left))]">
@@ -236,7 +241,7 @@ export function OrientationBar() {
             <span className="hidden md:inline">{lugar}</span>
           </span>
 
-          {(view !== 'home' || vistaLivre) && (
+          {(view !== 'home' || vistaLivre || quadroFocado) && (
             <button
               type="button"
               onClick={() => goTo('home')}

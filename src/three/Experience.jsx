@@ -69,6 +69,14 @@ function Sombra() {
 // direita — esta espalhado na HORIZONTAL.
 const CAMPO_HORIZONTAL = 32
 
+// Cobertura horizontal MINIMA fora do celular. O fov vertical 38 e de tela
+// deitada; numa tela em pe com largura de desktop (iPad em pe, 768x1024) ele
+// cobria so 29 graus na horizontal, contra 58 no 16:10, e na prateleira quatro
+// etiquetas saiam cortadas nas bordas. Abaixo desta cobertura o vertical cresce
+// ate alcanca-la. Em tela deitada (4:3 ja cobre 49) nada muda: so entra abaixo da
+// proporcao ~1,03.
+const CAMPO_HORIZONTAL_MINIMO = 39
+
 function CameraFov() {
   const isMobile = useIsMobile()
   const camera = useThree((s) => s.camera)
@@ -76,7 +84,10 @@ function CameraFov() {
 
   useEffect(() => {
     if (!isMobile) {
-      camera.fov = 38
+      const proporcao = tamanho.width / Math.max(1, tamanho.height)
+      const meia = THREE.MathUtils.degToRad(CAMPO_HORIZONTAL_MINIMO) / 2
+      const verticalMinimo = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(meia) / proporcao))
+      camera.fov = Math.min(72, Math.max(38, verticalMinimo))
       camera.updateProjectionMatrix()
       return
     }

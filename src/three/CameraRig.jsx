@@ -40,6 +40,7 @@ export function CameraRig() {
   const view = useStore((s) => s.view)
   const focusedProduct = useStore((s) => s.focusedProduct)
   const quadroFocado = useStore((s) => s.quadroFocado)
+  const painelAberto = useStore((s) => Boolean(s.panel))
   const entered = useStore((s) => s.entered)
   const cameraSeq = useStore((s) => s.cameraSeq)
   const isMobile = useIsMobile()
@@ -183,6 +184,11 @@ export function CameraRig() {
     // Aplicado como DERIVADA de um seno, nao como posicao absoluta, entao a
     // oscilacao acontece em volta de onde o usuario deixou a camera.
     if (!entered || reduced) return
+    // Com a folha aberta no celular ninguem ve a cena, e o respiro mexe a camera
+    // a cada quadro: os controles pedem novo quadro a cada movimento, e a pausa
+    // do loop (PausaSobAFolha) voltava a desenhar ~30 vezes por segundo depois de
+    // alguns segundos parada (medido).
+    if (isMobile && painelAberto) return
     if (c.currentAction !== SEM_ACAO) return
     if (performance.now() - ultimoToque.current < ESPERA_RESPIRO) return
     const t = state.clock.elapsedTime

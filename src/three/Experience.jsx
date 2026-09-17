@@ -255,6 +255,33 @@ function PerfWatch({ aoBaixarDpr }) {
   return null
 }
 
+/**
+ * No celular, com a folha aberta, a cena fica atras de 84% da tela e continuava
+ * desenhando sem parar — medido: 21 renders por segundo com o orcamento aberto e
+ * parado (num celular de verdade, ate 60), bateria e calor enquanto a pessoa
+ * preenche o formulario (raio-x de 15/09, P10). Depois do voo da camera ate o
+ * lugar do painel, o loop passa a desenhar so quando pedem (os controles da
+ * camera pedem sozinhos); fechou, volta ao normal. No desktop a gaveta deixa a
+ * cena a vista, e nada muda.
+ */
+function PausaSobAFolha() {
+  const isMobile = useIsMobile()
+  const painelAberto = useStore((s) => Boolean(s.panel))
+  const setFrameloop = useThree((s) => s.setFrameloop)
+  const pausar = isMobile && painelAberto
+
+  useEffect(() => {
+    if (!pausar) {
+      setFrameloop('always')
+      return
+    }
+    const id = setTimeout(() => setFrameloop('demand'), 1200)
+    return () => clearTimeout(id)
+  }, [pausar, setFrameloop])
+
+  return null
+}
+
 function Scene({ quality, aoBaixarDpr }) {
   const alta = quality === 'alta'
   // Com `prefers-reduced-motion`, a poeira para de flutuar — mas continua na
@@ -290,6 +317,7 @@ function Scene({ quality, aoBaixarDpr }) {
       <fogExp2 attach="fog" args={['#241b16', 0.042]} />
       <CameraFov />
       <GuardaContexto />
+      <PausaSobAFolha />
 
       {montar && (
         <>

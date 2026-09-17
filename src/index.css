@@ -143,8 +143,13 @@
   .btn-principal {
     @apply btn bg-brasa-texto text-porcelana;
   }
-  .btn-principal:hover {
-    background-color: var(--color-brasa-hover);
+  /* Hover so onde existe ponteiro que paira, como o `hover:` do Tailwind v4 ja faz
+     nas utilitarias. No toque o navegador do iPhone deixa o :hover preso depois
+     do toque, e o botao ficava com cara de apertado ate tocar em outro lugar. */
+  @media (hover: hover) {
+    .btn-principal:hover {
+      background-color: var(--color-brasa-hover);
+    }
   }
   .btn-principal:active {
     transform: scale(0.97);
@@ -162,16 +167,20 @@
   .btn-secundario {
     @apply btn border border-carvao/15 bg-creme text-carvao;
   }
-  .btn-secundario:hover {
-    border-color: color-mix(in oklab, var(--color-carvao) 35%, transparent);
+  @media (hover: hover) {
+    .btn-secundario:hover {
+      border-color: color-mix(in oklab, var(--color-carvao) 35%, transparent);
+    }
   }
 
   .btn-fantasma {
     @apply btn px-3 py-2 text-carvao/70;
   }
-  .btn-fantasma:hover {
-    color: var(--color-carvao);
-    background-color: color-mix(in oklab, var(--color-carvao) 7%, transparent);
+  @media (hover: hover) {
+    .btn-fantasma:hover {
+      color: var(--color-carvao);
+      background-color: color-mix(in oklab, var(--color-carvao) 7%, transparent);
+    }
   }
 
   .campo {
@@ -210,9 +219,11 @@
       transform 0.15s var(--ease-suave),
       box-shadow 0.15s;
   }
-  .etiqueta-peca:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgb(43 35 32 / 0.16);
+  @media (hover: hover) {
+    .etiqueta-peca:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgb(43 35 32 / 0.16);
+    }
   }
 }
 

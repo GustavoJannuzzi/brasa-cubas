@@ -229,7 +229,10 @@ Números de 15/09, antes disso e das otimizações seguintes: ~593 mil triângul
 
 O projeto é um site estático (Vite): `npm run build` gera `dist/`, sem variável
 de ambiente para configurar — o pedido sai por link do WhatsApp, sem backend.
-É uma página só, sem rotas de cliente, então não há `rewrites`. Se algum dia
+É uma página só, sem rotas de cliente, então não há `rewrites`. Endereço
+inexistente cai em `public/404.html` (os três hosts servem esse arquivo): nome de
+seção digitado como caminho (`/produtos`, `/produto/caneca-floral`) vai para o
+hash equivalente; o resto vê "Esta página não existe" com o link de volta. Se algum dia
 entrar um router, aí sim vale `{ "rewrites": [{ "source": "/(.*)",
 "destination": "/" }] }`.
 

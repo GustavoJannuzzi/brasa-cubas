@@ -122,7 +122,10 @@
         )
         // Erro de sintaxe ou de execucao antes de o React montar nao dispara o
         // evento acima. Quinze segundos cobrem com folga a carga de um celular
-        // lento (loader na tela aos 2,8 s com CPU 4x).
+        // lento (loader na tela aos 2,8 s com CPU 4x). E rede lenta nao da
+        // reserva falsa: `mostrar` ainda espera o DOMContentLoaded, que so vem
+        // depois de o script principal baixar e rodar — medido a 40 kbps: 26,7 s,
+        // app montado no mesmo instante, nenhuma reserva no meio.
         setTimeout(mostrar, 15000)
         window.mostrarReservaDoAtelie = mostrar
       })()

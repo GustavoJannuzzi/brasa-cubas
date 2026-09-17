@@ -61,7 +61,7 @@ export function Header() {
   }
 
   return (
-    <header className="camada-cena fixed inset-x-0 top-0 z-30 flex items-center gap-3 px-3 py-2.5 md:px-5 md:py-3">
+    <header className="camada-cena fixed inset-x-0 top-0 z-30 flex items-center gap-3 py-2.5 pr-[max(0.75rem,env(safe-area-inset-right))] pl-[max(0.75rem,env(safe-area-inset-left))] md:py-3 md:pr-[max(1.25rem,env(safe-area-inset-right))] md:pl-[max(1.25rem,env(safe-area-inset-left))]">
       {/* fundo em degradê para o menu ler sobre a cena sem virar uma barra opaca */}
       <div
         className="pointer-events-none absolute inset-0 -z-10"

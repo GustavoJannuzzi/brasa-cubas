@@ -182,7 +182,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
         className={
           isMobile
             ? 'anim-painel fixed inset-x-0 bottom-0 z-40 flex max-h-[84svh] flex-col rounded-t-3xl bg-porcelana outline-none'
-            : 'anim-gaveta fixed top-[4.75rem] right-4 bottom-4 z-40 flex w-[27rem] flex-col overflow-hidden rounded-2xl bg-porcelana outline-none'
+            : 'anim-gaveta fixed top-[4.75rem] right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex w-[27rem] flex-col overflow-hidden rounded-2xl bg-porcelana outline-none'
         }
         style={{
           touchAction: 'pan-y',

@@ -88,7 +88,7 @@ export function HeroCard() {
   return (
     <div
       ref={ancorarEmbaixo}
-      className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[22rem] camada-cena"
+      className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-[max(1.25rem,env(safe-area-inset-left))] md:max-w-[22rem] camada-cena"
     >
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] md:p-4"
@@ -154,7 +154,7 @@ export function FocusedProductBar() {
   return (
     <div
       ref={ancorarEmbaixo}
-      className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[24rem] camada-cena"
+      className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-[max(1.25rem,env(safe-area-inset-left))] md:max-w-[24rem] camada-cena"
     >
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)]"
@@ -224,7 +224,7 @@ export function OrientationBar() {
   const lugarCurto = vistaLivre ? 'Vista livre' : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home)
 
   return (
-    <div className="camada-cena fixed top-[3.4rem] left-3 z-20 flex items-center gap-1 md:top-[4.4rem] md:left-5">
+    <div className="camada-cena fixed top-[3.4rem] left-[max(0.75rem,env(safe-area-inset-left))] z-20 flex items-center gap-1 md:top-[4.4rem] md:left-[max(1.25rem,env(safe-area-inset-left))]">
       {desenhando && (
         <>
           <span
@@ -288,7 +288,7 @@ export function TourBar() {
   const ultimo = tourStep === hotspots.length - 1
 
   return (
-    <div className="camada-cena anim-sobe fixed bottom-[calc(4.75rem_+_var(--sobra-area-segura))] left-3 right-3 z-30 md:bottom-5 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
+    <div className="camada-cena anim-sobe fixed bottom-[calc(4.75rem_+_var(--sobra-area-segura))] left-3 right-3 z-30 md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
       <div className="rounded-2xl bg-porcelana/96 p-4 shadow-[var(--shadow-painel)]" style={{ backdropFilter: 'blur(6px)' }}>
         <div className="flex items-center gap-2">
           <IconSparkle size={16} className="text-brasa" />

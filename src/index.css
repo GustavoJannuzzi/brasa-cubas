@@ -98,6 +98,13 @@
   }
 }
 
+/* Laterais: com viewport-fit=cover, o iPhone deitado desenha a pagina por baixo
+   do recorte da camera e informa a faixa em env(safe-area-inset-left/right).
+   Cabecalho, chip de lugar, cartoes e gaveta usam max(margem de sempre, faixa)
+   direto na classe (Header, Overlays, Panel). Medido com 47/47/21 emulado em
+   844x390: a marca entrava 27 px sob o recorte, "Como navegar" 27, o chip 15, o
+   card 11 e a gaveta ~10. Sem recorte, max() devolve a margem de sempre. */
+
 /* Camada de UI que fica POR CIMA da cena.
    No ateliê a pinça e da camera. So o canvas tinha touch-action, e qualquer
    gesto que encostasse num rotulo, no cartao ou na folha virava zoom da pagina

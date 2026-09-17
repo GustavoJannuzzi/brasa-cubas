@@ -75,9 +75,12 @@ function Linha({ line }) {
             <button
               type="button"
               onClick={() => setQty(product.id, qty - 1)}
-              disabled={noMinimo}
+              // aria-disabled, e nao disabled: com o foco no botao, chegar ao
+              // minimo o desabilitava e o foco caia no body (medido com Enter,
+              // 21 -> 20). O clique no minimo ja nao faz nada (setQty limita).
+              aria-disabled={noMinimo || undefined}
               // 44 px e o minimo de alvo de toque; estavam em 32.
-              className="grid h-11 w-11 place-items-center rounded-full text-carvao/70 disabled:opacity-30"
+              className="grid h-11 w-11 place-items-center rounded-full text-carvao/70 aria-disabled:opacity-30"
               // O "−" apagado sem explicacao parecia defeito.
               aria-label={noMinimo ? `Diminuir: já está no mínimo de ${product.minQty}` : 'Diminuir'}
             >

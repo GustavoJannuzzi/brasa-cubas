@@ -112,9 +112,11 @@ export function ProductDetail() {
             <button
               type="button"
               onClick={() => setQty((q) => Math.max(product.minQty, q - 1))}
-              disabled={qty <= product.minQty}
+              // aria-disabled, e nao disabled: ver o mesmo botao no CartPanel —
+              // desabilitar com o foco dentro derrubava o foco no body.
+              aria-disabled={qty <= product.minQty || undefined}
               // 44 px: alvo de toque minimo.
-              className="grid h-11 w-11 place-items-center rounded-full text-carvao/70 disabled:opacity-30"
+              className="grid h-11 w-11 place-items-center rounded-full text-carvao/70 aria-disabled:opacity-30"
               aria-label={
                 qty <= product.minQty
                   ? `Diminuir: já está no mínimo de ${product.minQty}`

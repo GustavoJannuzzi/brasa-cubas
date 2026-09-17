@@ -42,11 +42,16 @@ export function ProductDetail() {
       footer={
         <div className="mb-3 flex flex-col gap-2 md:mb-0">
           <div className="flex items-center justify-between text-[13px]">
-            <span className="text-carvao/70">
+            {/* `key` pela quantidade: com a pagina traduzida pelo navegador, o
+                rotulo e o total ficavam no valor de quando o painel abriu. Ver
+                src/lib/tradutor.js. */}
+            <span key={`qtd-${qty}`} className="text-carvao/70">
               {plural(qty, 'peça', 'peças')}
               {product.from && ' · estimativa'}
             </span>
-            <span className="text-[17px] font-semibold text-carvao">{money(total)}</span>
+            <span key={`total-${total}`} className="text-[17px] font-semibold text-carvao">
+              {money(total)}
+            </span>
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={() => addToCart(product.id, qty)} className="btn-principal flex-1">

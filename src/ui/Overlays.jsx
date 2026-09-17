@@ -342,7 +342,9 @@ export function TourBar() {
         <div className="flex items-center gap-2">
           <IconSparkle size={16} className="text-brasa" />
           <span className="text-[11px] font-semibold tracking-wide text-brasa-texto uppercase">
-            Tour · {tourStep + 1} de {hotspots.length}
+            <span key={tourStep}>
+              Tour · {tourStep + 1} de {hotspots.length}
+            </span>
           </span>
           {/* 44 de altura (media 28,5: texto de 12,5 px com line-height 1, mais o
               py-2), sem fundo em repouso. O -my de 7,75 px devolve exatamente o que
@@ -361,9 +363,15 @@ export function TourBar() {
           </button>
         </div>
 
+        {/* `key` pelo ponto nos textos que trocam a cada passo: com a pagina
+            traduzida pelo navegador eles ficariam no primeiro. Ver src/lib/tradutor.js. */}
         <div id="tour-passo" aria-live="polite">
-          <p className="mt-1.5 font-display text-[17px] text-carvao">{spot.title}</p>
-          <p className="mt-0.5 text-[13px] text-carvao/70">{spot.hint}</p>
+          <p key={`titulo-${spot.id}`} className="mt-1.5 font-display text-[17px] text-carvao">
+            {spot.title}
+          </p>
+          <p key={`dica-${spot.id}`} className="mt-0.5 text-[13px] text-carvao/70">
+            {spot.hint}
+          </p>
         </div>
 
         <div className="mt-3 flex gap-2">
@@ -375,7 +383,9 @@ export function TourBar() {
             }}
             className="btn-secundario flex-1 px-4 py-2.5"
           >
-            Abrir {spot.label.toLowerCase()}
+            {/* Um so elemento: os dois pedacos de texto soltos viravam dois itens
+                do flex do botao depois de traduzidos. */}
+            <span key={spot.id}>Abrir {spot.label.toLowerCase()}</span>
           </button>
           <button
             ref={proximo}
@@ -387,7 +397,7 @@ export function TourBar() {
             aria-describedby="tour-passo"
             className="btn-principal flex-1 px-4 py-2.5"
           >
-            {ultimo ? 'Terminar' : 'Próximo'}
+            <span key={ultimo ? 'terminar' : 'proximo'}>{ultimo ? 'Terminar' : 'Próximo'}</span>
             <IconArrow size={16} />
           </button>
         </div>

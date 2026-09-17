@@ -52,14 +52,22 @@ function Progresso({ step }) {
   return (
     <div className="mb-4">
       {/* Invisivel na tela: quem enxerga ja tem a barra e o rotulo do passo. */}
+      {/* O titulo invisivel NAO leva `key`: o foco e posto nele pela ref a cada
+          passo. So o texto de dentro troca de elemento. Os rotulos visiveis levam
+          `key` pelo passo: com a pagina traduzida pelo navegador ficavam em
+          "Passo 1 de 3". Ver src/lib/tradutor.js. */}
       <h3 ref={titulo} tabIndex={-1} className="sr-only outline-none">
-        Passo {step + 1} de {PASSOS.length}: {PASSOS[step]}
+        <span key={step}>
+          Passo {step + 1} de {PASSOS.length}: {PASSOS[step]}
+        </span>
       </h3>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-[12px] font-semibold tracking-wide text-carvao/70 uppercase">
+        <span key={`numero-${step}`} className="text-[12px] font-semibold tracking-wide text-carvao/70 uppercase">
           Passo {step + 1} de {PASSOS.length}
         </span>
-        <span className="text-[12.5px] font-medium text-carvao/70">{PASSOS[step]}</span>
+        <span key={`nome-${step}`} className="text-[12.5px] font-medium text-carvao/70">
+          {PASSOS[step]}
+        </span>
       </div>
       <div className="flex gap-1.5">
         {PASSOS.map((_, i) => (
@@ -202,7 +210,7 @@ export function QuotePanel() {
                 facil de perder justo em quem esta conferindo o resumo. */}
             <button type="button" onClick={copiar} className="btn-secundario">
               {copiado ? <IconCheck size={17} className="text-salvia" /> : <IconCopy size={17} />}
-              {copiado ? 'Copiado' : 'Copiar'}
+              <span key={copiado ? 'copiado' : 'copiar'}>{copiado ? 'Copiado' : 'Copiar'}</span>
             </button>
           </div>
         </div>
@@ -254,7 +262,9 @@ export function QuotePanel() {
             </button>
           )}
           <button type="button" onClick={avancar} className="btn-principal flex-1">
-            {step < PASSOS.length - 1 ? 'Continuar' : 'Ver resumo'}
+            <span key={step < PASSOS.length - 1 ? 'continuar' : 'resumo'}>
+              {step < PASSOS.length - 1 ? 'Continuar' : 'Ver resumo'}
+            </span>
             <IconArrow size={16} />
           </button>
         </div>

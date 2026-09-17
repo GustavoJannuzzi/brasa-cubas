@@ -127,7 +127,10 @@ export function Loader() {
                 disabled={!pronto}
                 className="mt-3 text-[12.5px] text-porcelana/50 underline underline-offset-2 disabled:no-underline disabled:opacity-45 hover:text-porcelana/80"
               >
-                {pronto ? 'Entrar no ateliê mesmo assim' : 'Continuar esperando o 3D'}
+                {/* `key` pelo estado: ver src/lib/tradutor.js (texto que troca no lugar). */}
+                <span key={pronto ? 'pronto' : 'esperando'}>
+                  {pronto ? 'Entrar no ateliê mesmo assim' : 'Continuar esperando o 3D'}
+                </span>
               </button>
             )}
           </>
@@ -139,7 +142,9 @@ export function Loader() {
               disabled={!pronto}
               className="btn-principal mt-5 w-full max-w-64 disabled:opacity-45"
             >
-              {pronto ? 'Entrar no ateliê' : 'Preparando a bancada…'}
+              {/* Com a pagina traduzida pelo navegador, sem a `key` o botao seguia
+                  "Preparando a bancada…" com o atelie pronto: ver src/lib/tradutor.js. */}
+              <span key={pronto ? 'pronto' : 'preparando'}>{pronto ? 'Entrar no ateliê' : 'Preparando a bancada…'}</span>
               {pronto && <IconArrow size={16} />}
             </button>
 
@@ -222,13 +227,19 @@ export function Onboarding() {
       className="camada-cena fixed inset-0 z-[45] flex items-end justify-center bg-carvao/45 p-4 md:items-center"
     >
       <div className="anim-sobe w-full max-w-md rounded-2xl bg-porcelana p-5 shadow-[var(--shadow-painel)]">
-        <span className="text-[11px] font-semibold tracking-wide text-brasa-texto uppercase">
+        {/* `key` pela tela nos textos que trocam: com a pagina traduzida pelo
+            navegador, o titulo do card 2 (texto + icone) derrubava o site no
+            segundo "Proximo", e o contador ficava em "1 de 3". Ver src/lib/tradutor.js.
+            A `key` vai nos textos, e nao no cartao, para nao repetir a entrada dele. */}
+        <span key={`contador-${tela}`} className="text-[11px] font-semibold tracking-wide text-brasa-texto uppercase">
           {tela + 1} de {TELAS.length}
         </span>
-        <h2 id="onboarding-titulo" className="mt-1.5 text-[20px] leading-snug">
+        <h2 key={`titulo-${tela}`} id="onboarding-titulo" className="mt-1.5 text-[20px] leading-snug">
           {TELAS[tela].titulo}
         </h2>
-        <p className="mt-2 text-[14px] leading-relaxed text-carvao/70">{TELAS[tela].texto}</p>
+        <p key={`texto-${tela}`} className="mt-2 text-[14px] leading-relaxed text-carvao/70">
+          {TELAS[tela].texto}
+        </p>
 
         {ultima && (
           <button
@@ -264,7 +275,7 @@ export function Onboarding() {
             onClick={() => (ultima ? finishOnboarding() : setTela(tela + 1))}
             className="btn-principal max-[20rem]:w-full"
           >
-            {ultima ? 'Entendi' : 'Próximo'}
+            <span key={ultima ? 'entendi' : 'proximo'}>{ultima ? 'Entendi' : 'Próximo'}</span>
             <IconArrow size={16} />
           </button>
         </div>

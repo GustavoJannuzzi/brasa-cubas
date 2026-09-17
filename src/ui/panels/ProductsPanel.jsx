@@ -79,8 +79,12 @@ export function ProductsPanel() {
         <button
           type="button"
           onClick={() => openPanel('orcamento')}
-          className="btn-principal mb-3 w-full md:mb-0"
+          className="btn-principal mb-3 w-full text-balance md:mb-0"
         >
+          {/* text-balance: em 375 o texto quebrava como "Nao achou o que queria?
+              Peca sob / medida", com "medida" sozinha na segunda linha (medido,
+              caractere a caractere). No desktop cabe numa linha, e o balance nao
+              cria quebra — so equilibra as que ja existem. */}
           Não achou o que queria? Peça sob medida
           <IconArrow size={16} />
         </button>

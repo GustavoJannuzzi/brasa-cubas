@@ -58,7 +58,15 @@ function Linha({ line }) {
               clicavel, e fica acima do seletor: nao rouba toque de ninguem. */}
           <button
             type="button"
-            onClick={() => removeFromCart(product.id)}
+            onClick={(e) => {
+              // A linha some com o foco dentro: medido com Enter, ele caia no body.
+              // Vai antes para a linha vizinha (a de baixo, senao a de cima) ou,
+              // sem vizinha, para o painel.
+              const linha = e.currentTarget.closest('li')
+              const vizinha = linha?.nextElementSibling ?? linha?.previousElementSibling
+              ;(vizinha?.querySelector('button') ?? e.currentTarget.closest('[role="dialog"]'))?.focus()
+              removeFromCart(product.id)
+            }}
             aria-label={`Remover ${product.name}`}
             className="-my-3 -mr-3 grid h-11 w-11 shrink-0 place-items-center rounded-full text-carvao/55 transition-colors hover:bg-carvao/6 hover:text-brasa"
           >

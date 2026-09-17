@@ -239,7 +239,10 @@ export function Onboarding() {
           </button>
         )}
 
-        <div className="mt-5 flex items-center gap-3">
+        {/* Quebra em tela estreita. A linha pede ~242 px e o cartao da 188 em 260
+            (zoom de pagina do Android): "Proximo" saia do cartao e da tela, e so
+            "Pular" ficava ao alcance. Abaixo de 20rem ele desce e ocupa a linha. */}
+        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex gap-1.5">
             {TELAS.map((_, i) => (
               <span
@@ -255,7 +258,7 @@ export function Onboarding() {
             ref={proximo}
             type="button"
             onClick={() => (ultima ? finishOnboarding() : setTela(tela + 1))}
-            className="btn-principal"
+            className="btn-principal max-[20rem]:w-full"
           >
             {ultima ? 'Entendi' : 'Próximo'}
             <IconArrow size={16} />

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import { productById } from '../data/products'
 import { hotspots, panelToHotspot } from '../data/scene'
 import { money } from '../lib/format'
@@ -19,6 +19,35 @@ const focarDepoisDeTrocarModo = (simples) =>
     if (ativo && ativo !== document.body && document.contains(ativo)) return
     document.querySelector(simples ? 'main h1' : 'header button')?.focus({ preventScroll: true })
   })
+
+// Gravar pode falhar mesmo com o localStorage acessivel: cota cheia
+// (QuotaExceededError), navegador que zera a cota. O zustand grava dentro de cada
+// `set`, sem protecao, e a excecao subia ate o React — medido com `setItem`
+// lancando: o app inteiro caia em "Algo deu errado" no primeiro toque, e
+// recarregar nao resolvia. Sem gravar o site segue; so nao lembra do pedido na
+// proxima visita. O localStorage e lido JA na criacao: bloqueado de vez (getter
+// lancando), o `createJSONStorage` segue devolvendo nada e o persist se desliga,
+// como antes.
+const armazenamento = createJSONStorage(() => {
+  const local = window.localStorage
+  return {
+    getItem: (nome) => local.getItem(nome),
+    setItem: (nome, valor) => {
+      try {
+        local.setItem(nome, valor)
+      } catch {
+        /* sem espaco: segue sem guardar */
+      }
+    },
+    removeItem: (nome) => {
+      try {
+        local.removeItem(nome)
+      } catch {
+        /* idem */
+      }
+    },
+  }
+})
 
 export const useStore = create(
   persist(
@@ -353,6 +382,7 @@ export const useStore = create(
     {
       name: 'brasa-cubas',
       version: 1,
+      storage: armazenamento,
       // Guardamos so o que o usuario perderia se recarregasse sem querer.
       partialize: (s) => ({
         cart: s.cart,

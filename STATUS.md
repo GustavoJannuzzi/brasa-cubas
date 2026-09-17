@@ -84,6 +84,14 @@ sem versão leve — **foi resolvido na fase 2**. As 19 peças da cena agora cus
 perto o bastante para facetar. Desenhado por quadro depois da mudança: 287.372
 triângulos em 295 chamadas no desktop, e 59.326 em 108 no celular.
 
+**Remedido em 17/09** (visão geral, `renderer.info`, maior de 5 quadros), com o
+gato, os quadros, os porta-retratos e as fotos do mural já na cena e o mapa de
+sombra congelado depois de 45 quadros: **~172 mil triângulos em 220 chamadas**
+em 1440 (alta) e **~73 mil em 167** em 375 (baixa). No celular as chamadas
+passaram de 108 para 167 (a vista e o método da medida acima não ficaram
+registrados, então a comparação é indicativa) — é o primeiro lugar a olhar se o
+celular engasgar.
+
 ## 2. Fase 2: os quinze do topo, feitos
 
 Um commit por item, cada um com a medição no corpo da mensagem. Em ordem:
@@ -134,11 +142,11 @@ Os dados daqui são fictícios; os fatos verificados estão no projeto pai
 | Dado | Aqui | Verificado / pendência |
 | --- | --- | --- |
 | Cidade | Foz do Iguaçu, PR (`studio.js:7`, textos de entrega e a descrição do `index.html`), trocada com confirmação em 16/09 | Foz do Iguaçu/PR (`site.ts`) — resolvido. O WhatsApp de exemplo segue com DDD 51 (linha abaixo) |
-| WhatsApp | 5551999990000 (`studio.js:8`), em todo link `wa.me` | Número real não definido. No pai, sem número o botão vira aviso |
+| WhatsApp | 5551999990000 (`studio.js:8`), em todo link `wa.me`; repetido à mão no `<noscript>` do `index.html`, junto com o e-mail e o prazo de resposta | Número real não definido. No pai, sem número o botão vira aviso |
 | Instagram | @brasacubas | instagram.com/isabelacubas; o TikTok (@isabelacubas) não aparece aqui |
 | E-mail | atelie@brasacubas.com.br | Não existe endereço definido; o botão "Por e-mail" depende dele |
 | Nome da marca | "Brasa Cubas" | Pendente com a Isabela (§3 das perguntas) |
-| Galeria "Projetos entregues" | 6 projetos com cliente, quantidade e ano | Nenhum confirmado. Hoje o site **afirma entregas** que ninguém verificou |
+| Galeria "Projetos entregues" | 5 fotos de referência (`public/fotos/peca-*`, não são peças dela) com legendas genéricas, sem cliente, quantidade nem ano | O título "Projetos entregues" e a dica "O que já saiu daqui" ainda **afirmam entregas** que não são dela. Trocar pelas fotos reais ou mudar o título antes de publicar |
 | Preços, prazos e pedido mínimo | 11 peças com preço de tabela, prazo 10–25 dias, mín. 20 lembrancinhas | Depende das respostas dela (§1, §2, §5, §7) |
 | Pagamento | "50% + 50%" | O pai decidiu Pix na chave (D3) |
 | Horário | Seg a sex, 9h às 18h | Não perguntado |

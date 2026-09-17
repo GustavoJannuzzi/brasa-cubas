@@ -133,7 +133,7 @@ Os dados daqui são fictícios; os fatos verificados estão no projeto pai
 
 | Dado | Aqui | Verificado / pendência |
 | --- | --- | --- |
-| Cidade | Porto Alegre, RS (`studio.js:7`, `index.html`, textos) | Foz do Iguaçu/PR (`site.ts`) |
+| Cidade | Foz do Iguaçu, PR (`studio.js:7`, textos de entrega e a descrição do `index.html`), trocada com confirmação em 16/09 | Foz do Iguaçu/PR (`site.ts`) — resolvido. O WhatsApp de exemplo segue com DDD 51 (linha abaixo) |
 | WhatsApp | 5551999990000 (`studio.js:8`), em todo link `wa.me` | Número real não definido. No pai, sem número o botão vira aviso |
 | Instagram | @brasacubas | instagram.com/isabelacubas; o TikTok (@isabelacubas) não aparece aqui |
 | E-mail | atelie@brasacubas.com.br | Não existe endereço definido; o botão "Por e-mail" depende dele |

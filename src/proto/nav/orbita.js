@@ -24,6 +24,11 @@ const CENTRO = [0, 1.28, -0.9]
 // da face interna.
 const Z_MINIMO = room.wallZ + 0.15
 
+// Ate onde a camera pode se afastar de lado. E o casco (parede mais a
+// espessura dela) com uma folga: mais que isso e o quadro comeca a mostrar o
+// que nao existe do lado de fora.
+const X_MAXIMO = room.halfW + room.wallT + 0.5
+
 // Distancia maxima. Medido: com a abertura de 32 graus do celular, o comodo
 // inteiro so cabe no quadro a partir de ~6,2 m com o alvo no centro. A neblina
 // a 6,6 m come 6,8% e dissolve a borda do diorama sem apagar a cena.
@@ -41,7 +46,6 @@ export default function criarOrbita({ toque }) {
     // A biblioteca continua comandando o gesto.
     gestosProprios: false,
     colisores: true,
-    sala: { rightFrontZ: 0.4 },
 
     controles: {
       azimuthRotateSpeed: toque ? 0.75 : 0.9,
@@ -77,11 +81,21 @@ export default function criarOrbita({ toque }) {
       return [pos[0] + dx * t, pos[1] + dy * t, pos[2] + dz * t]
     },
 
-    /** Ate onde o giro pode ir sem a camera passar para tras da parede do fundo. */
+    /**
+     * Ate onde o giro pode ir. Sao DUAS desigualdades, e a segunda faltava:
+     *
+     * 1. em z, a camera nao passa para tras da parede do fundo — e a unica que
+     *    nao pode sumir, porque e ela que tem a janela por onde entra o sol;
+     * 2. em x, a camera nao se afasta demais do casco. Sem isto, medido, no
+     *    ultimo grau do giro ela ia parar em x 3,34 e o vazio saltava de 0,0%
+     *    para 15,1% do quadro.
+     */
     azimuteMaximo: ({ alvo, dist, phi }) => {
       const denominador = dist * Math.sin(phi)
       if (denominador < 0.001) return Math.PI
-      return Math.acos(travar((Z_MINIMO - alvo[2]) / denominador, -0.999, 0.999))
+      const porZ = Math.acos(travar((Z_MINIMO - alvo[2]) / denominador, -0.999, 0.999))
+      const porX = Math.asin(travar((X_MAXIMO - Math.abs(alvo[0])) / denominador, -0.999, 0.999))
+      return Math.min(porZ, Math.abs(porX))
     },
 
     /**
@@ -90,7 +104,15 @@ export default function criarOrbita({ toque }) {
      * comodo fica inteiro de um lado do plano, entao uma parede so pode tapar o
      * miolo vista do outro lado.
      */
-    corte: (cam) => ({ esq: cam[0] < -room.halfW, dir: cam[0] > room.halfW }),
+    // A troca acontece depois da ESPESSURA da parede, e nao na face interna: e
+    // dentro desses 10 cm que a camera esta dentro do solido e nao se ve nada,
+    // entao o estado intermediario nao e observavel. Na face interna, medido, a
+    // abertura do celular ficava a 0,4 grau da troca — um pixel de dedo apagava
+    // a parede inteira.
+    corte: (cam) => ({
+      esq: cam[0] < -(room.halfW + room.wallT),
+      dir: cam[0] > room.halfW + room.wallT,
+    }),
 
     tempoDeCorte: TEMPO_CORTE,
 

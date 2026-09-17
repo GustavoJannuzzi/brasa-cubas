@@ -57,9 +57,13 @@ export const room = {
   // chega a 36,5% no pior angulo do celular.
   // Custo: zero triangulo e zero draw call (a parede e uma caixa so, e o
   // rodape e a profundidade do teto ja derivam desta medida). Conferido que a
+  // IMPORTANTE: quem decide e `proto.ligado`, e nao a variante. Com ?nav=atual
+  // o controle recebe a MESMA sala das variantes, senao o teste compararia
+  // navegacao e geometria ao mesmo tempo — e so a parede estendida ja muda 20
+  // pontos de vazio em 1440. Sem parametro nenhum, 0,1: o site publicado.
   // samambaia do banquinho nao fura a parede nova: o vertice mais a direita
   // dela fica em x 1,822, com 9,8 cm de folga da face interna.
-  rightFrontZ: proto.nav === 'atual' ? 0.1 : 0.85,
+  rightFrontZ: proto.ligado ? 0.85 : 0.1,
   floorFrontZ: 2.7, // o assoalho avanca um pouco mais que as paredes
   window: { x: 1.34, y: 1.72, w: 0.7, h: 1.12 },
   // Placa na sobra de parede entre a parede da esquerda e a prateleira.

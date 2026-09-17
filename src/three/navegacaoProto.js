@@ -20,8 +20,26 @@ import { useStore } from '../store/useStore'
 // - GESTOS DA BIBLIOTECA (orbita): quem gira continua sendo o camera-controls,
 //   porque orbitar e o que ele faz bem. A variante so muda o pivô, o limite do
 //   giro e quais paredes ficam na frente.
+//
+// Quatro cuidados que sairam de revisao do proprio codigo, e cada um seria um
+// defeito no aparelho do dono:
+//
+// 1. PRIORIDADE -2 no useFrame. O drei chama controls.update(delta) em -1, e o
+//    camera-controls so escreve camera.position dentro do update(). Escrevendo
+//    a pose depois disso, o dedo andaria um quadro inteiro na frente da cena.
+// 2. SAIR CEDO quando nao ha dedo, nem inercia, nem mistura pendente, nem
+//    respiro autorizado. Sem isso o setLookAt roda todo quadro para sempre
+//    depois do primeiro arrasto — e o loop em 'demand' nunca mais dorme, com a
+//    cena desenhando atras da folha aberta no celular. E o defeito que o commit
+//    fbd8b10 consertou, voltando por caminho novo.
+// 3. CAPTURA DO PONTEIRO. Os overlays (chip, barra de baixo, cartao) sao irmaos
+//    do canvas: sem captura, o arrasto que cruza a barra de 46,5 px congela no
+//    meio, porque o pointermove passa a ir para o overlay.
+// 4. LEVANTAR UM DEDO da pinca nao encerra o gesto, e pointercancel (barra do
+//    iPhone, ligacao) nao vira peteleco: solta sem inercia.
 
 const TOLERANCIA = 6
+const ESPERA_RESPIRO = 2600
 
 const distancia = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
 
@@ -32,6 +50,8 @@ export function useNavegacaoProto(controls) {
   const isMobile = useIsMobile()
   const isTouch = useIsTouch()
   const reduzido = useReducedMotion()
+  const entrou = useStore((s) => s.entered)
+  const painelAberto = useStore((s) => Boolean(s.panel))
 
   const variante = useMemo(() => {
     const criar = navegacaoDoProto()
@@ -46,6 +66,9 @@ export function useNavegacaoProto(controls) {
     pinca: 0,
     ultimo: null,
     vel: 0,
+    ultimoToque: 0,
+    mistura: 0,
+    lugar: null,
     reancorado: false,
     corte: { esq: 0, dir: 0 },
   })
@@ -67,7 +90,9 @@ export function useNavegacaoProto(controls) {
 
     if (variante.gestosProprios) {
       // Quem le o dedo e esta cola. Sem isso, os dois comandariam a camera no
-      // mesmo quadro.
+      // mesmo quadro. Atencao: o <CameraControls> CONTINUA montado de proposito
+      // — e o preventDefault do ouvinte dele que impede a pagina de rolar e de
+      // ampliar no iPhone enquanto a cola comanda.
       c.mouseButtons.left = NADA
       c.mouseButtons.right = NADA
       c.mouseButtons.middle = NADA
@@ -121,6 +146,7 @@ export function useNavegacaoProto(controls) {
       s.congelada = pose()
       s.estado = variante.inicial(s.congelada)
       s.comandando = true
+      s.mistura = 0
       useStore.getState().setVistaLivre(true)
     }
 
@@ -132,6 +158,13 @@ export function useNavegacaoProto(controls) {
       }
       s.ultimo = null
       s.vel = 0
+      s.ultimoToque = performance.now()
+      // Sem captura, o arrasto morre assim que o dedo cruza um overlay.
+      try {
+        el.setPointerCapture(e.pointerId)
+      } catch (err) {
+        // navegador que recuse a captura nao pode derrubar o gesto
+      }
     }
 
     const aoMover = (e) => {
@@ -140,6 +173,7 @@ export function useNavegacaoProto(controls) {
       const anterior = { x: p.x, y: p.y }
       p.x = e.clientX
       p.y = e.clientY
+      s.ultimoToque = performance.now()
 
       const menor = Math.min(el.clientWidth, el.clientHeight)
       const lente = meioQuadro()
@@ -161,6 +195,7 @@ export function useNavegacaoProto(controls) {
             menor,
             ...lente,
           })
+          s.mistura = Math.min(1, s.mistura + Math.abs(e.clientX - anterior.x) / menor)
         }
         invalidate()
         return
@@ -178,16 +213,30 @@ export function useNavegacaoProto(controls) {
       }
       s.ultimo = { t: agora }
       s.estado = variante.arrastar(s.estado, { dx, dy, menor, ...lente })
+      // A mistura anda com o DEDO, nunca com o relogio: alimentada por tempo,
+      // encostar 6 px no vidro e soltar deslizava a camera 1,56 m sozinha.
+      s.mistura = Math.min(1, s.mistura + (Math.abs(dx) + Math.abs(dy)) / (menor * 0.45))
       invalidate()
     }
 
-    const aoSubir = () => {
-      s.ponteiros.clear()
-      s.pinca = 0
-      if (s.comandando && variante.soltar) {
-        s.estado = variante.soltar(s.estado, s.vel * 0.9)
-        invalidate()
+    const aoSubir = (e) => {
+      const tinha = s.ponteiros.size
+      s.ponteiros.delete(e.pointerId)
+      if (s.ponteiros.size < 2) s.pinca = 0
+      try {
+        el.releasePointerCapture(e.pointerId)
+      } catch (err) {
+        // ja solto
       }
+      // Levantar UM dedo da pinca nao encerra o gesto.
+      if (s.ponteiros.size > 0 || tinha === 0) return
+      s.ultimoToque = performance.now()
+      if (!s.comandando || !variante.soltar) return
+      // Gesto cancelado pelo sistema (barra do iPhone, ligacao) nao vira
+      // peteleco: seria inercia que ninguem pediu.
+      const cancelado = e.type === 'pointercancel'
+      s.estado = variante.soltar(s.estado, cancelado ? 0 : s.vel * 0.9)
+      invalidate()
     }
 
     el.addEventListener('pointerdown', aoDescer)
@@ -242,9 +291,21 @@ export function useNavegacaoProto(controls) {
 
     if (variante.gestosProprios) {
       if (!s.comandando || !s.estado || !variante.quadro) return
-      const r = variante.quadro(s.estado, dt, state.clock.elapsedTime)
+      // O respiro segue as mesmas duas guardas do CameraRig: com a folha aberta
+      // no celular ninguem ve a cena, e antes de entrar nao ha cena para ver.
+      const respirar =
+        !reduzido &&
+        entrou &&
+        !(isMobile && painelAberto) &&
+        s.ponteiros.size === 0 &&
+        performance.now() - s.ultimoToque > ESPERA_RESPIRO
+      const parado =
+        !respirar && s.ponteiros.size === 0 && s.mistura >= 1 && Math.abs(s.estado.vel || 0) < 0.0001
+      if (parado) return
+
+      const r = variante.quadro(s.estado, dt, state.clock.elapsedTime, respirar)
       s.estado = r.estado
-      const m = r.mistura ?? 1
+      const m = s.mistura
       const p = r.pose
       const f = s.congelada
       const misturar = (a, b) => a + (b - a) * m
@@ -257,7 +318,16 @@ export function useNavegacaoProto(controls) {
         misturar(f.alvo[2], p.alvo[2]),
         false,
       )
-      if (r.vivo) invalidate()
+      // O rotulo do chip: nas pontas de qualquer variante nenhum marcador fica
+      // em quadro, e o lugar escrito passa a ser a unica orientacao.
+      if (variante.lugar) {
+        const lugar = variante.lugar(s.estado)
+        if (lugar !== s.lugar) {
+          s.lugar = lugar
+          useStore.getState().setLugarProto(lugar)
+        }
+      }
+      if (r.vivo || respirar) invalidate()
       return
     }
 
@@ -294,7 +364,7 @@ export function useNavegacaoProto(controls) {
       }
       if (mudou) invalidate()
     }
-  })
+  }, -2)
 
   // Estavel de proposito: o rig usa isto na lista de dependencias do efeito de
   // enquadramento, e uma funcao nova a cada render faria o efeito rodar sem
@@ -302,6 +372,9 @@ export function useNavegacaoProto(controls) {
   const aoEnquadrar = useCallback(() => {
     est.current.comandando = false
     est.current.estado = null
+    est.current.mistura = 0
+    est.current.lugar = null
+    useStore.getState().setLugarProto(null)
   }, [])
 
   return useMemo(() => ({ variante, aoEnquadrar }), [variante, aoEnquadrar])

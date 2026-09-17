@@ -47,13 +47,11 @@ const MEIA_VIDA = 0.16
 const VEL_MAX = 4
 const VEL_PARADA = 0.05
 
-// Quanto de trilho a camera leva para sair da pose do preset e entrar no
-// trilho. Com movimento reduzido isso encurta: nao pode virar um deslize de
-// 1,5 m que ninguem pediu.
-const ENTRADA = 0.36
-const ENTRADA_REDUZIDA = 0.1
-
 const travar = (v, min, max) => (v < min ? min : v > max ? max : v)
+
+// Caixa em que a camera do trilho pode andar, em metros. Nao e a conta do
+// trilho: e a rede embaixo dela.
+const LIMITE = { x: 1.8, yMin: 0.4, yMax: 2.4, zMin: -1.5, zMax: 2.5 }
 
 /** Interpola uma tabela de tres valores por v em [-1, 1]. */
 const porAltura = (tabela, v) =>
@@ -83,7 +81,6 @@ const poseNoTrilho = (s, v, k) => {
 export default function criarTrilho({ toque, reduzido }) {
   const ganhoS = toque ? GANHO_S.toque : GANHO_S.ponteiro
   const ganhoV = toque ? GANHO_V.toque : GANHO_V.ponteiro
-  const entrada = reduzido ? ENTRADA_REDUZIDA : ENTRADA
 
   return {
     nome: 'trilho',
@@ -95,18 +92,12 @@ export default function criarTrilho({ toque, reduzido }) {
     // camera colapsaria no alvo — exatamente o defeito que este protótipo
     // existe para consertar. Por isso, no trilho, sem colisores.
     colisores: false,
-    // O retorno da direita termina em z 0,10 e o trilho leva o olhar ate a face
-    // dele. Sem isto, medido, o vazio chega a 15% da tela em 1440 e 29% no
-    // celular deitado.
-    sala: { rightFrontZ: 0.4 },
-
     /** De onde a pose atual entra no trilho (inversa exata da elipse). */
     inicial: ({ pos }) => ({
       s: travar(Math.atan2(pos[0] / AX, (pos[2] - CZ) / AZ) / FI, -1, 1),
       v: alturaParaV(pos[1]),
       k: 1,
       vel: 0,
-      mistura: 0,
     }),
 
     arrastar: (e, { dx, dy, menor }) => ({
@@ -123,8 +114,8 @@ export default function criarTrilho({ toque, reduzido }) {
       vel: reduzido ? 0 : travar(velocidade, -VEL_MAX, VEL_MAX),
     }),
 
-    quadro: (e, dt, tempo) => {
-      let { s, v, k, vel, mistura } = e
+    quadro: (e, dt, tempo, respirar) => {
+      let { s, v, k, vel } = e
       // Inercia: um peteleco forte acrescenta no maximo 0,64 de s (1,0 m) e
       // assenta em ~0,65 s. Bater na ponta para, sem quicar.
       if (Math.abs(vel) > VEL_PARADA) {
@@ -134,21 +125,33 @@ export default function criarTrilho({ toque, reduzido }) {
       } else {
         vel = 0
       }
-      // A entrada no trilho: a pose desenhada vai da pose congelada ate a do
-      // trilho ao longo de `entrada` de trilho andado.
-      mistura = travar(mistura + Math.abs(s - e.s) / entrada + dt * 0.6, 0, 1)
 
-      // Respiro: nos proprios parametros, e como SENO ABSOLUTO, nao integrado.
-      // Sendo absoluto ele nao acumula deriva ao encostar nas travas, defeito
+      // Respiro nos proprios parametros, como SENO ABSOLUTO e nao integrado:
+      // sendo absoluto ele nao acumula deriva ao encostar nas travas, defeito
       // que a versao integrada teria.
-      const respiroS = reduzido ? 0 : 0.05 * Math.sin(tempo * 0.24)
-      const respiroV = reduzido ? 0 : 0.037 * Math.sin(tempo * 0.19)
+      //
+      // As amplitudes ficaram em 0,02 e 0,015 depois de medir as primeiras:
+      // 0,05 e 0,037 davam 16,1 cm de camera e 2,41 graus de olhar, contra
+      // 1,19 grau e ZERO centimetro do respiro de hoje. Nao era respiro, era
+      // balanco de barco.
+      const respiroS = respirar ? 0.02 * Math.sin(tempo * 0.24) : 0
+      const respiroV = respirar ? 0.015 * Math.sin(tempo * 0.19) : 0
+
+      const pose = poseNoTrilho(travar(s + respiroS, -1, 1), travar(v + respiroV, -1, 1), k)
+      // Rede: o trilho nao tem colisor (o alvo das pontas fica dentro do solido
+      // da parede, e os raios do camera-controls devolveriam corte 0,00 m).
+      // Seis comparacoes de caixa antes de escrever custam nada e garantem que
+      // nenhuma conta futura ponha a camera atravessando parede.
+      pose.pos = [
+        travar(pose.pos[0], -LIMITE.x, LIMITE.x),
+        travar(pose.pos[1], LIMITE.yMin, LIMITE.yMax),
+        travar(pose.pos[2], LIMITE.zMin, LIMITE.zMax),
+      ]
 
       return {
-        estado: { s, v, k, vel, mistura },
-        pose: poseNoTrilho(travar(s + respiroS, -1, 1), travar(v + respiroV, -1, 1), k),
-        mistura,
-        vivo: Math.abs(vel) > VEL_PARADA || mistura < 1,
+        estado: { s, v, k, vel },
+        pose,
+        vivo: Math.abs(vel) > VEL_PARADA,
       }
     },
 

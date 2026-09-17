@@ -131,6 +131,19 @@ export default function criarEstacoes({ celular, toque, reduzido }) {
     return { id, pos: preset.position, base, r: base.r }
   })
   const ganho = toque ? GANHO.toque : GANHO.ponteiro
+  // A faixa so depende de (estacao, meia largura, meia altura) do quadro, e a
+  // varredura roda a cada pointermove: guardar evita refazer 100 testes de raio
+  // por movimento de dedo.
+  const guardados = new Map()
+  const faixaDe = (i, meiaH, meiaV) => {
+    const chave = `${i}|${meiaH.toFixed(3)}|${meiaV.toFixed(3)}`
+    let f = guardados.get(chave)
+    if (!f) {
+      f = faixaDoOlhar(estacoes[i].pos, estacoes[i].base, meiaH, meiaV)
+      guardados.set(chave, f)
+    }
+    return f
+  }
   const tetoYaw = celular ? TETO_YAW.celular : TETO_YAW.tela
 
   return {
@@ -138,26 +151,33 @@ export default function criarEstacoes({ celular, toque, reduzido }) {
     gestosProprios: true,
     // A camera nao se move: nao ha raio para a colisao encurtar.
     colisores: false,
-    sala: { rightFrontZ: 0.4 },
 
     inicial: ({ pos, alvo }) => {
-      // Entra pela estacao mais perto de onde a camera esta agora.
+      // Entra pela estacao mais parecida com a pose atual — PERTO E ALINHADA,
+      // nao so perto. Saindo de uma peca em close em frente a estante, a mais
+      // proxima podia ser uma que olha para o outro lado, e a virada era
+      // instantanea: dois defeitos que se somavam.
+      const d = direcao(pos, alvo)
       let melhor = 0
-      let dist = Infinity
+      let nota = Infinity
       estacoes.forEach((e, i) => {
-        const d = Math.hypot(e.pos[0] - pos[0], e.pos[1] - pos[1], e.pos[2] - pos[2])
-        if (d < dist) {
-          dist = d
+        const dist = Math.hypot(e.pos[0] - pos[0], e.pos[1] - pos[1], e.pos[2] - pos[2])
+        // 1 metro de distancia pesa o mesmo que 30 graus de diferenca de olhar.
+        let giro = Math.abs(e.base.yaw - d.yaw)
+        if (giro > Math.PI) giro = 2 * Math.PI - giro
+        const n = dist + giro / (Math.PI / 6)
+        if (n < nota) {
+          nota = n
           melhor = i
         }
       })
-      const d = direcao(pos, alvo)
-      return { i: melhor, yaw: d.yaw, pitch: d.pitch, zoom: 1 }
+      const est = estacoes[melhor]
+      return { i: melhor, yaw: est.base.yaw, pitch: est.base.pitch, zoom: 1 }
     },
 
     arrastar: (e, { dx, dy, menor, meiaH, meiaV }) => {
       const est = estacoes[e.i]
-      const f = faixaDoOlhar(est.pos, est.base, meiaH ?? 0.5, meiaV ?? 0.4)
+      const f = faixaDe(e.i, meiaH ?? 0.5, meiaV ?? 0.4)
       return {
         ...e,
         yaw: travar(
@@ -175,11 +195,12 @@ export default function criarEstacoes({ celular, toque, reduzido }) {
 
     soltar: (e) => e,
 
-    quadro: (e, dt, tempo) => {
+    quadro: (e, dt, tempo, respirar) => {
       const est = estacoes[e.i]
-      const respiro = reduzido ? 0 : 0.004 * Math.sin(tempo * 0.24)
-      const yaw = e.yaw + respiro
-      const pitch = e.pitch + (reduzido ? 0 : 0.0015 * Math.sin(tempo * 0.19))
+      // O respiro so roda quando a cola autoriza: com a folha aberta no celular
+      // ninguem ve a cena, e antes de entrar nao ha cena para ver.
+      const yaw = e.yaw + (respirar ? 0.004 * Math.sin(tempo * 0.24) : 0)
+      const pitch = e.pitch + (respirar ? 0.0015 * Math.sin(tempo * 0.19) : 0)
       const r = est.r / e.zoom
       return {
         estado: e,
@@ -191,7 +212,6 @@ export default function criarEstacoes({ celular, toque, reduzido }) {
             est.pos[2] - r * Math.cos(yaw) * Math.cos(pitch),
           ],
         },
-        mistura: 1,
         vivo: false,
       }
     },

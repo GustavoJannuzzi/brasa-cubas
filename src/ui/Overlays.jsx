@@ -239,6 +239,7 @@ export function OrientationBar() {
   const gl3d = useStore((s) => s.gl3d)
   const vistaLivre = useStore((s) => s.vistaLivre)
   const quadroFocado = useStore((s) => s.quadroFocado)
+  const lugarProto = useStore((s) => s.lugarProto)
 
   if (!entered) return null
 
@@ -253,8 +254,11 @@ export function OrientationBar() {
   // ela, a foto tocada a partir da visao geral dizia "Ateliê" e escondia o botao
   // de casa (a vista seguia 'home'): medido em 375, a unica saida visivel era a
   // aba "Ateliê", que ja parecia selecionada.
-  const lugar = vistaLivre ? 'Vista livre' : quadroFocado ? 'Foto de perto' : (peca ?? LUGARES[view] ?? LUGARES.home)
-  const lugarCurto = vistaLivre ? 'Vista livre' : quadroFocado ? 'Foto' : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home)
+  // Com uma variante de navegacao em teste, ela sabe dizer o lugar melhor que
+  // "Vista livre" — nas pontas do passeio nenhum marcador fica em quadro, e
+  // este rotulo passa a ser a unica orientacao.
+  const lugar = lugarProto ?? (vistaLivre ? 'Vista livre' : quadroFocado ? 'Foto de perto' : (peca ?? LUGARES[view] ?? LUGARES.home))
+  const lugarCurto = lugarProto ?? (vistaLivre ? 'Vista livre' : quadroFocado ? 'Foto' : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home))
 
   return (
     <div className="camada-cena fixed top-[3.4rem] left-[max(0.75rem,env(safe-area-inset-left))] z-20 flex items-center gap-1 md:top-[4.4rem] md:left-[max(1.25rem,env(safe-area-inset-left))]">

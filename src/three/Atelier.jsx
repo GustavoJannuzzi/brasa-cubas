@@ -113,7 +113,6 @@ export function Atelier() {
           key={i}
           geometry={roundedBox(p.geo[0], p.geo[1], p.geo[2], 0.012)}
           position={p.pos}
-          userData={{ parede: i === 1 ? 'esq' : i === 2 ? 'dir' : undefined }}
           castShadow
           receiveShadow
         >
@@ -128,7 +127,6 @@ export function Atelier() {
           key={i}
           geometry={roundedBox(p.geo[0], p.geo[1], p.geo[2], 0.014)}
           position={p.pos}
-          userData={{ parede: i === 1 ? 'esq' : undefined }}
         >
           <meshStandardMaterial color="#e6d8c0" roughness={0.7} />
         </mesh>

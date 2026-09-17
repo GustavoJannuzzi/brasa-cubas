@@ -83,7 +83,9 @@ export function Header() {
             type="button"
             onClick={() => openPanel(item.id)}
             aria-current={panel === item.id ? 'page' : undefined}
-            className={`rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors ${
+            // px-3 ate 960: com pecas no pedido o selo soma 27-32 px, e em 768
+            // "Como encomendar" voltava a quebrar (cabecalho a 79). Medido.
+            className={`rounded-full px-3 py-2 text-[13px] font-medium transition-colors min-[60rem]:px-3.5 ${
               panel === item.id
                 ? 'bg-porcelana text-carvao'
                 : // Porcelana cheia: a /80 sobre o degrade dava 3,24:1 na linha

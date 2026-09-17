@@ -129,14 +129,17 @@ do repositório; aqui vai o mapa por tema (commit de referência entre parêntes
   carregamento (`3954971`); aviso de demora na hora (`a08b97e`); cópia de
   primitiva sem montar a geometria padrão e sonda única de WebGL — A/B intercalado
   com CPU 4×: "Entrar" de 15,0 para 13,5 s de mediana (`d93a0e2`, `39a0815`);
-  arquivos com hash em cache de um ano (`8491514`).
+  arquivos com hash em cache de um ano (`8491514`); CSS das fontes do Google sem
+  bloquear a pintura (`c4204fd`).
 - **Resiliência**: foto que falha não derruba o 3D (`9178233`); pacote do 3D que
   não baixa com retentativa real (`1d03a81`); estado guardado com tipo errado
   (`4c23aa4`); limites de erro no painel e na raiz (`4c23aa4`, `162cfbe`); página
   legível sem JavaScript (`d733858`, `854a7ef`); reserva com conteúdo quando o
   app não sobe (`8837e9c`); armazenamento cheio (`5e68107`); luz e sombras de volta
   depois de o contexto WebGL cair (`2a18e57`); página traduzida pelo navegador
-  (`366aea5`, `7862f39`); aparelho só com WebGL1 vai para a lista (`56e2d3d`).
+  (`366aea5`, `7862f39`, nome fora da tradução em `f79da00`); aparelho só com
+  WebGL1 vai para a lista (`56e2d3d`); pedido acompanha entre duas abas
+  (`d1e1026`); página própria para endereço inexistente (`1e433fd`).
 - **Desempenho contínuo**: com movimento reduzido a cena para de desenhar quando
   nada muda, e a pausa virou prop do Canvas (`fbd8b10`); passada do mouse refaz a
   sombra por 0,75 s em vez de 3,5 s (`fbd8b10`).

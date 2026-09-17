@@ -11,6 +11,9 @@ function Cartao({ product }) {
   const openProduct = useStore((s) => s.openProduct)
   const focusProductIn3D = useStore((s) => s.focusProductIn3D)
   const addToCart = useStore((s) => s.addToCart)
+  // Pelo link #produtos o painel abre tambem no modo lista, onde "Ver na
+  // prateleira" so fechava o painel: sem prateleira na tela, o botao sai.
+  const simpleMode = useStore((s) => s.simpleMode)
   const isMobile = useIsMobile()
 
   return (
@@ -38,15 +41,19 @@ function Cartao({ product }) {
           da lista de alvos pequenos do site. min-h-11 no lugar do padding porque
           o items-center ja centraliza, e py-3 daria 43, ainda abaixo. */}
       <div className="flex border-t border-carvao/8">
-        <button
-          type="button"
-          onClick={() => focusProductIn3D(product.id)}
-          className="flex min-h-11 flex-1 items-center justify-center gap-1.5 text-[12.5px] font-medium text-carvao/70 transition-colors hover:bg-carvao/5"
-        >
-          <IconCube size={15} />
-          Ver na prateleira
-        </button>
-        <span className="w-px bg-carvao/8" />
+        {!simpleMode && (
+          <>
+            <button
+              type="button"
+              onClick={() => focusProductIn3D(product.id)}
+              className="flex min-h-11 flex-1 items-center justify-center gap-1.5 text-[12.5px] font-medium text-carvao/70 transition-colors hover:bg-carvao/5"
+            >
+              <IconCube size={15} />
+              Ver na prateleira
+            </button>
+            <span className="w-px bg-carvao/8" />
+          </>
+        )}
         <button
           type="button"
           onClick={() => addToCart(product.id)}

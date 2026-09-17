@@ -24,6 +24,9 @@ export function ProductDetail() {
   const openPanel = useStore((s) => s.openPanel)
   const addToCart = useStore((s) => s.addToCart)
   const focusProductIn3D = useStore((s) => s.focusProductIn3D)
+  // No modo lista nao ha prateleira na tela: o botao so fechava o painel. O
+  // detalhe chega ate aqui pelo nome da peca no pedido ou por link #produto/.
+  const simpleMode = useStore((s) => s.simpleMode)
   const product = productById(id)
 
   const [qty, setQty] = useState(product?.minQty ?? 1)
@@ -73,14 +76,16 @@ export function ProductDetail() {
       <div className="flex items-start gap-4">
         <div className="shrink-0">
           <PieceThumb piece={product.piece} size={120} />
-          <button
-            type="button"
-            onClick={() => focusProductIn3D(product.id)}
-            className="mt-1.5 flex w-[120px] items-center justify-center gap-1 rounded-lg border border-carvao/12 py-1.5 text-[11.5px] font-medium text-carvao/70"
-          >
-            <IconCube size={13} />
-            Ver na prateleira
-          </button>
+          {!simpleMode && (
+            <button
+              type="button"
+              onClick={() => focusProductIn3D(product.id)}
+              className="mt-1.5 flex w-[120px] items-center justify-center gap-1 rounded-lg border border-carvao/12 py-1.5 text-[11.5px] font-medium text-carvao/70"
+            >
+              <IconCube size={13} />
+              Ver na prateleira
+            </button>
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[22px] leading-none font-semibold text-brasa-texto">{priceLabel(product)}</p>

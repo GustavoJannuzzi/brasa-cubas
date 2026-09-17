@@ -33,6 +33,10 @@ export function HelpPanel() {
   const startTour = useStore((s) => s.startTour)
   const replayOnboarding = useStore((s) => s.replayOnboarding)
   const discovered = useStore((s) => s.discovered)
+  // Pelo link #ajuda o painel abre tambem no modo lista. Tour, visao geral,
+  // marcadores e apresentacao so existem no 3D (fechavam o painel e nada mais), e
+  // "Ver como lista" faria o contrario do que diz.
+  const simpleMode = useStore((s) => s.simpleMode)
   const isTouch = useIsTouch()
   // A POSICAO do menu vem da largura (md), nao do toque: no iPad em pe o menu
   // esta no topo, e numa janela estreita com mouse, embaixo. Pelo toque, a frase
@@ -70,45 +74,56 @@ export function HelpPanel() {
       </p>
 
       <div className="mt-5 grid gap-2">
-        <Acao
-          icon={IconSparkle}
-          title="Fazer o tour guiado"
-          text="Passo a passo pelos cinco pontos, na ordem."
-          onClick={() => {
-            startTour()
-            closePanel()
-          }}
-        />
-        <Acao
-          icon={IconHome}
-          title="Voltar para a visão geral"
-          text="Reenquadra a cena no ponto de partida."
-          onClick={() => {
-            goTo('home')
-            closePanel()
-          }}
-        />
-        <Acao
-          icon={showHotspots ? IconEyeOff : IconEye}
-          title={showHotspots ? 'Esconder os marcadores' : 'Mostrar os marcadores'}
-          text="Para olhar o ateliê sem nada por cima."
-          onClick={toggleHotspots}
-        />
-        <Acao
-          icon={IconLayers}
-          title="Ver como lista, sem 3D"
-          text="Mesmo conteúdo em página comum. Bom para conexão fraca ou aparelho antigo."
-          onClick={toggleSimpleMode}
-        />
-        <Acao
-          icon={IconCube}
-          title="Rever a apresentação"
-          text="Aquelas três telas do começo."
-          onClick={() => {
-            replayOnboarding()
-            closePanel()
-          }}
-        />
+        {simpleMode ? (
+          <Acao
+            icon={IconCube}
+            title="Ver o ateliê em 3D"
+            text="A mesma vitrine, dentro do ateliê."
+            onClick={toggleSimpleMode}
+          />
+        ) : (
+          <>
+            <Acao
+              icon={IconSparkle}
+              title="Fazer o tour guiado"
+              text="Passo a passo pelos cinco pontos, na ordem."
+              onClick={() => {
+                startTour()
+                closePanel()
+              }}
+            />
+            <Acao
+              icon={IconHome}
+              title="Voltar para a visão geral"
+              text="Reenquadra a cena no ponto de partida."
+              onClick={() => {
+                goTo('home')
+                closePanel()
+              }}
+            />
+            <Acao
+              icon={showHotspots ? IconEyeOff : IconEye}
+              title={showHotspots ? 'Esconder os marcadores' : 'Mostrar os marcadores'}
+              text="Para olhar o ateliê sem nada por cima."
+              onClick={toggleHotspots}
+            />
+            <Acao
+              icon={IconLayers}
+              title="Ver como lista, sem 3D"
+              text="Mesmo conteúdo em página comum. Bom para conexão fraca ou aparelho antigo."
+              onClick={toggleSimpleMode}
+            />
+            <Acao
+              icon={IconCube}
+              title="Rever a apresentação"
+              text="Aquelas três telas do começo."
+              onClick={() => {
+                replayOnboarding()
+                closePanel()
+              }}
+            />
+          </>
+        )}
       </div>
     </Panel>
   )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { hotspots } from '../data/scene'
 import { products } from '../data/products'
 import { studio } from '../data/studio'
@@ -290,12 +290,25 @@ export function TourBar() {
   const nextTourStep = useStore((s) => s.nextTourStep)
   const stopTour = useStore((s) => s.stopTour)
   const openPanel = useStore((s) => s.openPanel)
+  const proximo = useRef(null)
+  const ativo = tourStep >= 0
 
-  if (tourStep < 0) return null
+  // Medido pelo teclado: ao comecar o tour o foco nao entrava na barra, e o
+  // leitor de tela so ouvia "Proximo" a cada passo, sem o nome do ponto. O foco
+  // vai para "Proximo" (que tem o passo como descricao) e o texto do passo e
+  // regiao viva.
+  useEffect(() => {
+    if (ativo) proximo.current?.focus()
+  }, [ativo])
+
+  if (!ativo) return null
   const spot = hotspots[tourStep]
   if (!spot) return null
 
   const ultimo = tourStep === hotspots.length - 1
+  // A barra some ao terminar ou encerrar, com o foco dentro: ele caia no body.
+  // Vai antes para a marca, o comeco do cabecalho.
+  const focarMarca = () => document.querySelector('header button')?.focus()
 
   return (
     <div className="camada-cena anim-sobe fixed bottom-[calc(4.75rem_+_var(--sobra-area-segura))] left-3 right-3 z-30 md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
@@ -312,15 +325,20 @@ export function TourBar() {
               0,5 px: medido, 161,5 -> 162. */}
           <button
             type="button"
-            onClick={stopTour}
+            onClick={() => {
+              focarMarca()
+              stopTour()
+            }}
             className="btn-fantasma -my-[7.75px] ml-auto -mr-2 min-h-11 text-[12.5px]"
           >
             Encerrar
           </button>
         </div>
 
-        <p className="mt-1.5 font-display text-[17px] text-carvao">{spot.title}</p>
-        <p className="mt-0.5 text-[13px] text-carvao/70">{spot.hint}</p>
+        <div id="tour-passo" aria-live="polite">
+          <p className="mt-1.5 font-display text-[17px] text-carvao">{spot.title}</p>
+          <p className="mt-0.5 text-[13px] text-carvao/70">{spot.hint}</p>
+        </div>
 
         <div className="mt-3 flex gap-2">
           <button
@@ -333,7 +351,16 @@ export function TourBar() {
           >
             Abrir {spot.label.toLowerCase()}
           </button>
-          <button type="button" onClick={nextTourStep} className="btn-principal flex-1 px-4 py-2.5">
+          <button
+            ref={proximo}
+            type="button"
+            onClick={() => {
+              if (ultimo) focarMarca()
+              nextTourStep()
+            }}
+            aria-describedby="tour-passo"
+            className="btn-principal flex-1 px-4 py-2.5"
+          >
             {ultimo ? 'Terminar' : 'Próximo'}
             <IconArrow size={16} />
           </button>

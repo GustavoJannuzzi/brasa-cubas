@@ -74,9 +74,13 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
       // enquanto a folha existe, e o React remove o painel antes de tirar o
       // inert do irmao. Focar ali dentro era engolido, e o foco caia no body.
       devolucaoPendente = requestAnimationFrame(() => {
-        // Se a essa altura o foco ja esta dentro de um dialogo, outro painel
-        // assumiu: devolver agora seria roubar dele.
-        if (document.activeElement?.closest?.('[role="dialog"]')) return
+        // So devolve se o foco se PERDEU (foi para o body junto com o painel).
+        // Se ele ja esta em outro lugar, alguem assumiu de proposito: outro
+        // painel, ou a barra do tour que "Fazer o tour guiado" abre ao fechar a
+        // Ajuda — medido, a devolucao roubava o foco dela e o tour comecava com
+        // o teclado de volta no cabecalho.
+        const ativo = document.activeElement
+        if (ativo && ativo !== document.body && document.contains(ativo)) return
         if (alvo && document.contains(alvo) && !alvo.closest('[inert]')) {
           alvo.focus({ preventScroll: true })
           return

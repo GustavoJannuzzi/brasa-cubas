@@ -103,6 +103,24 @@ export function CameraRig() {
     }
   }, [])
 
+  // Esc desfaz o close (foto ou peca), como numa foto ampliada — o mesmo que o X
+  // da barra da peca e o botao de casa. O comentario abaixo ja contava com isso,
+  // mas so havia o Esc dos paineis e da apresentacao: medido em 1440, Esc com
+  // foto ou peca em close nao mudava nada. Com painel ou apresentacao na tela o
+  // Esc e deles: fecha so o painel e a peca embaixo continua (medido). A fase de
+  // CAPTURA le o estado antes de qualquer outro Esc agir, sem depender da ordem
+  // de registro — um link direto abre o painel antes de a cena montar.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return
+      const s = useStore.getState()
+      if (s.panel || document.querySelector('[role="dialog"]')) return
+      if (s.quadroFocado || s.focusedProduct) s.clearFocus()
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [])
+
   useEffect(() => {
     const c = controls.current
     if (!c || !entered) return

@@ -113,7 +113,9 @@ export function SimpleMode() {
 
       <main className="mx-auto max-w-3xl px-4 [&_section]:scroll-mt-20">
         <section className="py-8">
-          <h1 className="font-display text-[30px] leading-tight text-carvao sm:text-[36px]">
+          {/* tabIndex -1: recebe o foco quando a pessoa troca do ateliê para a
+              lista (ver focarDepoisDeTrocarModo no store). */}
+          <h1 tabIndex={-1} className="font-display text-[30px] leading-tight text-carvao outline-none sm:text-[36px]">
             Peças de porcelana fria, modeladas à mão sob encomenda
           </h1>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-carvao/70">

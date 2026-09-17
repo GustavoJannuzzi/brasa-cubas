@@ -10,6 +10,16 @@ let toastSeq = 0
 // redesenhar nada.
 const tempoDosAvisos = new Map()
 
+// Trocar entre lista e ateliê troca a pagina inteira com o foco dentro do botao
+// que pediu a troca: medido, o foco caia no body. Depois do commit, e so se o
+// foco se perdeu: vai para o titulo da lista ou para a marca do ateliê.
+const focarDepoisDeTrocarModo = (simples) =>
+  requestAnimationFrame(() => {
+    const ativo = document.activeElement
+    if (ativo && ativo !== document.body && document.contains(ativo)) return
+    document.querySelector(simples ? 'main h1' : 'header button')?.focus({ preventScroll: true })
+  })
+
 export const useStore = create(
   persist(
     (set, get) => ({
@@ -266,8 +276,15 @@ export const useStore = create(
 
       // --- preferencias / desempenho ---
       simpleMode: false,
-      setSimpleMode: (simpleMode) => set({ simpleMode }),
-      toggleSimpleMode: () => set((s) => ({ simpleMode: !s.simpleMode })),
+      setSimpleMode: (simpleMode) => {
+        set({ simpleMode })
+        focarDepoisDeTrocarModo(simpleMode)
+      },
+      toggleSimpleMode: () => {
+        const simples = !get().simpleMode
+        set({ simpleMode: simples })
+        focarDepoisDeTrocarModo(simples)
+      },
       // Estado do 3D. 'ok' enquanto desenha; 'perdido' quando o contexto WebGL
       // cai (o WKWebView derruba ao voltar de outro app) ou a cena lanca
       // excecao; 'indisponivel' quando o aparelho nem abre WebGL; 'naoBaixou'

@@ -36,6 +36,11 @@ const LUGARES_CURTO = {
 // offsetHeight e nao getBoundingClientRect: a entrada anima com transform.
 // Funcao de modulo, identidade estavel: o React chama uma vez ao montar e a
 // limpeza (React 19) ao desmontar.
+// Controle que some ao ser acionado (X do card, X da barra da peca, casa, fim
+// do tour) levava o foco junto: medido com Enter, ele caia no body em todos.
+// Antes de sumir, o foco vai para a marca, o comeco do cabecalho.
+const focarMarca = () => document.querySelector('header button')?.focus()
+
 function ancorarEmbaixo(el) {
   if (!el) return
   const raiz = document.documentElement
@@ -102,7 +107,10 @@ export function HeroCard() {
             primeira linha termina 6 px antes da caixa do X. */}
         <button
           type="button"
-          onClick={() => setFechado(true)}
+          onClick={() => {
+            focarMarca()
+            setFechado(true)
+          }}
           aria-label="Fechar apresentação"
           className="absolute -top-0.5 -right-0.5 grid h-11 w-11 place-items-center rounded-full text-carvao/55 hover:bg-carvao/6 hover:text-carvao"
         >
@@ -147,8 +155,19 @@ export function FocusedProductBar() {
   const openProduct = useStore((s) => s.openProduct)
   const addToCart = useStore((s) => s.addToCart)
   const clearFocus = useStore((s) => s.clearFocus)
+  const barra = useRef(null)
+  const visivel = Boolean(focusedProduct && !panel)
 
-  if (!focusedProduct || panel) return null
+  // "Ver na prateleira" fecha o painel e mostra esta barra: o botao sumia com o
+  // foco dentro e ele caia no body (medido). Se o foco se perdeu, vem para ca.
+  useEffect(() => {
+    if (!visivel) return
+    const ativo = document.activeElement
+    if (ativo && ativo !== document.body && document.contains(ativo)) return
+    barra.current?.focus({ preventScroll: true })
+  }, [visivel, focusedProduct])
+
+  if (!visivel) return null
   const product = products.find((p) => p.id === focusedProduct)
   if (!product) return null
 
@@ -158,14 +177,21 @@ export function FocusedProductBar() {
       className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-[max(1.25rem,env(safe-area-inset-left))] md:max-w-[24rem] camada-cena"
     >
       <div
-        className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)]"
+        ref={barra}
+        tabIndex={-1}
+        role="region"
+        aria-label={`Peça em destaque: ${product.name}`}
+        className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] outline-none"
         style={{ backdropFilter: 'blur(6px)' }}
       >
         {/* Mesmo conserto do X do card de destaque: 27x27 -> 44x44, sem fundo em
             repouso; o -top/-right mantem o centro do icone no canto. */}
         <button
           type="button"
-          onClick={clearFocus}
+          onClick={() => {
+            focarMarca()
+            clearFocus()
+          }}
           aria-label="Parar de destacar a peça"
           className="absolute -top-0.5 -right-0.5 grid h-11 w-11 place-items-center rounded-full text-carvao/55 hover:bg-carvao/6 hover:text-carvao"
         >
@@ -248,7 +274,10 @@ export function OrientationBar() {
           {(view !== 'home' || vistaLivre || quadroFocado) && (
             <button
               type="button"
-              onClick={() => goTo('home')}
+              onClick={() => {
+                focarMarca()
+                goTo('home')
+              }}
               title="Voltar para a visão geral"
               aria-label="Voltar para a visão geral"
               className="grid h-8 w-8 place-items-center rounded-full bg-carvao/55 text-porcelana/80 transition-colors hover:text-porcelana"
@@ -306,9 +335,6 @@ export function TourBar() {
   if (!spot) return null
 
   const ultimo = tourStep === hotspots.length - 1
-  // A barra some ao terminar ou encerrar, com o foco dentro: ele caia no body.
-  // Vai antes para a marca, o comeco do cabecalho.
-  const focarMarca = () => document.querySelector('header button')?.focus()
 
   return (
     <div className="camada-cena anim-sobe fixed bottom-[calc(4.75rem_+_var(--sobra-area-segura))] left-3 right-3 z-30 md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">

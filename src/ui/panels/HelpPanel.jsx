@@ -37,6 +37,7 @@ export function HelpPanel() {
   // marcadores e apresentacao so existem no 3D (fechavam o painel e nada mais), e
   // "Ver como lista" faria o contrario do que diz.
   const simpleMode = useStore((s) => s.simpleMode)
+  const gl3d = useStore((s) => s.gl3d)
   const isTouch = useIsTouch()
   // A POSICAO do menu vem da largura (md), nao do toque: no iPad em pe o menu
   // esta no topo, e numa janela estreita com mouse, embaixo. Pelo toque, a frase
@@ -75,12 +76,15 @@ export function HelpPanel() {
 
       <div className="mt-5 grid gap-2">
         {simpleMode ? (
-          <Acao
-            icon={IconCube}
-            title="Ver o ateliê em 3D"
-            text="A mesma vitrine, dentro do ateliê."
-            onClick={toggleSimpleMode}
-          />
+          // Mesma regra do cabecalho da lista: sem WebGL, o 3D nao abre.
+          gl3d !== 'indisponivel' && (
+            <Acao
+              icon={IconCube}
+              title="Ver o ateliê em 3D"
+              text="A mesma vitrine, dentro do ateliê."
+              onClick={toggleSimpleMode}
+            />
+          )
         ) : (
           <>
             <Acao

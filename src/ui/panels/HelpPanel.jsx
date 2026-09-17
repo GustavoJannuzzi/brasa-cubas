@@ -1,5 +1,5 @@
 import { hotspots } from '../../data/scene'
-import { useIsTouch } from '../../hooks/useMedia'
+import { useIsMobile, useIsTouch } from '../../hooks/useMedia'
 import { useStore } from '../../store/useStore'
 import { IconCube, IconEye, IconEyeOff, IconHome, IconLayers, IconSparkle } from '../Icons'
 import { Panel } from '../Panel'
@@ -34,6 +34,10 @@ export function HelpPanel() {
   const replayOnboarding = useStore((s) => s.replayOnboarding)
   const discovered = useStore((s) => s.discovered)
   const isTouch = useIsTouch()
+  // A POSICAO do menu vem da largura (md), nao do toque: no iPad em pe o menu
+  // esta no topo, e numa janela estreita com mouse, embaixo. Pelo toque, a frase
+  // mandava procurar no lugar errado nos dois casos (medido).
+  const isMobile = useIsMobile()
 
   return (
     <Panel title="Como navegar" subtitle="O ateliê é 3D, mas nada aqui depende de saber girar a cena" onClose={closePanel}>
@@ -48,14 +52,14 @@ export function HelpPanel() {
         <li className="flex gap-2.5">
           <span className="font-display text-brasa-texto">2</span>
           <span>
-            Toque nos marcadores <strong className="font-semibold text-carvao">✦</strong> para abrir
-            cada parte do ateliê. Tocar direto no objeto também funciona.
+            {isTouch ? 'Toque' : 'Clique'} nos marcadores <strong className="font-semibold text-carvao">✦</strong> para
+            abrir cada parte do ateliê. {isTouch ? 'Tocar' : 'Clicar'} direto no objeto também funciona.
           </span>
         </li>
         <li className="flex gap-2.5">
           <span className="font-display text-brasa-texto">3</span>
           <span>
-            Com pressa? O menu {isTouch ? 'de baixo' : 'do topo'} leva direto a produtos, orçamento e
+            Com pressa? O menu {isMobile ? 'de baixo' : 'do topo'} leva direto a produtos, orçamento e
             contato, sem precisar explorar.
           </span>
         </li>

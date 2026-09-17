@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useIsMobile } from '../../hooks/useMedia'
+import { useIsMobile, useIsTouch } from '../../hooks/useMedia'
 import { categories, products } from '../../data/products'
 import { priceLabel } from '../../lib/format'
 import { useStore } from '../../store/useStore'
@@ -64,6 +64,8 @@ export function ProductsPanel() {
   const closePanel = useStore((s) => s.closePanel)
   const openPanel = useStore((s) => s.openPanel)
   const [filter, setFilter] = useState('todos')
+  const isMobile = useIsMobile()
+  const isTouch = useIsTouch()
 
   const lista = useMemo(
     () => (filter === 'todos' ? products : products.filter((p) => p.category === filter)),
@@ -73,7 +75,12 @@ export function ProductsPanel() {
   return (
     <Panel
       title="Produtos"
-      subtitle={`${products.length} peças no catálogo · toque numa peça para ver na prateleira`}
+      // O que o toque no cartao faz depende da largura (ver Cartao): na folha do
+      // celular abre so o detalhe, sem destacar a peca atras. Prometer a prateleira
+      // ali era prometer o que nao acontece.
+      subtitle={`${products.length} peças no catálogo · ${isTouch ? 'toque' : 'clique'} numa peça para ${
+        isMobile ? 'ver os detalhes' : 'ver na prateleira'
+      }`}
       onClose={closePanel}
       footer={
         <button

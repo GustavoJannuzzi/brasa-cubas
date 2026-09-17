@@ -198,9 +198,17 @@ Números de 15/09, antes disso e das otimizações seguintes: ~593 mil triângul
 
 O projeto é um site estático (Vite): `npm run build` gera `dist/`, sem variável
 de ambiente para configurar — o pedido sai por link do WhatsApp, sem backend.
-Não existe `vercel.json` de propósito: é uma página só, sem rotas de cliente. Se
-algum dia entrar um router, aí sim vale `{ "rewrites": [{ "source": "/(.*)",
+É uma página só, sem rotas de cliente, então não há `rewrites`. Se algum dia
+entrar um router, aí sim vale `{ "rewrites": [{ "source": "/(.*)",
 "destination": "/" }] }`.
+
+O `vercel.json` só existe para o cache: tudo em `/assets/` tem o hash do conteúdo
+no nome, então vai como `max-age` de um ano e `immutable`. Sem isso a Vercel manda
+`max-age=0, must-revalidate`, e quem volta pelo link da bio pergunta de novo por
+cada arquivo antes de usar o que já tem. As fotos de `public/fotos/` NÃO entram
+na regra: o nome não muda quando a foto é trocada. Em outro host a mesma regra
+vai num `public/_headers` (Netlify e Cloudflare Pages leem esse arquivo):
+`/assets/*` seguido de `  Cache-Control: public, max-age=31536000, immutable`.
 
 A versão do Node está fixada em `engines` (>= 20.19), porque o Vite 8 não roda
 nas anteriores.

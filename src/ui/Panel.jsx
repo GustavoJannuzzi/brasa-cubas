@@ -29,6 +29,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
   const isMobile = useIsMobile()
   const sheet = useRef(null)
   const [drag, setDrag] = useState(0)
+  const dragAtual = useRef(0)
   const gesture = useRef(null)
   // Quem tinha o foco antes de o painel abrir.
   //
@@ -163,16 +164,22 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
 
   const onPointerMove = useCallback((e) => {
     if (!gesture.current) return
-    setDrag(Math.max(0, e.clientY - gesture.current.startY))
+    const d = Math.max(0, e.clientY - gesture.current.startY)
+    dragAtual.current = d
+    setDrag(d)
   }, [])
 
+  // O quanto arrastou vem de uma ref, e o onClose fica FORA do atualizador de
+  // estado: chamado la dentro (que o StrictMode ainda roda duas vezes), ele
+  // atualizava outro componente durante a renderizacao — erro no console a cada
+  // folha fechada arrastando (medido).
   const onPointerUp = useCallback(() => {
     if (!gesture.current) return
     gesture.current = null
-    setDrag((d) => {
-      if (d > 110) onClose()
-      return 0
-    })
+    const d = dragAtual.current
+    dragAtual.current = 0
+    setDrag(0)
+    if (d > 110) onClose()
   }, [onClose])
 
   return (

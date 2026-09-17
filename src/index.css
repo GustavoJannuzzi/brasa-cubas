@@ -257,8 +257,12 @@
 .anim-sobe {
   animation: sobe-suave 0.5s var(--ease-suave) both;
 }
+/* backwards, e nao both: com both a animacao seguia segurando translateY(0)
+   depois de terminar, e animacao ganha do transform inline do arrasto — medido,
+   arrastando a folha 200 px o transform ficava na identidade e ela nao
+   acompanhava o dedo. */
 .anim-painel {
-  animation: entra-painel 0.38s var(--ease-suave) both;
+  animation: entra-painel 0.38s var(--ease-suave) backwards;
 }
 .anim-gaveta {
   animation: entra-gaveta 0.32s var(--ease-suave) both;

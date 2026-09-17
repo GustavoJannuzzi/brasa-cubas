@@ -86,6 +86,18 @@
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
+/* Quanto a barra de baixo do celular CRESCE por causa da area segura: o padding
+   dela e max(0.75rem, inset), entao so passa de 0.75rem quando o inset passa.
+   O que fica ancorado acima da barra (card de destaque, barra de peca, tour,
+   avisos) soma esta sobra a sua distancia fixa. Sem ela, com 34 px de area
+   segura (indicador de inicio do iPhone) o card ficava a 1,6 px da barra — eram
+   23,6. Sem area segura a sobra e 0 e nada muda. Os dois 0.75rem andam juntos. */
+@layer base {
+  :root {
+    --sobra-area-segura: max(0px, env(safe-area-inset-bottom) - 0.75rem);
+  }
+}
+
 /* Camada de UI que fica POR CIMA da cena.
    No ateliê a pinça e da camera. So o canvas tinha touch-action, e qualquer
    gesto que encostasse num rotulo, no cartao ou na folha virava zoom da pagina

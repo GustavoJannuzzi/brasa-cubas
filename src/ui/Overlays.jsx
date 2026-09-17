@@ -67,7 +67,7 @@ export function HeroCard() {
     return null
 
   return (
-    <div className="anim-sobe fixed right-3 bottom-[4.4rem] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[22rem] camada-cena">
+    <div className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[22rem] camada-cena">
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] md:p-4"
         style={{ backdropFilter: 'blur(6px)' }}
@@ -130,7 +130,7 @@ export function FocusedProductBar() {
   if (!product) return null
 
   return (
-    <div className="anim-sobe fixed right-3 bottom-[4.4rem] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[24rem] camada-cena">
+    <div className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[24rem] camada-cena">
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)]"
         style={{ backdropFilter: 'blur(6px)' }}
@@ -263,7 +263,7 @@ export function TourBar() {
   const ultimo = tourStep === hotspots.length - 1
 
   return (
-    <div className="camada-cena anim-sobe fixed bottom-[4.75rem] left-3 right-3 z-30 md:bottom-5 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
+    <div className="camada-cena anim-sobe fixed bottom-[calc(4.75rem_+_var(--sobra-area-segura))] left-3 right-3 z-30 md:bottom-5 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
       <div className="rounded-2xl bg-porcelana/96 p-4 shadow-[var(--shadow-painel)]" style={{ backdropFilter: 'blur(6px)' }}>
         <div className="flex items-center gap-2">
           <IconSparkle size={16} className="text-brasa" />
@@ -370,7 +370,7 @@ export function Toasts() {
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed bottom-[8.5rem] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6"
+      className="pointer-events-none fixed bottom-[calc(8.5rem_+_var(--sobra-area-segura))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6"
     >
       {toasts.map((t) => (
         <span

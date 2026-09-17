@@ -71,8 +71,11 @@ atrás da parede direita, e um arrasto vertical a levava a 6 m de altura, acima
 do teto, que é um plano de uma face só.
 
 **Sem passe de postprocessing.** Bloom/DoF custam caro em celular. O clima
-quente vem da iluminação, de um `Environment` gerado na hora (sem baixar HDRI) e
-de uma vinheta em CSS por cima do canvas.
+quente vem da iluminação, de um mapa de ambiente gerado na hora a partir de
+`Lightformer`s (`AmbienteGerado`, sem baixar HDRI) e de uma vinheta em CSS por
+cima do canvas. O `AmbienteGerado` é o caminho do `<Environment>` do drei com
+filhos, copiado para não levar junto os carregadores de HDR/EXR (−17 KB
+comprimidos no pacote do 3D; o mapa sai idêntico).
 
 ---
 
@@ -165,7 +168,7 @@ src/
               textures.js (canvas), lente.js (campo de visão e gaveta),
               experienceLazy.js (o 3D em pacote próprio), Atelier, WorkTable,
               Shelf, Pinboard, Quadros, Plants, Cat, CeramicPiece, Hotspot,
-              Lighting, CameraRig, FotoOpcional, Experience,
+              Lighting, AmbienteGerado, CameraRig, FotoOpcional, Experience,
               useGeracaoDoContexto.js (refaz o que desenha uma vez só)
   ui/         Header (com o MobileNav), Panel, Intro, Overlays, SimpleMode,
               Aviso3D, Boundary3D, ErroGeral (queda do app inteiro),
@@ -198,8 +201,8 @@ medido; o comentário no código conta qual.
   (`PausaQuandoNadaMexe`, em `Experience.jsx`) e só desenha quando alguém pede. A
   pausa é o prop `frameloop` do Canvas: chamar `setFrameloop` de dentro da cena é
   desfeito no próximo render.
-- **O que desenha uma vez só numa textura** (`frames={1}`, mapa de sombra
-  congelado) **precisa ser refeito quando o contexto WebGL volta** — o navegador do
+- **O que desenha uma vez só numa textura** (`AmbienteGerado`, `frames={1}`, mapa
+  de sombra congelado) **precisa ser refeito quando o contexto WebGL volta** — o navegador do
   Instagram derruba o contexto ao voltar do WhatsApp. Usar a `key` de
   `useGeracaoDoContexto` (ver `Lighting` e `Atelier`).
 

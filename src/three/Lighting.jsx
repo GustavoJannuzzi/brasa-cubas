@@ -1,5 +1,6 @@
-import { Environment, Lightformer } from '@react-three/drei'
+import { Lightformer } from '@react-three/drei'
 import { room } from '../data/scene'
+import { AmbienteGerado } from './AmbienteGerado'
 import { useGeracaoDoContexto } from './useGeracaoDoContexto'
 
 /**
@@ -63,7 +64,7 @@ export function Lighting({ quality = 'alta' }) {
       {/* Ambiente gerado na hora, sem baixar HDRI: e o que da o brilho suave
           de porcelana nas pecas e o reflexo lustroso nas folhas. Desenhado uma
           vez: a `key` refaz depois de o contexto cair (useGeracaoDoContexto). */}
-      <Environment key={geracao} resolution={alta ? 128 : 64} frames={1}>
+      <AmbienteGerado key={geracao} resolution={alta ? 128 : 64}>
         <Lightformer
           form="rect"
           intensity={3.2}
@@ -88,7 +89,7 @@ export function Lighting({ quality = 'alta' }) {
           position={[-3, 1.4, 0.6]}
           target={[0, 1.2, 0]}
         />
-      </Environment>
+      </AmbienteGerado>
     </>
   )
 }

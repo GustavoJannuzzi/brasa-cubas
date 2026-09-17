@@ -135,6 +135,22 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [isMobile])
 
+  // Altura da folha do celular em --folha-altura, para os avisos subirem acima
+  // dela (Toasts, em Overlays). Medido: adicionando pelo detalhe da peca, o aviso
+  // nascia sobre o seletor de quantidade e o "1" sumia por 2,6 s.
+  // offsetHeight e nao getBoundingClientRect: a folha entra com transform.
+  useEffect(() => {
+    const el = sheet.current
+    if (!isMobile || !el) return
+    const raiz = document.documentElement
+    const observador = new ResizeObserver(() => raiz.style.setProperty('--folha-altura', `${el.offsetHeight}px`))
+    observador.observe(el)
+    return () => {
+      observador.disconnect()
+      raiz.style.removeProperty('--folha-altura')
+    }
+  }, [isMobile])
+
   const onPointerDown = useCallback((e) => {
     if (!e.isPrimary) return
     gesture.current = { startY: e.clientY, id: e.pointerId }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { hotspots } from '../data/scene'
 import { products } from '../data/products'
 import { studio } from '../data/studio'
+import { useIsMobile } from '../hooks/useMedia'
 import { money, priceLabel } from '../lib/format'
 import { useStore } from '../store/useStore'
 import { IconArrow, IconClose, IconEye, IconEyeOff, IconHome, IconLayers, IconSparkle } from './Icons'
@@ -386,18 +387,28 @@ export function LowPerfBanner() {
 
 export function Toasts() {
   const toasts = useStore((s) => s.toasts)
+  // Gaveta aberta no desktop: o aviso centraliza na area LIVRE, como a camera
+  // (lente.js). Centralizado na tela inteira, em 768 ele nascia sobre o botao
+  // "Adicionar ao pedido" que acabara de ser clicado (1.589 px2 de letra).
+  // 28rem = w-[27rem] + right-4 da gaveta em Panel.jsx.
+  const painelAberto = useStore((s) => Boolean(s.panel))
+  const isMobile = useIsMobile()
+  const gavetaAberta = painelAberto && !isMobile
 
   // Sempre montado, mesmo vazio: uma regiao viva so e anunciada de forma
   // confiavel se ja existia no DOM quando o texto chega. Montada junto com o
   // aviso, o leitor de tela costuma perder a primeira mensagem — e aqui a
   // primeira mensagem e "20 un (minimo do pedido) · R$ 240".
-  // No celular: o maior entre o lugar de sempre e 0,5rem acima do cartao ancorado
-  // (ver ancorarEmbaixo). Sem cartao, --ancora-baixo nao existe e vale o de sempre.
+  // No celular: o maior entre o lugar de sempre, 0,5rem acima do cartao ancorado
+  // (ver ancorarEmbaixo) e 0,5rem acima da folha aberta (--folha-altura, Panel).
+  // Sem cartao nem folha, as variaveis nao existem e vale o de sempre.
   return (
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed bottom-[max(calc(8.5rem_+_var(--sobra-area-segura)),calc(4.4rem_+_var(--sobra-area-segura)_+_var(--ancora-baixo,0px)_+_0.5rem))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6"
+      className={`pointer-events-none fixed bottom-[max(calc(8.5rem_+_var(--sobra-area-segura)),calc(4.4rem_+_var(--sobra-area-segura)_+_var(--ancora-baixo,0px)_+_0.5rem),calc(var(--folha-altura,0px)_+_0.5rem))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6 ${
+        gavetaAberta ? 'md:left-[calc(50%-14rem)] md:max-w-[calc(100vw-30rem)]' : ''
+      }`}
     >
       {toasts.map((t) => (
         <span

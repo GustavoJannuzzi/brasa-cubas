@@ -135,16 +135,22 @@ export function FocusedProductBar() {
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)]"
         style={{ backdropFilter: 'blur(6px)' }}
       >
+        {/* Mesmo conserto do X do card de destaque: 27x27 -> 44x44, sem fundo em
+            repouso; o -top/-right mantem o centro do icone no canto. */}
         <button
           type="button"
           onClick={clearFocus}
           aria-label="Parar de destacar a peça"
-          className="absolute top-1.5 right-1.5 rounded-full p-1.5 text-carvao/55 hover:bg-carvao/6 hover:text-carvao"
+          className="absolute -top-0.5 -right-0.5 grid h-11 w-11 place-items-center rounded-full text-carvao/55 hover:bg-carvao/6 hover:text-carvao"
         >
           <IconClose size={15} />
         </button>
 
-        <p className="pr-7 text-[14px] leading-snug font-medium text-carvao">{product.name}</p>
+        {/* pr-8 (era pr-7): o espaco reservado para o X tem de acompanhar o X. Com
+            ele em 44, a area de toque entra 30 px no conteudo pela direita, e os 28
+            do pr-7 deixavam a ultima letra de um nome longo 2 px embaixo dela.
+            Medido no desktop, onde a barra se ajusta ao nome: 34 px2 (2 x 17). */}
+        <p className="pr-8 text-[14px] leading-snug font-medium text-carvao">{product.name}</p>
         <p className="mt-0.5 text-[13px] font-semibold text-brasa-texto">{priceLabel(product)}</p>
 
         <div className="mt-2.5 flex gap-2">
@@ -264,7 +270,16 @@ export function TourBar() {
           <span className="text-[11px] font-semibold tracking-wide text-brasa-texto uppercase">
             Tour · {tourStep + 1} de {hotspots.length}
           </span>
-          <button type="button" onClick={stopTour} className="btn-fantasma ml-auto -mr-2 text-[12.5px]">
+          {/* 44 de altura (media 28,5: texto de 12,5 px com line-height 1, mais o
+              py-2), sem fundo em repouso. O -my de 7,75 px devolve exatamente o que
+              a caixa ganhou (44 - 15,5 = 28,5), para a barra do tour nao mudar de
+              altura. Com 7,5 px — conta feita sobre o 29 arredondado — ela crescia
+              0,5 px: medido, 161,5 -> 162. */}
+          <button
+            type="button"
+            onClick={stopTour}
+            className="btn-fantasma -my-[7.75px] ml-auto -mr-2 min-h-11 text-[12.5px]"
+          >
             Encerrar
           </button>
         </div>

@@ -270,6 +270,10 @@ export function QuotePanel() {
               <button
                 type="button"
                 onClick={() => {
+                  // O aviso de rascunho some com este botao dentro: sem isto o
+                  // foco caia no body (medido com Enter). Vai para o primeiro
+                  // campo, que fica.
+                  document.getElementById('q-kind')?.focus()
                   resetQuote()
                   setVeioDeRascunho(false)
                   setTouched(false)

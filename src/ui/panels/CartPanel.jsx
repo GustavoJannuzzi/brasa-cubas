@@ -160,8 +160,16 @@ export function CartPanel() {
     }
   }
 
-  const jaMandei = () => {
+  // Esvaziar troca o painel pelo estado vazio, sem o rodape e sem a lista: o
+  // botao acionado some com o foco dentro (medido com Enter: foco no body).
+  // O foco vai antes para o painel.
+  const esvaziar = (e) => {
+    e?.currentTarget.closest('[role="dialog"]')?.focus()
     clearCart()
+  }
+
+  const jaMandei = (e) => {
+    esvaziar(e)
     setMandou(false)
   }
 
@@ -278,7 +286,7 @@ export function CartPanel() {
         <button type="button" onClick={() => openPanel('produtos')} className="btn-fantasma -ml-1 min-h-11">
           Continuar escolhendo
         </button>
-        <button type="button" onClick={clearCart} className="btn-fantasma min-h-11 text-[13px]">
+        <button type="button" onClick={esvaziar} className="btn-fantasma min-h-11 text-[13px]">
           Limpar
         </button>
       </div>

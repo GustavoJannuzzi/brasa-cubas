@@ -13,7 +13,7 @@ import {
   shelfSlotPosition,
   views,
 } from '../data/scene'
-import { useIsMobile, useReducedMotion } from '../hooks/useMedia'
+import { useIsMobile, useIsTouch, useReducedMotion } from '../hooks/useMedia'
 import { useStore } from '../store/useStore'
 
 // Distancia proporcional ao tamanho da peca: a peca ocupa mais ou menos o
@@ -43,6 +43,7 @@ export function CameraRig() {
   const entered = useStore((s) => s.entered)
   const cameraSeq = useStore((s) => s.cameraSeq)
   const isMobile = useIsMobile()
+  const isTouch = useIsTouch()
   const reduced = useReducedMotion()
   const ultimoToque = useRef(0)
   const alvo = useMemo(() => new THREE.Vector3(), [])
@@ -198,8 +199,11 @@ export function CameraRig() {
       // foi exatamente esse: "parece camera de jogo, esquisito, menos
       // rotacional". Freando o vertical, um dedo passa a ler como girar uma
       // mesa giratoria: a sala roda em volta e o horizonte fica quieto.
-      azimuthRotateSpeed={isMobile ? 0.55 : 0.9}
-      polarRotateSpeed={isMobile ? 0.26 : 0.75}
+      // Pelo PONTEIRO, e nao pela largura: por largura, iPad em pe e celular
+      // deitado (>= 768, toque) giravam na velocidade de mouse, e uma janela
+      // estreita de desktop, com mouse, na de toque. Medido lendo a instancia.
+      azimuthRotateSpeed={isTouch ? 0.55 : 0.9}
+      polarRotateSpeed={isTouch ? 0.26 : 0.75}
     />
   )
 }

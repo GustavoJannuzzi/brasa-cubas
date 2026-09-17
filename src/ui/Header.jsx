@@ -13,8 +13,20 @@ export const NAV = [
 ]
 
 function Marca({ onClick }) {
+  // O nome acessivel COMECA pelo texto que esta na tela (WCAG 2.5.3, nivel A).
+  // Antes era so "Voltar para a visao geral do atelie": quem usa comando de voz e
+  // diz "clicar em Brasa Cubas" nao acionava o botao, porque para o leitor ele nao
+  // se chamava assim. Medido numa auditoria de todo focavel com rotulo e texto
+  // visivel: era a UNICA falha (os marcadores e o "Pedido" ja passavam).
+  // Montado dos mesmos dados que desenham o texto — escrito a mao, divergiria em
+  // silencio no dia em que o nome mudasse em studio.js.
   return (
-    <button type="button" onClick={onClick} className="flex items-center gap-2.5 text-left" aria-label="Voltar para a visão geral do ateliê">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-2.5 text-left"
+      aria-label={`${studio.name}, ${studio.tagline}: voltar para a visão geral`}
+    >
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brasa text-porcelana">
         <span className="font-display text-[15px] leading-none">bc</span>
       </span>

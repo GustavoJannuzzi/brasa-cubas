@@ -396,6 +396,8 @@ export function LowPerfBanner() {
 
 export function Toasts() {
   const toasts = useStore((s) => s.toasts)
+  const segurarAviso = useStore((s) => s.segurarAviso)
+  const soltarAviso = useStore((s) => s.soltarAviso)
   // Gaveta aberta no desktop: o aviso centraliza na area LIVRE, como a camera
   // (lente.js). Centralizado na tela inteira, em 768 ele nascia sobre o botao
   // "Adicionar ao pedido" que acabara de ser clicado (1.589 px2 de letra).
@@ -434,6 +436,10 @@ export function Toasts() {
             <button
               type="button"
               onClick={t.acao.aoClicar}
+              onMouseEnter={() => segurarAviso(t.id)}
+              onMouseLeave={() => soltarAviso(t.id)}
+              onFocus={() => segurarAviso(t.id)}
+              onBlur={() => soltarAviso(t.id)}
               className="pointer-events-auto -mr-1.5 shrink-0 rounded-full px-2 py-0.5 font-semibold text-brasa-clara underline underline-offset-2"
             >
               {t.acao.rotulo}

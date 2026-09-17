@@ -6,6 +6,9 @@ import { hotspots, panelToHotspot } from '../data/scene'
 import { money } from '../lib/format'
 
 let toastSeq = 0
+// Temporizadores dos avisos, fora do estado: pausar e retomar nao precisa
+// redesenhar nada.
+const tempoDosAvisos = new Map()
 
 export const useStore = create(
   persist(
@@ -281,10 +284,27 @@ export const useStore = create(
         set((s) => ({
           toasts: [...s.toasts.filter((t) => !chave || t.chave !== chave), { id, texto, chave, acao }],
         }))
-        setTimeout(
-          () => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
-          acao ? 6000 : 2600,
+        get().agendarFimDoAviso(id, acao ? 6000 : 2600)
+      },
+      agendarFimDoAviso: (id, ms) => {
+        clearTimeout(tempoDosAvisos.get(id))
+        tempoDosAvisos.set(
+          id,
+          setTimeout(() => {
+            tempoDosAvisos.delete(id)
+            set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }))
+          }, ms),
         )
+      },
+      // Com o mouse ou o foco no "Desfazer", o aviso nao some (WCAG 2.2.1). Antes
+      // ele sumia aos 6 s mesmo com o foco no botao, e o foco caia no body.
+      // Ao sair, ganha mais 3 s para a pessoa terminar de ler.
+      segurarAviso: (id) => {
+        clearTimeout(tempoDosAvisos.get(id))
+        tempoDosAvisos.delete(id)
+      },
+      soltarAviso: (id) => {
+        if (get().toasts.some((t) => t.id === id)) get().agendarFimDoAviso(id, 3000)
       },
     }),
     {

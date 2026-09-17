@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom'
 import { studio } from '../data/studio'
 import { products } from '../data/products'
 import { useStore } from '../store/useStore'
-import { IconArrow, IconLayers } from './Icons'
+import { IconArrow, IconLayers, MarcadorEmLinha } from './Icons'
 import { PieceThumb } from './PieceThumb'
 
 // Depois deste tempo sem o primeiro quadro, o loader para de esperar em
@@ -165,7 +165,11 @@ const TELAS = [
       'Você está olhando a bancada onde as peças de porcelana fria são modeladas. Arraste para girar e olhar em volta.',
   },
   {
-    titulo: 'Os pontos ✦ abrem as coisas',
+    titulo: (
+      <>
+        Os pontos <MarcadorEmLinha /> abrem as coisas
+      </>
+    ),
     texto:
       'A prateleira tem os produtos com preço. O caderno abre o orçamento. O mural mostra o que já foi entregue.',
   },

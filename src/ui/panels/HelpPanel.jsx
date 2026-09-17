@@ -1,7 +1,7 @@
 import { hotspots } from '../../data/scene'
 import { useIsMobile, useIsTouch } from '../../hooks/useMedia'
 import { useStore } from '../../store/useStore'
-import { IconCube, IconEye, IconEyeOff, IconHome, IconLayers, IconSparkle } from '../Icons'
+import { IconCube, IconEye, IconEyeOff, IconHome, IconLayers, IconSparkle, MarcadorEmLinha } from '../Icons'
 import { Panel } from '../Panel'
 
 function Acao({ icon: Icon, title, text, onClick, ativo }) {
@@ -52,7 +52,7 @@ export function HelpPanel() {
         <li className="flex gap-2.5">
           <span className="font-display text-brasa-texto">2</span>
           <span>
-            {isTouch ? 'Toque' : 'Clique'} nos marcadores <strong className="font-semibold text-carvao">✦</strong> para
+            {isTouch ? 'Toque' : 'Clique'} nos marcadores <MarcadorEmLinha /> para
             abrir cada parte do ateliê. {isTouch ? 'Tocar' : 'Clicar'} direto no objeto também funciona.
           </span>
         </li>

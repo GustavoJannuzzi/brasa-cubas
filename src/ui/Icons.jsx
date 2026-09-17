@@ -220,3 +220,19 @@ export const hotspotIcons = {
   hands: IconHands,
   phone: IconPhone,
 }
+
+/**
+ * Miniatura do marcador da cena para usar no meio de uma frase.
+ *
+ * A apresentacao e a ajuda falavam em "pontos ✦", e na cena nao existe estrela:
+ * o marcador e um circulo creme com o icone em brasa (raio-x de 15/09, UX-12).
+ * Escondido do leitor de tela — a frase se sustenta sem ele.
+ */
+export const MarcadorEmLinha = () => (
+  <span
+    aria-hidden="true"
+    className="mx-0.5 inline-grid h-[1.3em] w-[1.3em] place-items-center rounded-full border border-carvao/15 bg-creme align-[-0.22em] text-brasa"
+  >
+    <IconShelf size={11} />
+  </span>
+)

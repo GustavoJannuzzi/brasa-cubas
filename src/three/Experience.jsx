@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
@@ -264,50 +264,73 @@ function Scene({ quality, aoBaixarDpr }) {
   // Parar em vez de sumir segue a decisao que o projeto ja tomou nos outros
   // quatro lugares — o pulso do marcador, por exemplo, vira anel estatico.
   const reduzido = useReducedMotion()
+
+  // O conteudo da cena monta numa TRANSICAO. Montar tudo de uma vez era uma
+  // tarefa unica na linha principal: medido na producao, celular 375 com CPU 4x
+  // mais lenta, uma tarefa de 6,7 s e ~16 s de bloqueio somado ate o "Entrar".
+  // Nesse tempo o toque em "ver o catalogo como lista" — a saida de quem tem
+  // aparelho lento — so era atendido 9 a 10 s depois. O perfil mostrou que o
+  // grosso e construir geometria no render de cada peca e de cada planta; numa
+  // transicao a raiz do R3F (concorrente) fatia esse trabalho entre componentes
+  // e atende o toque no meio. Tudo acontece atras do carregador.
+  // Montam JUNTO com o conteudo, e nao antes: CameraRig (le as paredes-colisor ao
+  // montar), Sombra (congela o mapa depois de 45 quadros — da cena vazia, as
+  // pecas nunca teriam sombra), SceneReady (liberaria o "Entrar" com a cena vazia)
+  // e PerfWatch (mediria os quadros engasgados da montagem e rebaixaria o
+  // aparelho).
+  const [montar, setMontar] = useState(false)
+  useEffect(() => {
+    startTransition(() => setMontar(true))
+  }, [])
+
   return (
     <>
       <color attach="background" args={['#1c1512']} />
       <fogExp2 attach="fog" args={['#241b16', 0.042]} />
-
-      <Lighting quality={quality} />
-      <Atelier />
-      <WorkTable quality={quality} />
-      <Shelf quality={quality} />
-      <Pinboard />
-      {/* Suspense CURTO, so em volta das fotos. A cena inteira nao pode
-          suspender: o SceneReady vive aqui do lado, e se o useFrame dele parar
-          enquanto as imagens chegam, `assetsReady` nunca dispara e quem chegou
-          fica presa no loader para sempre. Assim o comodo aparece completo e as
-          molduras entram quando as fotos terminam de carregar. */}
-      <Suspense fallback={null}>
-        <Quadros />
-      </Suspense>
-      <Plants quality={quality} />
-      {/* O gato entra depois das plantas porque divide o canto com elas: a
-          posicao dele foi escolhida medindo a distancia ate a `costela-fundo`,
-          que eu tinha acabado de levantar. */}
-      <Gato />
-      <Hotspots />
-
-      {/* Poeira no facho de luz. Fica no caminho que o sol de verdade faz —
-          do vao da janela (1.34, 1.72, -1.7) ate a bancada (0.5, 0.78, 0) —
-          e nao num ponto qualquer: fora do facho nao haveria luz para revelar. */}
-      <Sparkles
-        count={alta ? 70 : 24}
-        scale={[1.4, 1.3, 1.9]}
-        position={[0.92, 1.26, -0.85]}
-        size={alta ? 2.2 : 1.6}
-        speed={reduzido ? 0 : 0.22}
-        opacity={0.5}
-        color="#ffe6c0"
-      />
-
-      <CameraRig />
       <CameraFov />
-      <SceneReady />
-      <Sombra />
-      <PerfWatch aoBaixarDpr={aoBaixarDpr} />
       <GuardaContexto />
+
+      {montar && (
+        <>
+          <Lighting quality={quality} />
+          <Atelier />
+          <WorkTable quality={quality} />
+          <Shelf quality={quality} />
+          <Pinboard />
+          {/* Suspense CURTO, so em volta das fotos. A cena inteira nao pode
+              suspender: o SceneReady vive aqui do lado, e se o useFrame dele parar
+              enquanto as imagens chegam, `assetsReady` nunca dispara e quem chegou
+              fica presa no loader para sempre. Assim o comodo aparece completo e as
+              molduras entram quando as fotos terminam de carregar. */}
+          <Suspense fallback={null}>
+            <Quadros />
+          </Suspense>
+          <Plants quality={quality} />
+          {/* O gato entra depois das plantas porque divide o canto com elas: a
+              posicao dele foi escolhida medindo a distancia ate a `costela-fundo`,
+              que eu tinha acabado de levantar. */}
+          <Gato />
+          <Hotspots />
+
+          {/* Poeira no facho de luz. Fica no caminho que o sol de verdade faz —
+              do vao da janela (1.34, 1.72, -1.7) ate a bancada (0.5, 0.78, 0) —
+              e nao num ponto qualquer: fora do facho nao haveria luz para revelar. */}
+          <Sparkles
+            count={alta ? 70 : 24}
+            scale={[1.4, 1.3, 1.9]}
+            position={[0.92, 1.26, -0.85]}
+            size={alta ? 2.2 : 1.6}
+            speed={reduzido ? 0 : 0.22}
+            opacity={0.5}
+            color="#ffe6c0"
+          />
+
+          <CameraRig />
+          <SceneReady />
+          <Sombra />
+          <PerfWatch aoBaixarDpr={aoBaixarDpr} />
+        </>
+      )}
     </>
   )
 }

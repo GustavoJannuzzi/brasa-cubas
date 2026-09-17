@@ -320,7 +320,17 @@ export const hotspots = [
     icon: 'notebook',
     panel: 'orcamento',
     view: 'orcamento',
-    position: [0.38, 0.94, 0.14],
+    // x 0.32 (era 0.38). Na visao geral o rotulo do "Contato" encostava no
+    // circulo deste marcador a partir de ~760 px de altura: 8 px2 em 1536x730,
+    // 155 em 1366x657, 267 em 1440x600 (so as partes pintadas). Com 6 cm para a
+    // esquerda, medido com o codigo real em 14 telas de 360x640 a 1440x900: zero
+    // sobreposicao e nenhum marcador sob o card. Custo: no close do caderno (passo
+    // 2 do tour) o circulo encosta no copo de pinceis.
+    // Reprovadas: 4 cm esquerda + 3 abaixo deixava 328 px2 sob o card em 360x640
+    // e 9 px2 em 1440x600; 6 cm abaixo jogava o marcador sob o card em 360x640;
+    // subir o Contato levava o marcador dele para cima da tabua no close do
+    // telefone.
+    position: [0.32, 0.94, 0.14],
     order: 2,
   },
   {

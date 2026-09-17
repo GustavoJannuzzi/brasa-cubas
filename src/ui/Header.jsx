@@ -22,6 +22,13 @@ function Marca({ onClick }) {
   // silencio no dia em que o nome mudasse em studio.js.
   // Area de toque de 44 (media 36); o -my-1 devolve a altura ganha, e o cabecalho
   // nao cresce.
+  // Entre 768 e 960 (iPad em pe, iPhone deitado) fica so o monograma: o menu de
+  // desktop ja aparece e a linha inteira precisa de 926 px (folga de 34 para fonte
+  // que renderiza mais larga ou ainda nao carregou). Medido: em 768/812/820
+  // o nome ia a 2 linhas e o subtitulo a 3, o cabecalho a 100 px e o texto descia
+  // 20,6 px por cima do chip "Visao geral do atelie"; "Como encomendar" em 2
+  // linhas. So monograma + carrinho so de icone precisa de 748. O nome segue no
+  // aria-label.
   return (
     <button
       type="button"
@@ -32,7 +39,7 @@ function Marca({ onClick }) {
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brasa text-porcelana">
         <span className="font-display text-[15px] leading-none">bc</span>
       </span>
-      <span className="leading-tight">
+      <span className="leading-tight md:hidden min-[60rem]:block">
         <span className="block font-display text-[17px] text-porcelana">{studio.name}</span>
         <span className="block text-[11px] text-porcelana/80">{studio.tagline}</span>
       </span>
@@ -110,7 +117,8 @@ export function Header() {
           aria-label={`Pedido: ${cartCount} ${cartCount === 1 ? 'peça' : 'peças'}`}
         >
           <IconCart size={19} />
-          <span className="hidden sm:inline">Pedido</span>
+          {/* Some tambem entre 768 e 960, junto com o nome da marca (ver Marca). */}
+          <span className="hidden sm:inline md:hidden min-[60rem]:inline">Pedido</span>
           {cartCount > 0 && (
             <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brasa px-1 text-[11px] font-semibold text-porcelana">
               {cartCount}

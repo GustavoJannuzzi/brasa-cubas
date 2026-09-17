@@ -127,7 +127,9 @@ Não é o layout de desktop encolhido:
   toque grosso, até 4 núcleos, até 2 GB ou renderizador por software caem na
   `baixa` — sem sombra nem antialias, `dpr` até 1,25, menos partículas e plantas
   com menos folhas. Girar o celular muda o enquadramento, nunca a qualidade.
-- `prefers-reduced-motion` desliga as transições de câmera e o respiro.
+- `prefers-reduced-motion` desliga as transições de câmera e o respiro, e com
+  a cena parada o loop só desenha quando algo muda (`PausaQuandoNadaMexe` em
+  `src/three/Experience.jsx`, a mesma pausa da folha aberta no celular).
 
 ---
 

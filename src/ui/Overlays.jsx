@@ -95,7 +95,7 @@ export function HeroCard() {
   return (
     <div
       ref={ancorarEmbaixo}
-      className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-[max(1.25rem,env(safe-area-inset-left))] md:max-w-[22rem] camada-cena"
+      className="anim-sobe fixed right-3 bottom-[calc(var(--barra-altura,4.4rem)_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-[max(1.25rem,env(safe-area-inset-left))] md:max-w-[22rem] camada-cena"
     >
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] md:p-4"
@@ -175,7 +175,7 @@ export function FocusedProductBar() {
   return (
     <div
       ref={ancorarEmbaixo}
-      className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-[max(1.25rem,env(safe-area-inset-left))] md:max-w-[24rem] camada-cena"
+      className="anim-sobe fixed right-3 bottom-[calc(var(--barra-altura,4.4rem)_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-[max(1.25rem,env(safe-area-inset-left))] md:max-w-[24rem] camada-cena"
     >
       <div
         ref={barra}
@@ -338,7 +338,7 @@ export function TourBar() {
   const ultimo = tourStep === hotspots.length - 1
 
   return (
-    <div className="camada-cena anim-sobe fixed bottom-[calc(4.75rem_+_var(--sobra-area-segura))] left-3 right-3 z-30 md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
+    <div className="camada-cena anim-sobe fixed bottom-[calc(var(--barra-altura,4.4rem)_+_0.35rem_+_var(--sobra-area-segura))] left-3 right-3 z-30 md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
       <div className="rounded-2xl bg-porcelana/96 p-4 shadow-[var(--shadow-painel)]" style={vidro(6)}>
         <div className="flex items-center gap-2">
           <IconSparkle size={16} className="text-brasa" />
@@ -484,7 +484,7 @@ export function Toasts() {
     <div
       role="status"
       aria-live="polite"
-      className={`pointer-events-none fixed bottom-[max(calc(8.5rem_+_var(--sobra-area-segura)),calc(4.4rem_+_var(--sobra-area-segura)_+_var(--ancora-baixo,0px)_+_0.5rem),calc(var(--folha-altura,0px)_+_0.5rem))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6 md:max-lg:bottom-[max(1.5rem,calc(1.75rem_+_var(--ancora-baixo,-0.25rem)))] ${
+      className={`pointer-events-none fixed bottom-[max(calc(8.5rem_+_var(--sobra-area-segura)),calc(var(--barra-altura,4.4rem)_+_var(--sobra-area-segura)_+_var(--ancora-baixo,0px)_+_0.5rem),calc(var(--folha-altura,0px)_+_0.5rem))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6 md:max-lg:bottom-[max(1.5rem,calc(1.75rem_+_var(--ancora-baixo,-0.25rem)))] ${
         gavetaAberta ? 'md:left-[calc(50%-14rem)] md:max-w-[calc(100vw-30rem)]' : ''
       }`}
     >

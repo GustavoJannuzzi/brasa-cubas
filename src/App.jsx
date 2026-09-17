@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useIsMobile } from './hooks/useMedia'
 import { useRotaHash } from './hooks/useRotaHash'
 import { studio } from './data/studio'
@@ -19,6 +19,7 @@ import {
   TourBar,
 } from './ui/Overlays'
 import { SimpleMode } from './ui/SimpleMode'
+import { proto } from './proto/bandeiras'
 import { CartPanel } from './ui/panels/CartPanel'
 import { ContactPanel } from './ui/panels/ContactPanel'
 import { GalleryPanel } from './ui/panels/GalleryPanel'
@@ -27,6 +28,12 @@ import { ProcessPanel } from './ui/panels/ProcessPanel'
 import { ProductDetail } from './ui/panels/ProductDetail'
 import { ProductsPanel } from './ui/panels/ProductsPanel'
 import { QuotePanel } from './ui/panels/QuotePanel'
+
+// Andaime de teste (ver src/proto). Sem parametro na URL as duas constantes
+// ficam null, o import() nunca acontece e nenhum byte de prototipo e baixado.
+const Selo = proto.ligado ? lazy(() => import('./proto/Selo').then((m) => ({ default: m.Selo }))) : null
+const BarraB1 =
+  proto.barra === 'b1' ? lazy(() => import('./proto/BarraB1').then((m) => ({ default: m.BarraB1 }))) : null
 
 const PANELS = {
   produtos: ProductsPanel,
@@ -106,6 +113,11 @@ export default function App() {
             nao fazia nada, porque a lista ja e esta pagina. A propria lista e
             a resposta. */}
         <Toasts />
+        {Selo && (
+          <Suspense fallback={null}>
+            <Selo />
+          </Suspense>
+        )}
       </>
     )
   }
@@ -154,7 +166,13 @@ export default function App() {
           <FocusedProductBar />
           <TourBar />
         </main>
-        <MobileNav />
+        {BarraB1 ? (
+          <Suspense fallback={<MobileNav />}>
+            <BarraB1 />
+          </Suspense>
+        ) : (
+          <MobileNav />
+        )}
 
       </div>
 
@@ -185,6 +203,11 @@ export default function App() {
       <Onboarding />
       <Loader />
       <Toasts />
+      {Selo && (
+        <Suspense fallback={null}>
+          <Selo />
+        </Suspense>
+      )}
     </>
   )
 }

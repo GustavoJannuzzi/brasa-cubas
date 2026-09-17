@@ -21,8 +21,8 @@
         // "orçamento" digitado com cedilha e acento vira o nome do link
         if (caminho.normalize) caminho = caminho.normalize('NFD').replace(/[̀-ͯ]/g, '')
         caminho = caminho.toLowerCase()
-        if (secoes[caminho]) location.replace('/#' + caminho)
-        else if (/^produto\/[a-z0-9-]+$/.test(caminho)) location.replace('/#' + caminho)
+        if (secoes[caminho]) location.replace('/' + location.search + '#' + caminho)
+        else if (/^produto\/[a-z0-9-]+$/.test(caminho)) location.replace('/' + location.search + '#' + caminho)
       })()
     </script>
     <style>

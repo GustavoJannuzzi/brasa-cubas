@@ -484,3 +484,7 @@ export const useCartSummary = () => {
     }
   }, [cart])
 }
+
+// Sonda de desenvolvimento: da acesso ao estado pelo console para medir
+// enquadramento e fluxo sem depender de clique sintetico. So existe em dev.
+if (import.meta.env.DEV) window.__store = useStore

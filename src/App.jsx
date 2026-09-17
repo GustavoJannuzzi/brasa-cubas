@@ -9,6 +9,7 @@ import { Aviso3D } from './ui/Aviso3D'
 import { Boundary3D } from './ui/Boundary3D'
 import { Header, MobileNav } from './ui/Header'
 import { Loader, Onboarding } from './ui/Intro'
+import { PainelSeguro } from './ui/PainelSeguro'
 import {
   FocusedProductBar,
   HeroCard,
@@ -97,7 +98,9 @@ export default function App() {
     return (
       <>
         <SimpleMode />
-        <PainelAtivo />
+        <PainelSeguro key={panel ?? 'nenhum'}>
+          <PainelAtivo />
+        </PainelSeguro>
         {/* Sem aviso de 3D aqui. Mesmo o "este navegador nao abre o 3D" ficava
             preso na tela, sem dispensar, e seu unico botao — "Ver em lista" —
             nao fazia nada, porque a lista ja e esta pagina. A propria lista e
@@ -174,7 +177,11 @@ export default function App() {
       {/* Antes de entrar, o painel tambem e fundo: com um link #orcamento o
           dialogo montava atras do loader e roubava o foco para um formulario
           invisivel. */}
-      {entered && <PainelAtivo />}
+      {entered && (
+        <PainelSeguro key={panel ?? 'nenhum'}>
+          <PainelAtivo />
+        </PainelSeguro>
+      )}
       <Onboarding />
       <Loader />
       <Toasts />

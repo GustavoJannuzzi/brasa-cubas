@@ -301,10 +301,18 @@ export const useStore = create(
       // O painel e o selo ja a ignoram; sem isto ela ficaria la para sempre,
       // invisivel, indo junto em todo pedido futuro que fosse lido do estado
       // guardado. Sai na hidratacao, antes do primeiro render.
+      //
+      // O mesmo vale para o que chega com tipo errado (edicao a mao, versao
+      // antiga, gravacao truncada). Medido com o localStorage adulterado: um
+      // campo do rascunho `null` ou numero derrubava o app inteiro ao abrir o
+      // Orcamento (`kind.trim`) — e a cada visita, porque o estado ruim fica
+      // guardado; `qty: '2'` fazia o selo somar texto e dizer "02 peças".
       merge: (guardado, atual) => ({
         ...atual,
         ...guardado,
-        cart: (guardado?.cart ?? []).filter((line) => productById(line.id)),
+        cart: (Array.isArray(guardado?.cart) ? guardado.cart : [])
+          .filter((line) => line && productById(line.id) && Number(line.qty) > 0)
+          .map((line) => ({ ...line, qty: Math.max(productById(line.id).minQty, Math.round(Number(line.qty))) })),
         // O rascunho vem campo a campo POR CIMA do inicial, nunca no lugar
         // dele. Espalhar o objeto guardado inteiro deixava sumir todo campo que
         // nao estivesse la — e o painel de orcamento le `quote.kind.trim()`
@@ -312,7 +320,13 @@ export const useStore = create(
         // gravacao truncada) derrubava a arvore inteira do React: tela branca,
         // que sobrevive a recarga porque o estado ruim fica guardado. Medido:
         // com `quote: {}` no localStorage, zero nos e zero texto na pagina.
-        quote: { ...atual.quote, ...(guardado?.quote ?? {}) },
+        // So entra campo que ja existe no inicial e com o mesmo tipo (todos texto).
+        quote: {
+          ...atual.quote,
+          ...Object.fromEntries(
+            Object.entries(guardado?.quote ?? {}).filter(([campo, valor]) => typeof valor === typeof atual.quote[campo]),
+          ),
+        },
       }),
     },
   ),

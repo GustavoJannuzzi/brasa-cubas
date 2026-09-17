@@ -1,6 +1,7 @@
 import { studio } from '../data/studio'
 import { selectCartCount, useStore } from '../store/useStore'
 import { IconCart, IconCube, IconHelp, IconLayers } from './Icons'
+import { vidro } from './vidro'
 
 // O menu e o principal remedio contra "nao achei onde compra":
 // esta sempre visivel e leva direto ao conteudo, sem exigir exploracao.
@@ -176,7 +177,7 @@ export function MobileNav() {
   return (
     <nav
       className="camada-cena area-segura-b fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-porcelana/10 bg-carvao/92 px-1 pt-1 max-[18rem]:gap-1 md:hidden"
-      style={{ backdropFilter: 'blur(8px)' }}
+      style={vidro(8)}
       aria-label="Seções do site"
     >
       {items.map((item) => {

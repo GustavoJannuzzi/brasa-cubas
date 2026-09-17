@@ -6,6 +6,7 @@ import { useIsMobile } from '../hooks/useMedia'
 import { money, priceLabel } from '../lib/format'
 import { useStore } from '../store/useStore'
 import { IconArrow, IconClose, IconEye, IconEyeOff, IconHome, IconLayers, IconSparkle } from './Icons'
+import { vidro } from './vidro'
 
 const PRECO_MINIMO = Math.min(...products.map((p) => p.price))
 
@@ -98,7 +99,7 @@ export function HeroCard() {
     >
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] md:p-4"
-        style={{ backdropFilter: 'blur(6px)' }}
+        style={vidro(6)}
       >
         {/* X em 44x44 (media 27x27, o menor alvo fora de painel). Sem fundo em
             repouso: -top-0.5 -right-0.5 mantem o centro do icone a 20 px do canto
@@ -182,7 +183,7 @@ export function FocusedProductBar() {
         role="region"
         aria-label={`Peça em destaque: ${product.name}`}
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] outline-none"
-        style={{ backdropFilter: 'blur(6px)' }}
+        style={vidro(6)}
       >
         {/* Mesmo conserto do X do card de destaque: 27x27 -> 44x44, sem fundo em
             repouso; o -top/-right mantem o centro do icone no canto. */}
@@ -265,7 +266,7 @@ export function OrientationBar() {
               Cheio da 5,18 no mesmo fundo. Mesmo ajuste que o menu ja recebeu. */}
           <span
             className="max-w-[9.5rem] truncate rounded-full bg-carvao/55 px-3 py-1.5 text-[11.5px] font-medium text-porcelana md:max-w-none"
-            style={{ backdropFilter: 'blur(6px)' }}
+            style={vidro(6)}
           >
             <span className="md:hidden">{lugarCurto}</span>
             <span className="hidden md:inline">{lugar}</span>
@@ -281,7 +282,7 @@ export function OrientationBar() {
               title="Voltar para a visão geral"
               aria-label="Voltar para a visão geral"
               className="grid h-8 w-8 place-items-center rounded-full bg-carvao/55 text-porcelana/80 transition-colors hover:text-porcelana"
-              style={{ backdropFilter: 'blur(6px)' }}
+              style={vidro(6)}
             >
               <IconHome size={16} />
             </button>
@@ -293,7 +294,7 @@ export function OrientationBar() {
             title={showHotspots ? 'Esconder marcadores' : 'Mostrar marcadores'}
             aria-label={showHotspots ? 'Esconder marcadores' : 'Mostrar marcadores'}
             className="hidden h-8 w-8 place-items-center rounded-full bg-carvao/55 text-porcelana/80 transition-colors hover:text-porcelana md:grid"
-            style={{ backdropFilter: 'blur(6px)' }}
+            style={vidro(6)}
           >
             {showHotspots ? <IconEyeOff size={16} /> : <IconEye size={16} />}
           </button>
@@ -306,7 +307,7 @@ export function OrientationBar() {
         title="Ver como lista, sem 3D"
         aria-label="Ver como lista, sem 3D"
         className="grid h-8 w-8 place-items-center rounded-full bg-carvao/55 text-porcelana/80 transition-colors hover:text-porcelana md:hidden"
-        style={{ backdropFilter: 'blur(6px)' }}
+        style={vidro(6)}
       >
         <IconLayers size={16} />
       </button>
@@ -338,7 +339,7 @@ export function TourBar() {
 
   return (
     <div className="camada-cena anim-sobe fixed bottom-[calc(4.75rem_+_var(--sobra-area-segura))] left-3 right-3 z-30 md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
-      <div className="rounded-2xl bg-porcelana/96 p-4 shadow-[var(--shadow-painel)]" style={{ backdropFilter: 'blur(6px)' }}>
+      <div className="rounded-2xl bg-porcelana/96 p-4 shadow-[var(--shadow-painel)]" style={vidro(6)}>
         <div className="flex items-center gap-2">
           <IconSparkle size={16} className="text-brasa" />
           <span className="text-[11px] font-semibold tracking-wide text-brasa-texto uppercase">

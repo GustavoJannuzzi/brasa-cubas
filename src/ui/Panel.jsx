@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useIsMobile } from '../hooks/useMedia'
 import { IconBack, IconClose } from './Icons'
+import { vidro } from './vidro'
 
 // O id do rAF de devolucao de foco vive no MODULO, nao na instancia.
 //
@@ -196,7 +197,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
           tabIndex={-1}
           onClick={onClose}
           className="camada-cena fixed inset-0 z-30 bg-carvao/35"
-          style={{ backdropFilter: 'blur(1px)' }}
+          style={vidro(1)}
         />
       )}
 

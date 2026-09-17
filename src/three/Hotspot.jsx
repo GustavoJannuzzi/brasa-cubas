@@ -3,6 +3,7 @@ import { hotspots } from '../data/scene'
 import { useCliqueSemArrasto } from '../hooks/useCliqueSemArrasto'
 import { useStore } from '../store/useStore'
 import { hotspotIcons } from '../ui/Icons'
+import { vidro } from '../ui/vidro'
 
 function Hotspot({ spot }) {
   const openPanel = useStore((s) => s.openPanel)
@@ -59,7 +60,7 @@ function Hotspot({ spot }) {
                 ? 'border-brasa bg-brasa text-porcelana'
                 : 'border-carvao/10 bg-creme/92 text-brasa'
             }`}
-            style={{ backdropFilter: 'blur(4px)' }}
+            style={vidro(4)}
           >
             {(!discovered || isTourTarget) && (
               // Atras do icone: elemento posicionado pinta por cima de um nao
@@ -75,7 +76,7 @@ function Hotspot({ spot }) {
             className={`rounded-lg border px-2 py-0.5 text-center leading-tight whitespace-nowrap transition-colors ${
               active ? 'border-brasa bg-brasa text-porcelana' : 'border-carvao/10 bg-creme/92 text-carvao'
             }`}
-            style={{ backdropFilter: 'blur(4px)' }}
+            style={vidro(4)}
           >
             <span className="block text-[12px] font-medium">{spot.label}</span>
             <span

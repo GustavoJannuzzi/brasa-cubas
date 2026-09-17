@@ -6,6 +6,7 @@ import { cartMessage, plainHello } from '../lib/whatsapp'
 import { useCartSummary, useStore } from '../store/useStore'
 import { IconArrow, IconCube, IconInstagram, IconMail, IconPlus, IconWhatsapp } from './Icons'
 import { PieceThumb } from './PieceThumb'
+import { vidro } from './vidro'
 
 // Sem '#': estes nomes sao os MESMOS que os hashes de painel (#produtos,
 // #contato). Como ancora real, o clique escrevia no endereco sem passar pelo
@@ -37,7 +38,7 @@ export function SimpleMode() {
 
   return (
     <div className="min-h-svh bg-porcelana pb-28">
-      <header className="sticky top-0 z-20 border-b border-carvao/10 bg-porcelana/95" style={{ backdropFilter: 'blur(8px)' }}>
+      <header className="sticky top-0 z-20 border-b border-carvao/10 bg-porcelana/95" style={vidro(8)}>
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3 sm:gap-3">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brasa text-porcelana">
             <span className="font-display text-[15px] leading-none">bc</span>

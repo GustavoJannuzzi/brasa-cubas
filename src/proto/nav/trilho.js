@@ -22,9 +22,14 @@ const CZ = 0.44 // centro da elipse em z
 const FI = 1.34 // meia-varredura, em radianos
 
 // --- a curva do alvo: o olhar gira para FORA e a distancia encolhe nas pontas ---
-const PSI = 0.42 // giro do olhar na ponta, em radianos
+// PSI 0,32 e L_PONTA 2,1 (eram 0,42 e 1,9): com os primeiros, a camera parava a
+// 1,33 m de um alvo EM CIMA da parede e o quadro da ponta ficava quase todo
+// reboco, com o diptico pequeno no meio — conferido na tela. Girando menos e
+// olhando de mais longe, a ponta direita passa a enquadrar o canto da janela
+// com o diptico, e a esquerda, o mural.
+const PSI = 0.32 // giro do olhar na ponta, em radianos
 const L_CENTRO = 2.5
-const L_PONTA = 1.9
+const L_PONTA = 2.1
 
 // --- altura: tres valores interpolados por v ---
 const CAM_Y = [1.12, 1.55, 2.02]

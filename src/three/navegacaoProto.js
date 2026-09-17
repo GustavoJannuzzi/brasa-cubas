@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
+import * as THREE from 'three'
 import { navegacaoDoProto } from '../proto/nav'
 import { useIsMobile, useIsTouch, useReducedMotion } from '../hooks/useMedia'
 import { useStore } from '../store/useStore'
@@ -40,6 +41,13 @@ import { useStore } from '../store/useStore'
 
 const TOLERANCIA = 6
 const ESPERA_RESPIRO = 2600
+
+// Vetores de trabalho, criados uma vez. E preciso que sejam Vector3 DE VERDADE:
+// getTarget/getPosition do camera-controls so escrevem no argumento se ele tiver
+// isVector3 — com um objeto simples eles devolvem um vetor novo e o objeto
+// continua zerado, em silencio. Foi assim que a orbita nunca re-ancorou o pivô.
+const _pos = new THREE.Vector3()
+const _alvo = new THREE.Vector3()
 
 const distancia = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
 
@@ -128,9 +136,8 @@ export function useNavegacaoProto(controls) {
 
     const pose = () => {
       const p = c.camera.position
-      const alvo = { x: 0, y: 0, z: 0 }
-      c.getTarget(alvo)
-      return { pos: [p.x, p.y, p.z], alvo: [alvo.x, alvo.y, alvo.z] }
+      c.getTarget(_alvo)
+      return { pos: [p.x, p.y, p.z], alvo: [_alvo.x, _alvo.y, _alvo.z] }
     }
 
     // Meio quadro da lente EM USO. Ler da camera, e nao recalcular da largura da
@@ -259,29 +266,38 @@ export function useNavegacaoProto(controls) {
       const s = est.current
       if (s.reancorado) return
       s.reancorado = true
-      const p = c.camera.position
-      const alvo = { x: 0, y: 0, z: 0 }
-      c.getTarget(alvo)
-      const novo = variante.reancorar({ pos: [p.x, p.y, p.z], alvo: [alvo.x, alvo.y, alvo.z] })
+      // A pose de DESTINO, nao a de agora: o arrasto pode comecar no meio do voo
+      // para um preset, e ai a direcao de visada e transitoria. Medido: com a
+      // pose de agora o pivô caiu no chao (y -0,05 em vez de 1,2) e a orbita
+      // passou a girar em volta do assoalho.
+      c.getPosition(_pos, true)
+      c.getTarget(_alvo, true)
+      const novo = variante.reancorar({ pos: [_pos.x, _pos.y, _pos.z], alvo: [_alvo.x, _alvo.y, _alvo.z] })
       if (!novo) return
       // Mesma posicao, mesma direcao: a imagem nao muda, so o pivô.
-      c.setLookAt(p.x, p.y, p.z, novo[0], novo[1], novo[2], false)
+      c.setLookAt(_pos.x, _pos.y, _pos.z, novo[0], novo[1], novo[2], false)
       invalidate()
     }
     c.addEventListener('controlstart', aoComecar)
     return () => c.removeEventListener('controlstart', aoComecar)
   }, [controls, variante, invalidate])
 
-  // --- as paredes que podem sumir, achadas uma vez ---
-  const paredes = useMemo(() => {
-    if (!variante?.corte) return null
+  // --- as paredes que podem sumir ---
+  // Procuradas no QUADRO, e nao numa memo de montagem: o Atelier entra por
+  // Suspense, entao na primeira renderizacao do rig a cena ainda esta vazia e a
+  // varredura voltava sem nada — medido, o corte nunca disparava.
+  const paredes = useRef(null)
+  const acharParedes = () => {
+    if (paredes.current) return paredes.current
     const grupos = { esq: [], dir: [] }
     cena.traverse((o) => {
       const lado = o.userData?.parede
       if (lado === 'esq' || lado === 'dir') grupos[lado].push(o)
     })
+    if (grupos.esq.length + grupos.dir.length === 0) return null
+    paredes.current = grupos
     return grupos
-  }, [cena, variante])
+  }
 
   useFrame((state, delta) => {
     const c = controls.current
@@ -333,11 +349,13 @@ export function useNavegacaoProto(controls) {
 
     // Órbita: limite do giro refeito por quadro, do mesmo jeito que o rig ja faz
     // com o angulo vertical — zoom e pan mudam a conta sem girar.
-    if (variante.azimuteMaximo) {
-      const alvo = { x: 0, y: 0, z: 0 }
-      c.getTarget(alvo, true)
+    // O limite so vale DEPOIS de o pivô ir para o centro do comodo. Com o alvo
+    // do preset (um canto, x -1,15) a conta devolve 16 graus e a camera nasce
+    // travada — medido: o arrasto nao movia nada.
+    if (variante.azimuteMaximo && s.reancorado) {
+      c.getTarget(_alvo, true)
       const limite = variante.azimuteMaximo({
-        alvo: [alvo.x, alvo.y, alvo.z],
+        alvo: [_alvo.x, _alvo.y, _alvo.z],
         dist: c.distance,
         phi: c.polarAngle,
       })
@@ -348,7 +366,8 @@ export function useNavegacaoProto(controls) {
     }
 
     // Corte: a parede atras da qual a camera esta some, em 0,3 s.
-    if (variante.corte && paredes) {
+    const lados = variante.corte ? acharParedes() : null
+    if (lados) {
       const p = c.camera.position
       const querCortar = variante.corte([p.x, p.y, p.z])
       const passo = dt / (variante.tempoDeCorte || 0.3)
@@ -360,7 +379,7 @@ export function useNavegacaoProto(controls) {
         const novo = alvoCorte > atual ? Math.min(alvoCorte, atual + passo) : Math.max(alvoCorte, atual - passo)
         s.corte[lado] = novo
         mudou = true
-        for (const o of paredes[lado]) o.visible = novo < 0.5
+        for (const o of lados[lado]) o.visible = novo < 0.5
       }
       if (mudou) invalidate()
     }

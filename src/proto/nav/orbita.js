@@ -24,10 +24,12 @@ const CENTRO = [0, 1.28, -0.9]
 // da face interna.
 const Z_MINIMO = room.wallZ + 0.15
 
-// Ate onde a camera pode se afastar de lado. E o casco (parede mais a
-// espessura dela) com uma folga: mais que isso e o quadro comeca a mostrar o
-// que nao existe do lado de fora.
-const X_MAXIMO = room.halfW + room.wallT + 0.5
+// Ate onde a camera pode se afastar de lado. Aqui sair do casco e o PONTO: a
+// cena vira maquete e a parede da frente some. O limite existe so para o ultimo
+// grau do giro, em que o quadro passava a mostrar 15,1% de vazio com a camera
+// em x 3,34. Generoso de proposito — apertar isto encurta a volta, que e o que
+// esta variante existe para oferecer.
+const X_MAXIMO = 4.2
 
 // Distancia maxima. Medido: com a abertura de 32 graus do celular, o comodo
 // inteiro so cabe no quadro a partir de ~6,2 m com o alvo no centro. A neblina
@@ -45,7 +47,13 @@ export default function criarOrbita({ toque }) {
     nome: 'orbita',
     // A biblioteca continua comandando o gesto.
     gestosProprios: false,
-    colisores: true,
+    // SEM colisor, e esta e a decisao central da variante: o colisor encurta o
+    // raio contra a parede (medido: de 3,77 m para 2,42 m no giro de 87 graus),
+    // que e exatamente o "girar no lugar" que se quer consertar — e, pior, a
+    // camera nunca chega atras da parede, que e onde o corte acontece. Quem
+    // protege a parede do fundo, a unica que nao pode sumir, e o limite de
+    // azimute em z.
+    colisores: false,
 
     controles: {
       azimuthRotateSpeed: toque ? 0.75 : 0.9,

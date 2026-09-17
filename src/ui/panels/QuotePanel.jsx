@@ -457,6 +457,7 @@ export function QuotePanel() {
               id="q-contact"
               className="campo"
               type={contato.type}
+              autoComplete={contato.autoComplete}
               inputMode={contato.id === 'whatsapp' ? 'tel' : undefined}
               placeholder={contato.placeholder}
               value={quote.contact}

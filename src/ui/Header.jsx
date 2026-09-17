@@ -20,11 +20,13 @@ function Marca({ onClick }) {
   // visivel: era a UNICA falha (os marcadores e o "Pedido" ja passavam).
   // Montado dos mesmos dados que desenham o texto — escrito a mao, divergiria em
   // silencio no dia em que o nome mudasse em studio.js.
+  // Area de toque de 44 (media 36); o -my-1 devolve a altura ganha, e o cabecalho
+  // nao cresce.
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-2.5 text-left"
+      className="-my-1 flex min-h-11 items-center gap-2.5 text-left"
       aria-label={`${studio.name}, ${studio.tagline}: voltar para a visão geral`}
     >
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brasa text-porcelana">
@@ -88,11 +90,19 @@ export function Header() {
         ))}
       </nav>
 
+      {/* Carrinho, camadas e ajuda com area de toque de 44 (mediam 35; o carrinho
+          so de icone no celular, 43x35). Sem fundo em repouso, a caixa maior nao
+          aparece; o -my-1 devolve a altura e o cabecalho segue igual (medido
+          contra a producao: 56 em 375, 60 em 1440).
+          O que muda, e pouco: os icones ficam alguns px mais para dentro, porque
+          a caixa cresceu com o icone centralizado. Medido em 375: ajuda 4,5 px,
+          carrinho 9,5 px. Compensar com margem negativa faria as areas de toque
+          da ajuda e das camadas se sobreporem no vao de 4 px entre elas. */}
       <div className="ml-auto flex items-center gap-1 md:ml-2">
         <button
           type="button"
           onClick={() => openPanel('carrinho')}
-          className={`relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-medium transition-colors ${
+          className={`relative -my-1 flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-medium transition-colors ${
             panel === 'carrinho' ? 'bg-porcelana text-carvao' : 'text-porcelana hover:bg-porcelana/12'
           }`}
           // Mesma palavra e mesma conta do selo, do subtitulo do painel e da
@@ -113,7 +123,7 @@ export function Header() {
           onClick={toggleSimpleMode}
           title="Ver como lista, sem 3D"
           aria-label="Ver como lista, sem 3D"
-          className="hidden rounded-full p-2 text-porcelana/85 transition-colors hover:bg-porcelana/12 hover:text-porcelana md:block"
+          className="-my-1 hidden h-11 w-11 place-items-center rounded-full text-porcelana/85 transition-colors hover:bg-porcelana/12 hover:text-porcelana md:grid"
         >
           <IconLayers size={19} />
         </button>
@@ -123,7 +133,7 @@ export function Header() {
           onClick={() => openPanel('ajuda')}
           title="Como navegar"
           aria-label="Como navegar"
-          className="rounded-full p-2 text-porcelana/85 transition-colors hover:bg-porcelana/12 hover:text-porcelana"
+          className="-my-1 grid h-11 w-11 place-items-center rounded-full text-porcelana/85 transition-colors hover:bg-porcelana/12 hover:text-porcelana"
         >
           <IconHelp size={19} />
         </button>

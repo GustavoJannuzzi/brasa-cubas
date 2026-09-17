@@ -72,11 +72,16 @@ export function HeroCard() {
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] md:p-4"
         style={{ backdropFilter: 'blur(6px)' }}
       >
+        {/* X em 44x44 (media 27x27, o menor alvo fora de painel). Sem fundo em
+            repouso: -top-0.5 -right-0.5 mantem o centro do icone a 20 px do canto
+            (era 19,5), entao ele fica no mesmo lugar. E a area maior nao cobre
+            letra do titulo: medido contra as linhas de texto, 0 px2 — em 375 a
+            primeira linha termina 6 px antes da caixa do X. */}
         <button
           type="button"
           onClick={() => setFechado(true)}
           aria-label="Fechar apresentação"
-          className="absolute top-1.5 right-1.5 rounded-full p-1.5 text-carvao/55 hover:bg-carvao/6 hover:text-carvao"
+          className="absolute -top-0.5 -right-0.5 grid h-11 w-11 place-items-center rounded-full text-carvao/55 hover:bg-carvao/6 hover:text-carvao"
         >
           <IconClose size={15} />
         </button>

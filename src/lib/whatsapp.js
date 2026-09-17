@@ -52,10 +52,13 @@ export const cartMailto = (lines, total, isEstimate) =>
 // `autoComplete` e o proposito do campo (WCAG 1.3.5): o celular oferece o
 // proprio telefone ou e-mail em vez de pedir para digitar. Instagram nao tem
 // token padrao; `off` evita o navegador sugerir o e-mail ali.
+// `corrigir: false` desliga maiuscula automatica e autocorrecao: no teclado do
+// iPhone "@seuperfil" vira "@Seuperfil" ou outra palavra, e a Isabela procura um
+// perfil que nao existe.
 export const CONTATOS = [
   { id: 'whatsapp', label: 'WhatsApp', placeholder: '(51) 99999-0000', type: 'tel', autoComplete: 'tel' },
   { id: 'email', label: 'E-mail', placeholder: 'voce@email.com', type: 'email', autoComplete: 'email' },
-  { id: 'instagram', label: 'Instagram', placeholder: '@seuperfil', type: 'text', autoComplete: 'off' },
+  { id: 'instagram', label: 'Instagram', placeholder: '@seuperfil', type: 'text', autoComplete: 'off', corrigir: false },
 ]
 
 const rotuloDoContato = (id) => CONTATOS.find((c) => c.id === id)?.label ?? id

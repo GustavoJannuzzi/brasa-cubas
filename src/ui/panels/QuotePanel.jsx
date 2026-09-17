@@ -430,6 +430,7 @@ export function QuotePanel() {
               id="q-name"
               className="campo"
               autoComplete="name"
+              autoCapitalize="words"
               value={quote.name}
               onChange={(e) => setQuoteField('name', e.target.value)}
               aria-invalid={mostraErro('name') || undefined}
@@ -463,6 +464,9 @@ export function QuotePanel() {
               type={contato.type}
               autoComplete={contato.autoComplete}
               inputMode={contato.id === 'whatsapp' ? 'tel' : undefined}
+              autoCapitalize={contato.corrigir === false ? 'none' : undefined}
+              autoCorrect={contato.corrigir === false ? 'off' : undefined}
+              spellCheck={contato.corrigir === false ? false : undefined}
               placeholder={contato.placeholder}
               value={quote.contact}
               onChange={(e) => setQuoteField('contact', e.target.value)}

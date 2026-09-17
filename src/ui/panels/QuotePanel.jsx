@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { studio } from '../../data/studio'
 import { daysUntil, formatDateBR, hojeISO, plural } from '../../lib/format'
 import { diasDeReferencia, prazoDoTipo, prazoEmTexto, tetoDoPrazo } from '../../lib/prazo'
-import { quoteMailto, quoteMessage, quoteText } from '../../lib/whatsapp'
+import { CONTATOS, quoteMailto, quoteMessage, quoteText } from '../../lib/whatsapp'
 import { useStore } from '../../store/useStore'
 import { IconAlert, IconArrow, IconBack, IconCheck, IconCopy, IconMail, IconWhatsapp } from '../Icons'
 import { Panel } from '../Panel'
@@ -16,11 +16,6 @@ const TIPOS = [
   'Outra coisa',
 ]
 
-const CONTATOS = [
-  { id: 'whatsapp', label: 'WhatsApp', placeholder: '(51) 99999-0000', type: 'tel' },
-  { id: 'email', label: 'E-mail', placeholder: 'voce@email.com', type: 'email' },
-  { id: 'instagram', label: 'Instagram', placeholder: '@seuperfil', type: 'text' },
-]
 
 const PASSOS = ['O que você precisa', 'Para quando', 'Como te encontro']
 

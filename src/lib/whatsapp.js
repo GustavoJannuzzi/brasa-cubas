@@ -49,6 +49,16 @@ export const cartMailto = (lines, total, isEstimate) =>
     cartText(lines, total, isEstimate),
   )}`
 
+// Formas de contato do orcamento. Moram aqui, e nao no painel, porque a mensagem
+// tambem precisa do rotulo: com o id, a Isabela recebia "Contato (whatsapp)".
+export const CONTATOS = [
+  { id: 'whatsapp', label: 'WhatsApp', placeholder: '(51) 99999-0000', type: 'tel' },
+  { id: 'email', label: 'E-mail', placeholder: 'voce@email.com', type: 'email' },
+  { id: 'instagram', label: 'Instagram', placeholder: '@seuperfil', type: 'text' },
+]
+
+const rotuloDoContato = (id) => CONTATOS.find((c) => c.id === id)?.label ?? id
+
 // Texto do orcamento. Mesmo conteudo usado no "copiar" e no e-mail,
 // para o usuario nunca ficar sem saida se nao usar WhatsApp.
 export const quoteText = (quote) =>
@@ -62,7 +72,7 @@ export const quoteText = (quote) =>
     quote.details ? `Detalhes: ${quote.details}` : null,
     ``,
     `Nome: ${quote.name || '(não informado)'}`,
-    `Contato (${quote.contactKind}): ${quote.contact || '(não informado)'}`,
+    `Contato (${rotuloDoContato(quote.contactKind)}): ${quote.contact || '(não informado)'}`,
   ]
     .filter((row) => row !== null)
     .join('\n')

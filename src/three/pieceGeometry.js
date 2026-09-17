@@ -82,10 +82,16 @@ const compose = (pos, rot = [0, 0, 0], scale = 1) => {
 const emptyGroups = () => ({ body: [], accent: [], petal: [], leaf: [], center: [] })
 
 // Empilha uma primitiva transformada dentro de um grupo de material.
+//
+// Copia para uma BufferGeometry crua, e nao com `geo.clone()`: o clone faz
+// `new this.constructor()`, e numa SphereGeometry isso monta primeiro uma esfera
+// PADRAO de 32x16 (561 vertices) so para sobrescrever em seguida. Com centenas de
+// petalas era o maior custo da montagem — 535 ms de CPU na carga da producao com
+// CPU 4x, so no construtor da esfera. Os buffers que saem sao os mesmos.
 const add = (out, group, geo, pos, rot, scale, parent) => {
   const m = compose(pos, rot, scale)
   if (parent) m.premultiply(parent)
-  out[group].push(geo.clone().applyMatrix4(m))
+  out[group].push(new THREE.BufferGeometry().copy(geo).applyMatrix4(m))
   return m
 }
 

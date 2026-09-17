@@ -96,10 +96,13 @@ const pintarCor = (geo, cor) => {
 // Duas funcoes de proposito, e o nome carrega o aviso.
 // `copiaPintada` e para geometria CACHEADA de `shapes`: ela e dividida com a
 // bancada e as prateleiras, e pintar ou mover o original estragaria a cena
-// inteira. Por isso clona antes.
+// inteira. Por isso copia antes — para uma BufferGeometry crua: `clone()` faz
+// `new this.constructor()`, que numa RoundedBoxGeometry monta uma caixa padrao
+// inteira so para jogar fora (ver `add` em pieceGeometry.js).
 // `pintarNova` e para geometria criada aqui mesmo, que ninguem mais usa.
+const copiar = (cacheada) => new THREE.BufferGeometry().copy(cacheada)
 const copiaPintada = (cacheada, cor, matriz) => {
-  const geo = cacheada.clone()
+  const geo = copiar(cacheada)
   if (matriz) geo.applyMatrix4(matriz)
   return pintarCor(geo, cor)
 }
@@ -162,10 +165,8 @@ function construir() {
   // Madeira sem vertex color: o material usa a textura da bancada.
   const madeira = mesclar(
     [
-      roundedBox(BASE.l, BASE.a, BASE.p, 0.008).clone().applyMatrix4(em(0, BASE.a / 2, 0)),
-      roundedBox(TOPO.l, TOPO.a, TOPO.p, 0.008)
-        .clone()
-        .applyMatrix4(em(0, BASE.a + COLUNA.a + TOPO.a / 2, 0)),
+      copiar(roundedBox(BASE.l, BASE.a, BASE.p, 0.008)).applyMatrix4(em(0, BASE.a / 2, 0)),
+      copiar(roundedBox(TOPO.l, TOPO.a, TOPO.p, 0.008)).applyMatrix4(em(0, BASE.a + COLUNA.a + TOPO.a / 2, 0)),
     ],
     'madeira do arranhador',
   )

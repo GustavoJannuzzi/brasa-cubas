@@ -49,6 +49,13 @@ const armazenamento = createJSONStorage(() => {
   }
 })
 
+// Linhas do pedido lidas do armazenamento, sem o que nao vale mais (peca fora do
+// catalogo, quantidade de tipo errado). Usado na hidratacao e na outra aba.
+const pedidoGuardado = (guardado) =>
+  (Array.isArray(guardado?.cart) ? guardado.cart : [])
+    .filter((line) => line && productById(line.id) && Number(line.qty) > 0)
+    .map((line) => ({ ...line, qty: Math.max(productById(line.id).minQty, Math.round(Number(line.qty))) }))
+
 export const useStore = create(
   persist(
     (set, get) => ({
@@ -403,9 +410,7 @@ export const useStore = create(
       merge: (guardado, atual) => ({
         ...atual,
         ...guardado,
-        cart: (Array.isArray(guardado?.cart) ? guardado.cart : [])
-          .filter((line) => line && productById(line.id) && Number(line.qty) > 0)
-          .map((line) => ({ ...line, qty: Math.max(productById(line.id).minQty, Math.round(Number(line.qty))) })),
+        cart: pedidoGuardado(guardado),
         // O rascunho vem campo a campo POR CIMA do inicial, nunca no lugar
         // dele. Espalhar o objeto guardado inteiro deixava sumir todo campo que
         // nao estivesse la — e o painel de orcamento le `quote.kind.trim()`
@@ -424,6 +429,26 @@ export const useStore = create(
     },
   ),
 )
+
+// Duas abas do site abertas: cada uma so lia o armazenamento na carga, e a que
+// gravasse depois apagava o que a outra tinha posto no pedido. Medido com um
+// iframe da mesma origem: 2 canecas adicionadas "na outra aba" sumiram do
+// armazenamento assim que esta mexeu no rascunho. Agora, quando a outra aba grava,
+// esta adota o PEDIDO dela. So o pedido: trazer o modo lista trocaria a tela desta
+// aba sozinha, e trazer o rascunho apagaria o que esta aba estivesse digitando.
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key !== 'brasa-cubas' || e.newValue == null) return
+    let guardado
+    try {
+      guardado = JSON.parse(e.newValue)?.state
+    } catch {
+      return
+    }
+    const cart = pedidoGuardado(guardado)
+    if (JSON.stringify(cart) !== JSON.stringify(useStore.getState().cart)) useStore.setState({ cart })
+  })
+}
 
 // --- dados derivados do carrinho ---
 //

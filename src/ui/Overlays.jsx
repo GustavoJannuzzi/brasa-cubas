@@ -402,11 +402,14 @@ export function Toasts() {
   // No celular: o maior entre o lugar de sempre, 0,5rem acima do cartao ancorado
   // (ver ancorarEmbaixo) e 0,5rem acima da folha aberta (--folha-altura, Panel).
   // Sem cartao nem folha, as variaveis nao existem e vale o de sempre.
+  // De 768 a 1023 (iPad em pe) o aviso centralizado alcanca o cartao do canto
+  // esquerdo: cobria o "Adicionar" da barra de peca (949 px2). Ali ele tambem
+  // sobe acima do cartao. De 1024 para cima nao cruza (medido: 0 px2).
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`pointer-events-none fixed bottom-[max(calc(8.5rem_+_var(--sobra-area-segura)),calc(4.4rem_+_var(--sobra-area-segura)_+_var(--ancora-baixo,0px)_+_0.5rem),calc(var(--folha-altura,0px)_+_0.5rem))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6 ${
+      className={`pointer-events-none fixed bottom-[max(calc(8.5rem_+_var(--sobra-area-segura)),calc(4.4rem_+_var(--sobra-area-segura)_+_var(--ancora-baixo,0px)_+_0.5rem),calc(var(--folha-altura,0px)_+_0.5rem))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6 md:max-lg:bottom-[max(1.5rem,calc(1.75rem_+_var(--ancora-baixo,-0.25rem)))] ${
         gavetaAberta ? 'md:left-[calc(50%-14rem)] md:max-w-[calc(100vw-30rem)]' : ''
       }`}
     >

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#2b2320" />
+    <title>Página não encontrada | Brasa Cubas</title>
+    <!-- Pagina de endereco inexistente (Vercel, Netlify e Cloudflare Pages servem
+         este arquivo). Antes vinha a pagina padrao da Vercel, em ingles e sem
+         caminho de volta. O site e uma pagina so e as secoes vivem no hash
+         (#produtos): quem digita o nome da secao como caminho (/produtos) vai
+         direto para ela. Sem dado do atelie aqui, de proposito. -->
+    <script>
+      ;(function () {
+        var secoes = { produtos: 1, projetos: 1, 'como-encomendar': 1, orcamento: 1, contato: 1, pedido: 1, ajuda: 1 }
+        var caminho = location.pathname.replace(/^\/+|\/+$/g, '')
+        try {
+          caminho = decodeURIComponent(caminho)
+        } catch (e) {}
+        // "orçamento" digitado com cedilha e acento vira o nome do link
+        if (caminho.normalize) caminho = caminho.normalize('NFD').replace(/[̀-ͯ]/g, '')
+        caminho = caminho.toLowerCase()
+        if (secoes[caminho]) location.replace('/#' + caminho)
+        else if (/^produto\/[a-z0-9-]+$/.test(caminho)) location.replace('/#' + caminho)
+      })()
+    </script>
+    <style>
+      body {
+        margin: 0;
+        background: #f7f1e8;
+        color: #2b2320;
+        font-family: Georgia, 'Times New Roman', serif;
+      }
+      main {
+        max-width: 36rem;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+      }
+      h1 {
+        margin: 0 0 0.75rem;
+        font-size: 1.6rem;
+        line-height: 1.2;
+      }
+      p {
+        margin: 0 0 1rem;
+        line-height: 1.5;
+      }
+      a {
+        display: inline-block;
+        margin-top: 0.5rem;
+        padding: 0.65rem 1.25rem;
+        border-radius: 999px;
+        background: #9f4825;
+        color: #fff;
+        text-decoration: none;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      a:focus-visible {
+        outline: 2px solid #2b2320;
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Esta página não existe</h1>
+      <p>O endereço pode ter sido digitado errado. O ateliê continua no mesmo lugar.</p>
+      <a href="/">Ir para o ateliê</a>
+    </main>
+  </body>
+</html>

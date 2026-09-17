@@ -116,8 +116,15 @@ export default function App() {
         {gl3d !== 'indisponivel' && (
           <Boundary3D
             key={tentativa}
-            onErro={() => {
-              setGl3d('perdido')
+            onErro={(erro) => {
+              // Pacote do 3D que nao baixou nao e cena quebrada: o navegador
+              // memoriza a falha do import() (medido: a mesma URL segue falhando
+              // depois que a rede volta), entao remontar nao adianta — so
+              // recarregar. Mensagens de Chrome, Safari e Firefox.
+              const naoBaixou = /dynamically imported module|Importing a module script failed/i.test(
+                String(erro?.message),
+              )
+              setGl3d(naoBaixou ? 'naoBaixou' : 'perdido')
               setAssetsReady(true)
             }}
           >
@@ -155,6 +162,10 @@ export default function App() {
           WhatsApp, nunca era anunciado. */}
       <Aviso3D
         onTentarDeNovo={() => {
+          if (gl3d === 'naoBaixou') {
+            window.location.reload()
+            return
+          }
           setGl3d('ok')
           setTentativa((n) => n + 1)
         }}

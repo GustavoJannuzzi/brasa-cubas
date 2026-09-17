@@ -57,7 +57,9 @@ export function Loader() {
     ? 'Ateliê pronto'
     : gl3d === 'indisponivel'
       ? 'Este navegador não abre o 3D'
-      : gl3d === 'perdido'
+      : gl3d === 'naoBaixou'
+        ? 'Não deu para baixar o ateliê 3D agora'
+        : gl3d === 'perdido'
         ? 'O 3D parou de desenhar'
         : demorou
           ? 'O 3D está demorando neste aparelho'
@@ -108,14 +110,26 @@ export function Loader() {
               <IconLayers size={16} />
               Ver o catálogo em lista
             </button>
-            <button
-              type="button"
-              onClick={enter}
-              disabled={!pronto}
-              className="mt-3 text-[12.5px] text-porcelana/50 underline underline-offset-2 disabled:no-underline disabled:opacity-45 hover:text-porcelana/80"
-            >
-              {pronto ? 'Entrar no ateliê mesmo assim' : 'Continuar esperando o 3D'}
-            </button>
+            {gl3d === 'naoBaixou' ? (
+              // "Continuar esperando" ficava desabilitado para sempre: o download
+              // nao volta sozinho. Recarregar e a retentativa que funciona.
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="mt-3 text-[12.5px] text-porcelana/50 underline underline-offset-2 hover:text-porcelana/80"
+              >
+                Tentar de novo
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={enter}
+                disabled={!pronto}
+                className="mt-3 text-[12.5px] text-porcelana/50 underline underline-offset-2 disabled:no-underline disabled:opacity-45 hover:text-porcelana/80"
+              >
+                {pronto ? 'Entrar no ateliê mesmo assim' : 'Continuar esperando o 3D'}
+              </button>
+            )}
           </>
         ) : (
           <>

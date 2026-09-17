@@ -236,8 +236,10 @@ export const useStore = create(
       toggleSimpleMode: () => set((s) => ({ simpleMode: !s.simpleMode })),
       // Estado do 3D. 'ok' enquanto desenha; 'perdido' quando o contexto WebGL
       // cai (o WKWebView derruba ao voltar de outro app) ou a cena lanca
-      // excecao; 'indisponivel' quando o aparelho nem abre WebGL. Quem marca e
-      // o App (na sonda) e o Experience (nos eventos do canvas).
+      // excecao; 'indisponivel' quando o aparelho nem abre WebGL; 'naoBaixou'
+      // quando o pacote do 3D falhou no download (rede) — ai so recarregar
+      // resolve. Quem marca e o App (na sonda e no limite de erro) e o Experience
+      // (nos eventos do canvas).
       gl3d: 'ok',
       setGl3d: (gl3d) => set({ gl3d }),
 

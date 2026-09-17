@@ -31,7 +31,11 @@ export function Aviso3D({ onTentarDeNovo }) {
         <IconLayers size={19} className="mt-0.5 shrink-0 text-brasa" />
         <div className="min-w-0 flex-1">
           <p className="text-[13.5px] font-medium text-carvao">
-            {indisponivel ? 'Este navegador não abre o ateliê em 3D' : 'O ateliê 3D parou de desenhar'}
+            {indisponivel
+              ? 'Este navegador não abre o ateliê em 3D'
+              : gl3d === 'naoBaixou'
+                ? 'Não deu para baixar o ateliê 3D agora'
+                : 'O ateliê 3D parou de desenhar'}
           </p>
           <p className="mt-0.5 text-[12.5px] leading-snug text-carvao/70">
             O catálogo, os preços e o orçamento continuam aqui — em lista, que abre leve.

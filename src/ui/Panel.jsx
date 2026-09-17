@@ -238,7 +238,10 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
             </button>
           )}
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-lg md:text-xl">{title}</h2>
+            {/* Quebra em vez de cortar: no detalhe da peca o titulo e o nome, e ele
+                nao aparece em outro lugar do painel. Com `truncate`, em 375 se lia
+                "Lembrancinha Vasinho de Fl…" (243 de 261 px). */}
+            <h2 className="text-lg text-balance md:text-xl">{title}</h2>
             {subtitle && <p className="mt-0.5 text-[13px] leading-snug text-carvao/70">{subtitle}</p>}
           </div>
           <button

@@ -31,7 +31,11 @@ function Canal({ icon: Icon, label, value, href, destaque }) {
         <span className={`block text-[11px] font-semibold tracking-wide uppercase ${destaque ? 'text-porcelana' : 'text-carvao/70'}`}>
           {label}
         </span>
-        <span className="block truncate text-[14px] font-medium">{value}</span>
+        {/* Quebra em vez de reticencias: a linha de envio cortava "Entrega em maos
+            em Foz do Iguacu" em todo celular (281 de 407 px em 375), e em 300 px
+            ate o e-mail perdia o fim. `wrap-anywhere` deixa o minimo da coluna
+            pequeno, entao o `min-w-0` acima segue valendo. */}
+        <span className="block text-[14px] font-medium wrap-anywhere">{value}</span>
       </span>
       {href && <IconArrow size={16} className={destaque ? 'text-porcelana/70' : 'text-carvao/30'} />}
     </Tag>

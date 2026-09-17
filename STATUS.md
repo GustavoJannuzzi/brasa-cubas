@@ -153,6 +153,8 @@ Os dados daqui são fictícios; os fatos verificados estão no projeto pai
 | Avisos obrigatórios (Decreto 7.962) | Ausentes: identificação do fornecedor, avisos por peça (`AVISOS_PECA` do pai), direito de arrependimento, frete discriminado | Precisam existir antes de publicar; a caneca e o ímã ainda não têm aviso escrito no pai |
 | LGPD | Formulário coleta nome e contato, guarda em `localStorage`, sem política | Definir política e se o rascunho continua salvo |
 | Contagens fixas | "11 peças com preço", "cinco pontos", "três telas" | Passam a depender do catálogo real |
+| Pedido mínimo no FAQ | "Só para lembrancinhas, que saem a partir de 20 unidades" (`studio.js`, `faq`) | **O site se contradiz**: o Ímã Florzinha também é lembrancinha e tem mínimo de 10 (`products.js`). Corrigir o texto ou o dado quando vierem as regras dela |
+| Prazo escrito à mão | "a partir de 10 dias" no passo a passo e no FAQ (`studio.js`) | Hoje bate com `minLeadDays` e com o menor `leadDays` do catálogo, mas é número digitado: trocar o prazo real sem trocar esses dois textos abre contradição |
 | Domínio / canonical / og:image | `brasacubas.com.br` comentado, sem og:image | Domínio não definido (§11) |
 
 ## 5. Como retomar

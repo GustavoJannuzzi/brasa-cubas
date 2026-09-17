@@ -7,6 +7,7 @@ import { foiRebaixado, limparRebaixamento, marcarRebaixado, tierDoAparelho } fro
 import { useStore } from '../store/useStore'
 import { Atelier } from './Atelier'
 import { CameraRig } from './CameraRig'
+import { FotoOpcional } from './FotoOpcional'
 import { fovVertical, larguraDaGaveta } from './lente'
 import { Gato } from './Cat'
 import { Hotspots } from './Hotspot'
@@ -302,9 +303,11 @@ function Scene({ quality, aoBaixarDpr }) {
               enquanto as imagens chegam, `assetsReady` nunca dispara e quem chegou
               fica presa no loader para sempre. Assim o comodo aparece completo e as
               molduras entram quando as fotos terminam de carregar. */}
-          <Suspense fallback={null}>
-            <Quadros />
-          </Suspense>
+          <FotoOpcional>
+            <Suspense fallback={null}>
+              <Quadros />
+            </Suspense>
+          </FotoOpcional>
           <Plants quality={quality} />
           {/* O gato entra depois das plantas porque divide o canto com elas: a
               posicao dele foi escolhida medindo a distancia ate a `costela-fundo`,

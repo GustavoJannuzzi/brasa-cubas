@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { gallery } from '../data/products'
 import { room } from '../data/scene'
 import { useStore } from '../store/useStore'
+import { FotoOpcional } from './FotoOpcional'
 import { roundedBox } from './shapes'
 import { corkTexture } from './textures'
 
@@ -107,9 +108,11 @@ export function Pinboard() {
       {/* Suspense CURTO: a cortica e a moldura aparecem na hora, e as fotos
           entram quando chegam. Sem isto o mural inteiro sumiria enquanto
           carrega, e ele fica bem no caminho da camera de abertura. */}
-      <Suspense fallback={null}>
-        <FotosDoMural itens={itens} aoAbrir={() => openPanel('galeria')} />
-      </Suspense>
+      <FotoOpcional>
+        <Suspense fallback={null}>
+          <FotosDoMural itens={itens} aoAbrir={() => openPanel('galeria')} />
+        </Suspense>
+      </FotoOpcional>
 
       {/* fita de papel com a palavra do ateliê, so para dar vida ao mural */}
       <mesh position={[0.45, -0.28, 0.021]} rotation={[0, 0, -0.06]}>

@@ -165,15 +165,43 @@ src/
               textures.js (canvas), lente.js (campo de visão e gaveta),
               experienceLazy.js (o 3D em pacote próprio), Atelier, WorkTable,
               Shelf, Pinboard, Quadros, Plants, Cat, CeramicPiece, Hotspot,
-              Lighting, CameraRig, FotoOpcional, Experience
+              Lighting, CameraRig, FotoOpcional, Experience,
+              useGeracaoDoContexto.js (refaz o que desenha uma vez só)
   ui/         Header (com o MobileNav), Panel, Intro, Overlays, SimpleMode,
-              Aviso3D, Boundary3D, Icons, PieceThumb
+              Aviso3D, Boundary3D, ErroGeral (queda do app inteiro),
+              PainelSeguro (queda de um painel), Icons, PieceThumb,
+              vidro.js (desfoque com prefixo)
   ui/panels/  Products, ProductDetail, Quote, Cart, Gallery, Process, Contact, Help
   hooks/      useMedia.js, useRotaHash.js (hash e voltar do navegador),
               useCliqueSemArrasto.js
   lib/        format.js (BRL, datas), prazo.js, rotas.js, tier.js (qualidade
-              por aparelho), webgl.js, whatsapp.js (mensagens)
+              por aparelho), webgl.js (sonda de WebGL2), tradutor.js (rede para
+              a página traduzida pelo navegador), whatsapp.js (mensagens)
 ```
+
+---
+
+## Cuidados ao mexer
+
+Quatro regras que não aparecem olhando um arquivo só. Cada uma saiu de um defeito
+medido; o comentário no código conta qual.
+
+- **Texto que troca com o componente montado leva `key`** (`{pronto ? 'A' : 'B'}`,
+  "Passo {n} de 3", contagens). Com a página traduzida pelo navegador — comum em
+  Foz, com visitante em espanhol — o React atualiza um nó que o tradutor já tirou
+  da tela, e o texto fica velho. `src/lib/tradutor.js` evita a queda; a `key` faz o
+  texto novo aparecer.
+- **Desfoque em estilo inline usa `vidro(px)`** (`src/ui/vidro.js`), nunca só
+  `backdropFilter`: o Safari do iOS 16 e 17 só entende a forma com prefixo.
+- **Quem muda a cena fora de um quadro chama `invalidate()`.** Com movimento
+  reduzido, e com a folha aberta no celular, o loop fica em pausa
+  (`PausaQuandoNadaMexe`, em `Experience.jsx`) e só desenha quando alguém pede. A
+  pausa é o prop `frameloop` do Canvas: chamar `setFrameloop` de dentro da cena é
+  desfeito no próximo render.
+- **O que desenha uma vez só numa textura** (`frames={1}`, mapa de sombra
+  congelado) **precisa ser refeito quando o contexto WebGL volta** — o navegador do
+  Instagram derruba o contexto ao voltar do WhatsApp. Usar a `key` de
+  `useGeracaoDoContexto` (ver `Lighting` e `Atelier`).
 
 ---
 

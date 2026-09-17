@@ -320,17 +320,19 @@ export const hotspots = [
     icon: 'notebook',
     panel: 'orcamento',
     view: 'orcamento',
-    // x 0.32 (era 0.38). Na visao geral o rotulo do "Contato" encostava no
-    // circulo deste marcador a partir de ~760 px de altura: 8 px2 em 1536x730,
-    // 155 em 1366x657, 267 em 1440x600 (so as partes pintadas). Com 6 cm para a
-    // esquerda, medido com o codigo real em 14 telas de 360x640 a 1440x900: zero
-    // sobreposicao e nenhum marcador sob o card. Custo: no close do caderno (passo
-    // 2 do tour) o circulo encosta no copo de pinceis.
-    // Reprovadas: 4 cm esquerda + 3 abaixo deixava 328 px2 sob o card em 360x640
-    // e 9 px2 em 1440x600; 6 cm abaixo jogava o marcador sob o card em 360x640;
-    // subir o Contato levava o marcador dele para cima da tabua no close do
+    // x 0.28 (era 0.38), junto com o Contato em x 0.55 (era 0.6). Na visao
+    // geral o rotulo do "Contato" encostava no circulo deste marcador a partir de
+    // ~760 px de altura: 8 px2 em 1536x730, 155 em 1366x657, 267 em 1440x600 (so
+    // as partes pintadas); e no celular em pe o rotulo do Contato passava 2 a 7 px
+    // da borda direita. Medido movendo as ancoras em tempo de execucao e depois com
+    // o codigo real, em 16 telas de 360x640 a 1440x900: zero sobreposicao, nenhum
+    // marcador sob o card, Contato dentro da tela em todos os celulares.
+    // Custo: no close do caderno (passo 2 do tour) o circulo fica sobre o copo de
+    // pinceis. Reprovadas: so o Contato a esquerda refazia a colisao nos notebooks;
+    // descer esta ancora a jogava sob o card em 360x640; avancar em z sem descer
+    // refazia a colisao; subir o Contato o levava para cima da tabua no close do
     // telefone.
-    position: [0.32, 0.94, 0.14],
+    position: [0.28, 0.94, 0.14],
     order: 2,
   },
   {
@@ -363,7 +365,8 @@ export const hotspots = [
     icon: 'phone',
     panel: 'contato',
     view: 'contato',
-    position: [0.6, 0.99, -0.32],
+    // x 0.55 (era 0.6): ver o comentario do marcador de orcamento.
+    position: [0.55, 0.99, -0.32],
     order: 5,
   },
 ]

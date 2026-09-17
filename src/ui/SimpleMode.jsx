@@ -46,7 +46,9 @@ export function SimpleMode() {
           {/* min-w-0 + truncate: sem isso o nome quebrava em duas linhas em
               tela de 375px e empurrava os botoes para fora. */}
           <span className="min-w-0 leading-tight">
-            <span className="block truncate font-display text-[17px] text-carvao">{studio.name}</span>
+            <span translate="no" className="block truncate font-display text-[17px] text-carvao">
+              {studio.name}
+            </span>
             <span className="block truncate text-[11px] text-carvao/70">{studio.tagline}</span>
           </span>
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
@@ -267,7 +269,7 @@ export function SimpleMode() {
       </main>
 
       <footer className="border-t border-carvao/10 py-6 text-center text-[12px] text-carvao/70">
-        {studio.name} · {studio.city} · {studio.email}
+        <span translate="no">{studio.name}</span> · {studio.city} · {studio.email}
       </footer>
 
       {lines.length > 0 && (

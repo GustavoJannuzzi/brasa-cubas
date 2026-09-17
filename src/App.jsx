@@ -147,7 +147,7 @@ export default function App() {
             dependem dela), e tudo aqui e fixo: o involucro nao mexe no layout. */}
         <main>
           <h1 className="sr-only">
-            {studio.name} — {studio.tagline}
+            <span translate="no">{studio.name}</span> — {studio.tagline}
           </h1>
           <OrientationBar />
           <HeroCard />

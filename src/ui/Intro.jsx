@@ -76,7 +76,9 @@ export function Loader() {
           ))}
         </div>
 
-        <h1 className="font-display text-[34px] leading-none text-porcelana">{studio.name}</h1>
+        <h1 translate="no" className="font-display text-[34px] leading-none text-porcelana">
+          {studio.name}
+        </h1>
         <p className="mt-2 text-[14px] text-porcelana/70">
           {studio.tagline} · {studio.city}
         </p>

@@ -41,7 +41,12 @@ function Marca({ onClick }) {
         <span className="font-display text-[15px] leading-none">bc</span>
       </span>
       <span className="leading-tight md:hidden min-[60rem]:block">
-        <span className="block font-display text-[17px] text-porcelana">{studio.name}</span>
+        {/* translate="no": nome proprio. Com a pagina traduzida pelo navegador,
+            "Brasa" e palavra comum e pode ser traduzida. So o nome; o subtitulo
+            traduz. Mesmo cuidado no carregador, na lista e no titulo do atelie. */}
+        <span translate="no" className="block font-display text-[17px] text-porcelana">
+          {studio.name}
+        </span>
         {/* Abaixo de 18rem (zoom de pagina do Android: 390 px a 150% sao 260) o
             subtitulo quebrava, a marca ia a 5 linhas e as letras desciam 178 px2
             sobre o chip de posicao e 676 sobre o botao de lista. Ele segue no

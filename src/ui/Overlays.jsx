@@ -435,7 +435,13 @@ export function Toasts() {
             // botao precisa receber de volta, senao o desfazer nao clica.
             <button
               type="button"
-              onClick={t.acao.aoClicar}
+              onClick={(e) => {
+                // O aviso troca pela confirmacao e este botao some: com o foco
+                // nele, o foco cairia no body. Vai antes para o painel aberto.
+                const tinhaFoco = document.activeElement === e.currentTarget
+                t.acao.aoClicar()
+                if (tinhaFoco) document.querySelector('[role="dialog"]')?.focus()
+              }}
               onMouseEnter={() => segurarAviso(t.id)}
               onMouseLeave={() => soltarAviso(t.id)}
               onFocus={() => segurarAviso(t.id)}

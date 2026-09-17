@@ -181,14 +181,19 @@ export const useStore = create(
           chave: 'carrinho:desfazer',
           acao: {
             rotulo: 'Desfazer',
-            aoClicar: () =>
+            aoClicar: () => {
               set((s) => {
                 // Se a peca voltou por outro caminho, nao duplicar.
                 if (s.cart.some((l) => l.id === id)) return s
                 const volta = [...s.cart]
                 volta.splice(Math.min(indice, volta.length), 0, linha)
                 return { cart: volta }
-              }),
+              })
+              // Troca o aviso (mesma chave): antes ele seguia dizendo "saiu do
+              // pedido · Desfazer" com a peca ja de volta, e o leitor de tela nao
+              // ouvia confirmacao nenhuma.
+              get().toast(`${product?.name ?? 'Peça'} voltou ao pedido`, { chave: 'carrinho:desfazer' })
+            },
           },
         })
       },
@@ -200,14 +205,16 @@ export const useStore = create(
           chave: 'carrinho:desfazer',
           acao: {
             rotulo: 'Desfazer',
-            aoClicar: () =>
+            aoClicar: () => {
               set((s) => {
                 // Mescla: o que entrou depois de limpar continua, e com a
                 // quantidade que a pessoa escolheu agora.
                 const porId = new Map(s.cart.map((l) => [l.id, l]))
                 for (const l of anterior) if (!porId.has(l.id)) porId.set(l.id, l)
                 return { cart: [...porId.values()] }
-              }),
+              })
+              get().toast('Pedido de volta', { chave: 'carrinho:desfazer' })
+            },
           },
         })
       },

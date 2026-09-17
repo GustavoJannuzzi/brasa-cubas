@@ -58,8 +58,3 @@ export const roundedCylinder = (raio, altura, arredonda = 0.012, segments = 16) 
   }
   return geo
 }
-
-export const disposeShapes = () => {
-  cache.forEach((geo) => geo.dispose())
-  cache.clear()
-}

@@ -33,7 +33,7 @@ const finish = (c, repeat = [1, 1], aniso = 4) => {
   return tex
 }
 
-let cache = {}
+const cache = {}
 
 /** Assoalho de tabua corrida. */
 export const woodFloorTexture = () => {
@@ -235,9 +235,4 @@ export const windowTexture = () => {
   }
   cache.win = finish(c, [1, 1], 4)
   return cache.win
-}
-
-export const disposeTextures = () => {
-  Object.values(cache).forEach((t) => t.dispose())
-  cache = {}
 }

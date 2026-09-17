@@ -3,8 +3,6 @@ import { money, formatDateBR } from './format'
 
 const link = (text) => `https://wa.me/${studio.whatsapp}?text=${encodeURIComponent(text)}`
 
-export const whatsappUrl = link
-
 export const plainHello = () =>
   link(`Oi! Vi o site do ateliê e queria tirar uma dúvida.`)
 

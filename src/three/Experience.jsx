@@ -376,6 +376,17 @@ export function Experience() {
   // Teto de dpr do degrau 1 do PerfWatch. Precisa viver no React porque o prop
   // `dpr` e reaplicado a cada render.
   const [tetoDpr, setTetoDpr] = useState(null)
+  const teto = tetoDpr ?? (quality === 'alta' ? 1.75 : 1.25)
+  // Degrau 1 do PerfWatch: menos pixel DE VERDADE. O teto ia a 1 com o piso
+  // tambem em 1, e em tela de dpr 1 — a maioria dos notebooks — nada mudava:
+  // medido em 1440 com Intel UHD, o dpr seguia 1, o quadro em 50 ms, e aos 41 s
+  // vinha o degrau 2 (qualidade baixa, que quase nao alivia: o custo e
+  // resolucao — GPU 38,7 ms, 20,9 com meio dpr — e nao luz nem sombra) com o
+  // aviso "a cena esta pesada". Agora e 75% do dpr em uso, com piso abaixo de 1.
+  const baixarDpr = () => {
+    const emUso = Math.min(Math.max(1, window.devicePixelRatio || 1), teto)
+    setTetoDpr(Math.min(1, emUso * 0.75))
+  }
 
   return (
     <Canvas
@@ -383,7 +394,7 @@ export function Experience() {
       // PCFSoftShadowMap de 'soft' foi removido e so gerava aviso no console.
       // A borda macia vem de shadow-radius, no Lighting.
       shadows={quality === 'alta' ? 'percentage' : false}
-      dpr={[1, tetoDpr ?? (quality === 'alta' ? 1.75 : 1.25)]}
+      dpr={[Math.min(1, teto), teto]}
       // Coerente porque o nivel do aparelho nao muda depois de criado o
       // renderer. Em aparelho de toque, 'default' deixa o sistema escolher a
       // GPU integrada, que gasta menos bateria e aquece menos.
@@ -400,7 +411,7 @@ export function Experience() {
       }}
       style={{ position: 'fixed', inset: 0, touchAction: 'none' }}
     >
-      <Scene quality={quality} aoBaixarDpr={() => setTetoDpr(1)} />
+      <Scene quality={quality} aoBaixarDpr={baixarDpr} />
     </Canvas>
   )
 }

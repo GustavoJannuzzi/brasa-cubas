@@ -68,7 +68,9 @@ export function SimpleMode() {
                 onClick={() => openPanel('carrinho')}
                 className="btn-secundario px-3.5 py-2 text-[12.5px] whitespace-nowrap"
               >
-                Pedido ({count})
+                {/* `key` pela contagem: com a pagina traduzida pelo navegador o numero
+                    sumia ("Pedido ( )"). Ver src/lib/tradutor.js. */}
+                <span key={count}>Pedido ({count})</span>
               </button>
             )}
 
@@ -283,11 +285,15 @@ export function SimpleMode() {
               <span className="min-w-0">
                 {/* "estimativa" na linha do rotulo: junto do valor, jogava o
                     numero para uma terceira linha em 375px. */}
-                <span className="block text-[12px] font-normal text-carvao/70">
+                {/* `key` pelos valores: traduzida pelo navegador, a barra seguia
+                    "Ver pedido · 1 peça". Ver src/lib/tradutor.js. */}
+                <span key={`qtd-${count}-${isEstimate}`} className="block text-[12px] font-normal text-carvao/70">
                   Ver pedido · {plural(count, 'peça', 'peças')}
                   {isEstimate && ' · estimativa'}
                 </span>
-                <span className="block text-[16px] font-semibold text-carvao">{money(total)}</span>
+                <span key={`total-${total}`} className="block text-[16px] font-semibold text-carvao">
+                  {money(total)}
+                </span>
               </span>
             </button>
             <a

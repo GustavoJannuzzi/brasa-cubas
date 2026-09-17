@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useIsMobile } from './hooks/useMedia'
 import { useRotaHash } from './hooks/useRotaHash'
+import { studio } from './data/studio'
 import { temWebGL } from './lib/webgl'
 import { useStore } from './store/useStore'
 import { Experience } from './three/experienceLazy'
@@ -128,10 +129,21 @@ export default function App() {
         <div className="vinheta" aria-hidden="true" />
 
         <Header />
-        <OrientationBar />
-        <HeroCard />
-        <FocusedProductBar />
-        <TourBar />
+        {/* Titulo e regiao principal para quem navega por leitor de tela. Medido:
+            no atelie 3D, depois de entrar, a pagina nao tinha NENHUM titulo nem
+            `main` — so cabecalho e menu; com um painel aberto, so um h2. O modo
+            lista ja tinha h1, h2, h3 e main. O `main` envolve so este trecho
+            continuo, sem mudar a ordem do DOM (a tabulacao e o foco de reserva
+            dependem dela), e tudo aqui e fixo: o involucro nao mexe no layout. */}
+        <main>
+          <h1 className="sr-only">
+            {studio.name} — {studio.tagline}
+          </h1>
+          <OrientationBar />
+          <HeroCard />
+          <FocusedProductBar />
+          <TourBar />
+        </main>
         <MobileNav />
 
       </div>

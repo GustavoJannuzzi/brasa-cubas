@@ -95,7 +95,7 @@ export function Pinboard() {
   const itens = useMemo(disposicao, [])
 
   return (
-    <group position={[-room.halfW + 0.03, 1.5, -0.9]} rotation={[0, Math.PI / 2, 0]}>
+    <group userData={{ parede: 'esq' }} position={[-room.halfW + 0.03, 1.5, -0.9]} rotation={[0, Math.PI / 2, 0]}>
       {/* moldura: caixa de canto arredondado, com a cortica recuada dentro */}
       <mesh geometry={roundedBox(1.24, 0.84, 0.032, 0.012)} castShadow receiveShadow>
         <meshStandardMaterial color="#8a6647" roughness={0.6} />

@@ -85,7 +85,15 @@ function Planta({ kind, position, rotation, scale, seed, hanging, bracket, stand
   const materiais = materiaisPlanta()
 
   return (
-    <group position={position} rotation={rotation} scale={scale}>
+    <group
+      position={position}
+      rotation={rotation}
+      scale={scale}
+      // Lado da parede em que a planta esta pendurada, para o protótipo de
+      // orbita poder sumir com ela junto com a parede. Planta de chao, de
+      // prateleira ou da viga nao tem lado.
+      userData={{ parede: position[0] < -1.9 ? 'esq' : position[0] > 1.9 ? 'dir' : undefined }}
+    >
       {Object.entries(built).map(([grupo, geometry]) => (
         <mesh
           key={grupo}

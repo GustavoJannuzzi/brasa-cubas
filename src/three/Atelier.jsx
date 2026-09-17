@@ -95,7 +95,7 @@ export function Atelier() {
           key={i}
           geometry={roundedBox(room.wallT, room.wallH, p.d, 0.006)}
           position={[p.x, room.wallH / 2, p.z]}
-          userData={COLISOR_CAMERA}
+          userData={{ ...COLISOR_CAMERA, parede: i === 0 ? 'esq' : 'dir' }}
           castShadow
           receiveShadow
         >
@@ -109,7 +109,14 @@ export function Atelier() {
         { geo: [0.028, 0.13, room.leftFrontZ - room.wallZ], pos: [-room.halfW + 0.014, 0.065, (room.leftFrontZ + room.wallZ) / 2] },
         { geo: [0.028, 0.13, room.rightFrontZ - room.wallZ], pos: [room.halfW - 0.014, 0.065, (room.rightFrontZ + room.wallZ) / 2] },
       ].map((p, i) => (
-        <mesh key={i} geometry={roundedBox(p.geo[0], p.geo[1], p.geo[2], 0.012)} position={p.pos} castShadow receiveShadow>
+        <mesh
+          key={i}
+          geometry={roundedBox(p.geo[0], p.geo[1], p.geo[2], 0.012)}
+          position={p.pos}
+          userData={{ parede: i === 1 ? 'esq' : i === 2 ? 'dir' : undefined }}
+          castShadow
+          receiveShadow
+        >
           <meshStandardMaterial color="#e6d8c0" roughness={0.62} />
         </mesh>
       ))}
@@ -117,7 +124,12 @@ export function Atelier() {
         { geo: [room.halfW * 2, 0.075, 0.045], pos: [0, room.wallH - 0.04, room.wallZ + 0.022] },
         { geo: [0.045, 0.075, room.leftFrontZ - room.wallZ], pos: [-room.halfW + 0.022, room.wallH - 0.04, (room.leftFrontZ + room.wallZ) / 2] },
       ].map((p, i) => (
-        <mesh key={i} geometry={roundedBox(p.geo[0], p.geo[1], p.geo[2], 0.014)} position={p.pos}>
+        <mesh
+          key={i}
+          geometry={roundedBox(p.geo[0], p.geo[1], p.geo[2], 0.014)}
+          position={p.pos}
+          userData={{ parede: i === 1 ? 'esq' : undefined }}
+        >
           <meshStandardMaterial color="#e6d8c0" roughness={0.7} />
         </mesh>
       ))}

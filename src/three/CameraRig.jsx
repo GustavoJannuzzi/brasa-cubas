@@ -15,6 +15,7 @@ import {
 } from '../data/scene'
 import { useIsMobile, useIsTouch, useReducedMotion } from '../hooks/useMedia'
 import { useStore } from '../store/useStore'
+import { useNavegacaoProto } from './navegacaoProto'
 
 // Distancia proporcional ao tamanho da peca: a peca ocupa mais ou menos o
 // mesmo pedaco do quadro, e sempre sobra prateleira em volta para o usuario
@@ -51,6 +52,10 @@ export function CameraRig() {
   const alvo = useMemo(() => new THREE.Vector3(), [])
   const esfera = useMemo(() => new THREE.Spherical(), [])
 
+  // Variante de navegacao em teste (?nav=). Sem parametro devolve variante
+  // null e nada abaixo muda.
+  const { variante, aoEnquadrar } = useNavegacaoProto(controls)
+
   // Caixa em que o alvo pode andar. `boundaryEnclosesCamera` fica no padrao
   // (falso) de proposito: o preso e o ALVO, nao a camera — ela precisa poder
   // recuar pela frente aberta, que e de onde o diorama se ve.
@@ -75,11 +80,14 @@ export function CameraRig() {
     scene.traverse((o) => {
       if (o.isMesh && o.userData.colisorCamera) paredes.push(o)
     })
-    c.colliderMeshes = paredes
+    // Uma variante que comanda o enquadramento inteiro dispensa os colisores:
+    // no trilho o alvo das pontas fica EM CIMA da parede e os quatro raios do
+    // _collisionTest devolveriam corte 0,00 m, colapsando a camera no alvo.
+    c.colliderMeshes = variante && variante.colisores === false ? [] : paredes
     return () => {
       c.colliderMeshes = []
     }
-  }, [scene])
+  }, [scene, variante])
 
   // Sonda de desenvolvimento: expoe os controles para medir enquadramento,
   // distancia e limites pelo console. So existe em dev.
@@ -161,14 +169,18 @@ export function CameraRig() {
     // De volta a um enquadramento conhecido: o rotulo pode voltar a dizer onde
     // a camera esta.
     useStore.getState().setVistaLivre(false)
+    aoEnquadrar()
     // cameraSeq nas dependencias e o que faz "voltar para a visao geral"
     // funcionar quando a vista ja e 'home' e so a camera saiu do lugar.
-  }, [view, focusedProduct, quadroFocado, entered, isMobile, reduced, cameraSeq, invalidate])
+  }, [view, focusedProduct, quadroFocado, entered, isMobile, reduced, cameraSeq, invalidate, aoEnquadrar])
 
   useFrame((state, delta) => {
     const c = controls.current
     if (!c) return
 
+    // Com a variante comandando, quem escreve a pose e a cola: o clamp de
+    // angulo e o respiro daqui brigariam com ela no mesmo quadro.
+    if (variante && variante.gestosProprios) return
     // --- faixa do angulo vertical, refeita a cada quadro ---
     // cameraY = alvoY + distancia * cos(polar). Exigir cameraMinY <= cameraY
     // <= cameraMaxY da as duas pontas da faixa: deixa olhar bem para cima de

@@ -8,6 +8,7 @@
 // de 78 cm, vaso de 25 cm. E o que da a referencia de tamanho para tudo.
 
 import { products } from './products'
+import { proto } from '../proto/bandeiras'
 
 export const PIECE_SCALE = 1.45
 
@@ -40,10 +41,25 @@ export const pieceWorldHeight = (piece) =>
 export const room = {
   wallZ: -1.7, // face interna da parede do fundo
   halfW: 1.92, // faces internas das laterais, em -halfW e +halfW
-  wallH: 2.9,
+  // ?teto= na URL. Sem parametro isto e 2.9, identico ao publicado. O teto
+  // sobe sozinho com a parede, e a sanca e os postes da viga derivam dele.
+  // Medido: subir o teto NAO melhora a navegacao — a colisao da camera e
+  // contra as PAREDES, e a distancia apos colisao e identica em 2,9, 3,05 e
+  // 3,2 em todos os azimutes. O que ele muda e a composicao da primeira tela.
+  wallH: proto.teto,
   wallT: 0.1,
   leftFrontZ: 1.75, // ate onde a parede da esquerda avanca
-  rightFrontZ: 0.1, // o retorno da direita para aqui
+  // O retorno da direita para aqui. Nas variantes de navegacao ele vai ate
+  // 0,85, e o numero saiu de varredura, nao de gosto: com traçado de raios em
+  // seis telas, o vazio de fora do comodo no pior caso do trilho e 17,6% da
+  // tela em 812x375 com o retorno em 0,4, e 0,00% com 0,85 — em todas as
+  // telas, sem precisar apertar a lente. A navegacao de hoje, para comparar,
+  // chega a 36,5% no pior angulo do celular.
+  // Custo: zero triangulo e zero draw call (a parede e uma caixa so, e o
+  // rodape e a profundidade do teto ja derivam desta medida). Conferido que a
+  // samambaia do banquinho nao fura a parede nova: o vertice mais a direita
+  // dela fica em x 1,822, com 9,8 cm de folga da face interna.
+  rightFrontZ: proto.nav === 'atual' ? 0.1 : 0.85,
   floorFrontZ: 2.7, // o assoalho avanca um pouco mais que as paredes
   window: { x: 1.34, y: 1.72, w: 0.7, h: 1.12 },
   // Placa na sobra de parede entre a parede da esquerda e a prateleira.

@@ -27,6 +27,25 @@ const LUGARES_CURTO = {
   contato: 'Telefone',
 }
 
+// Ref dos cartoes ancorados embaixo no celular (card de destaque e barra de peca):
+// publica a altura deles em --ancora-baixo para os avisos subirem acima. Adicionar
+// pela barra de peca e o caminho de compra do 3D, e o aviso "Lembrancinha...: 20 un"
+// caia em cima do nome e do preco que ele confirma — medido em 375: 4.142 px2 de
+// letra cobertos por 2,6 s, com o preco cortado ao meio.
+// offsetHeight e nao getBoundingClientRect: a entrada anima com transform.
+// Funcao de modulo, identidade estavel: o React chama uma vez ao montar e a
+// limpeza (React 19) ao desmontar.
+function ancorarEmbaixo(el) {
+  if (!el) return
+  const raiz = document.documentElement
+  const observador = new ResizeObserver(() => raiz.style.setProperty('--ancora-baixo', `${el.offsetHeight}px`))
+  observador.observe(el)
+  return () => {
+    observador.disconnect()
+    raiz.style.removeProperty('--ancora-baixo')
+  }
+}
+
 /**
  * Cartao de boas-vindas sobre a cena. E a resposta rapida para
  * "o que e este site e onde eu compro" — as duas perguntas que um site 3D
@@ -67,7 +86,10 @@ export function HeroCard() {
     return null
 
   return (
-    <div className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[22rem] camada-cena">
+    <div
+      ref={ancorarEmbaixo}
+      className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[22rem] camada-cena"
+    >
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)] md:p-4"
         style={{ backdropFilter: 'blur(6px)' }}
@@ -130,7 +152,10 @@ export function FocusedProductBar() {
   if (!product) return null
 
   return (
-    <div className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[24rem] camada-cena">
+    <div
+      ref={ancorarEmbaixo}
+      className="anim-sobe fixed right-3 bottom-[calc(4.4rem_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-5 md:left-5 md:max-w-[24rem] camada-cena"
+    >
       <div
         className="relative rounded-2xl bg-porcelana/95 p-3 shadow-[var(--shadow-painel)]"
         style={{ backdropFilter: 'blur(6px)' }}
@@ -366,11 +391,13 @@ export function Toasts() {
   // confiavel se ja existia no DOM quando o texto chega. Montada junto com o
   // aviso, o leitor de tela costuma perder a primeira mensagem — e aqui a
   // primeira mensagem e "20 un (minimo do pedido) · R$ 240".
+  // No celular: o maior entre o lugar de sempre e 0,5rem acima do cartao ancorado
+  // (ver ancorarEmbaixo). Sem cartao, --ancora-baixo nao existe e vale o de sempre.
   return (
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed bottom-[calc(8.5rem_+_var(--sobra-area-segura))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6"
+      className="pointer-events-none fixed bottom-[max(calc(8.5rem_+_var(--sobra-area-segura)),calc(4.4rem_+_var(--sobra-area-segura)_+_var(--ancora-baixo,0px)_+_0.5rem))] left-1/2 z-[46] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2 md:bottom-6"
     >
       {toasts.map((t) => (
         <span

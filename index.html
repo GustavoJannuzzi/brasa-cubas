@@ -133,10 +133,25 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- CSS das fontes SEM bloquear a pintura. Como `rel="stylesheet"` comum, ele
+         segurava a primeira pintura e o script do app: com a requisicao ao Google
+         pendurada (rede ruim que nao responde nem falha), medido na producao,
+         nenhuma pintura em 20 s e o app fora do DOM ate ~20 s. Com `media="print"`
+         o navegador baixa sem esperar e o `onload` liga o estilo; ate la o texto
+         sai nas fontes de reserva do CSS do app. O <noscript> mantem as fontes
+         para quem esta sem JS. -->
     <link
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

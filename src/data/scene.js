@@ -7,6 +7,8 @@
 // O AMBIENTE, ao contrario, e em escala de verdade — parede de 2,9 m, bancada
 // de 78 cm, vaso de 25 cm. E o que da a referencia de tamanho para tudo.
 
+import { products } from './products'
+
 export const PIECE_SCALE = 1.45
 
 // Altura util de cada tipo de peca, em unidades de peca (antes de PIECE_SCALE).
@@ -305,7 +307,9 @@ export const hotspots = [
     id: 'prateleira',
     title: 'A prateleira',
     label: 'Produtos',
-    hint: '11 peças com preço',
+    // Contado do catalogo, como o subtitulo do painel de Produtos: digitado, o
+    // "11" ficaria errado no primeiro produto que entrasse ou saisse.
+    hint: `${products.length} peças com preço`,
     icon: 'shelf',
     panel: 'produtos',
     view: 'prateleira',

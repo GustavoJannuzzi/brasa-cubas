@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Html } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { products } from '../data/products'
-import { PIECE_SCALE, shelf, shelfSlotPosition } from '../data/scene'
+import { PIECE_SCALE, shelf, shelfSlotPosition, views } from '../data/scene'
 import { useCliqueSemArrasto } from '../hooks/useCliqueSemArrasto'
 import { useIsMobile } from '../hooks/useMedia'
 import { priceLabel } from '../lib/format'
 import { useStore } from '../store/useStore'
 import { CeramicPiece } from './CeramicPiece'
+import { fovVertical, larguraDaGaveta } from './lente'
 import { roundedBox } from './shapes'
 
 // Pecas que nao ficam de pe: prato e ima sao expostos inclinados,
@@ -33,23 +34,29 @@ const FILLER = [
 // quina (como era antes, com `center`), a metade de cima subia por cima do
 // produto: nas pecas baixas — porta-joias, ima, lembrancinha — o proprio preco
 // escondia a peca que ele anuncia.
-// Abaixo desta altura de janela a etiqueta encolhe junto com a cena. Com o fov
-// vertical fixo das telas deitadas, o passo entre vagas e 0,1976 x altura (medido
-// em 1440x900, 1280x800, 1536x730, 1366x657, 1280x632 e 812x375: 0,1974-0,1978).
-// A 720 ele e 142 e sobra vao para a etiqueta de 132; em 1366x657, tamanho comum
-// de notebook, vizinhas se sobrepunham 2,5 px, e em 1280x632, 7,6.
+// Passo entre vagas, em px, que cabe a etiqueta inteira: 132 de largura + 10 de
+// vao. Abaixo disso a etiqueta ESCALA junto com a cena; abaixo de 83% dele some.
+//
+// O passo sai da mesma conta de lente da camera (lente.js): vao de 0,34 m entre
+// vagas visto a 2,495 m (camera da vista `prateleira` ate a frente da tabua), na
+// altura da tela e no fov daquele momento. A conta da 0,1979 x altura com fov 38;
+// medido, 0,1974-0,1978 em seis tamanhos. Antes a regra era so pela altura, e nao
+// sabia que a gaveta aberta abre o campo: em 768 com Produtos aberto as etiquetas
+// se sobrepunham na area livre.
 // Escalar (e nao estreitar) porque o preco "a partir de R$ 320" ja ocupa 121 px
 // dos 110 uteis: numa etiqueta mais estreita ele quebraria em duas linhas, e a
-// fileira de baixo sairia pela borda da tela.
-const ALTURA_DA_ETIQUETA_INTEIRA = 720
+// fileira de baixo sairia pela borda da tela. Abaixo de 83% a letra do nome
+// ficaria com menos de 10 px.
+const PASSO_DA_ETIQUETA_INTEIRA = 142
+const ESCALA_MINIMA = 0.83
+const PASSO_NO_MUNDO = shelf.slotsX[1] - shelf.slotsX[0]
+const DISTANCIA_DA_VISTA = views.prateleira.position[2] - (shelf.z + shelf.depth / 2)
 
-function Etiqueta({ product, position, onOpen }) {
+function Etiqueta({ product, position, onOpen, escala }) {
   const semArrasto = useCliqueSemArrasto((e) => {
     e.stopPropagation()
     onOpen()
   })
-  const altura = useThree((s) => s.size.height)
-  const escala = Math.min(1, altura / ALTURA_DA_ETIQUETA_INTEIRA)
 
   return (
     <Html position={position} zIndexRange={[18, 0]} style={{ pointerEvents: 'auto', touchAction: 'pan-y' }} aria-hidden="true">
@@ -76,7 +83,7 @@ function Etiqueta({ product, position, onOpen }) {
   )
 }
 
-function ProdutoNaPrateleira({ product, showTag, quality }) {
+function ProdutoNaPrateleira({ product, showTag, escalaDaEtiqueta, quality }) {
   const focusedProduct = useStore((s) => s.focusedProduct)
   const openProduct = useStore((s) => s.openProduct)
   const [hovered, setHovered] = useState(false)
@@ -107,6 +114,7 @@ function ProdutoNaPrateleira({ product, showTag, quality }) {
           // para pendurar sob a quina, e fica quase rente a face da frente.
           position={[base[0], base[1] - shelf.thickness - 0.012, shelf.z + shelf.depth / 2 + 0.005]}
           onOpen={() => openProduct(product.id)}
+          escala={escalaDaEtiqueta}
         />
       )}
     </group>
@@ -140,14 +148,20 @@ export function Shelf({ quality = 'alta' }) {
   const view = useStore((s) => s.view)
   const focusedProduct = useStore((s) => s.focusedProduct)
   const isMobile = useIsMobile()
-  const altura = useThree((s) => s.size.height)
+  const tamanho = useThree((s) => s.size)
+  const gavetaAberta = useStore((s) => !isMobile && Boolean(s.panel))
   // As etiquetas aparecem so quando o usuario esta olhando a prateleira de
   // frente. No celular nao cabem cinco por nivel, e quando uma peca esta em
   // destaque a faixa de baixo ja mostra nome e preco.
-  // Tela baixa (celular deitado) cai no mesmo caso: em 812x375 o passo e 74 px,
-  // e as etiquetas se sobrepunham 58 px com quatro cortadas. Abaixo de 600 a
-  // escala levaria a letra do nome para menos de 10 px.
-  const showTag = !isMobile && altura >= 600 && view === 'prateleira' && !focusedProduct
+  // Passo pequeno cai no mesmo caso: celular deitado (812x375, passo 74, as
+  // etiquetas se sobrepunham 58 px com quatro cortadas) e area livre estreita ao
+  // lado da gaveta.
+  const livre = tamanho.width - (gavetaAberta ? larguraDaGaveta() : 0)
+  const fov = fovVertical({ largura: livre, altura: tamanho.height, celular: false })
+  const passo =
+    (PASSO_NO_MUNDO / (2 * DISTANCIA_DA_VISTA * Math.tan((fov * Math.PI) / 360))) * tamanho.height
+  const escala = Math.min(1, passo / PASSO_DA_ETIQUETA_INTEIRA)
+  const showTag = !isMobile && escala >= ESCALA_MINIMA && view === 'prateleira' && !focusedProduct
 
   return (
     <group>
@@ -180,7 +194,7 @@ export function Shelf({ quality = 'alta' }) {
       ))}
 
       {products.map((product) => (
-        <ProdutoNaPrateleira key={product.id} product={product} showTag={showTag} quality={quality} />
+        <ProdutoNaPrateleira key={product.id} product={product} showTag={showTag} escalaDaEtiqueta={escala} quality={quality} />
       ))}
     </group>
   )

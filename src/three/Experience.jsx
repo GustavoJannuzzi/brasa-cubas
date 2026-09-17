@@ -7,6 +7,7 @@ import { foiRebaixado, limparRebaixamento, marcarRebaixado, tierDoAparelho } fro
 import { useStore } from '../store/useStore'
 import { Atelier } from './Atelier'
 import { CameraRig } from './CameraRig'
+import { fovVertical, larguraDaGaveta } from './lente'
 import { Gato } from './Cat'
 import { Hotspots } from './Hotspot'
 import { Lighting } from './Lighting'
@@ -63,48 +64,63 @@ function Sombra() {
 }
 
 // O prop `camera` do Canvas so vale na criacao. Girar o aparelho ou
-// redimensionar a janela precisa recalcular o campo de visao aqui.
-// Cobertura horizontal que a abertura do celular precisa ter, em graus. E ela
-// que decide o enquadramento: o que tem de caber — mural a esquerda, estante a
-// direita — esta espalhado na HORIZONTAL.
-const CAMPO_HORIZONTAL = 32
+// redimensionar a janela precisa recalcular o campo de visao aqui. A conta da
+// abertura esta em lente.js, dividida com as etiquetas da prateleira.
 
-// Cobertura horizontal MINIMA fora do celular. O fov vertical 38 e de tela
-// deitada; numa tela em pe com largura de desktop (iPad em pe, 768x1024) ele
-// cobria so 29 graus na horizontal, contra 58 no 16:10, e na prateleira quatro
-// etiquetas saiam cortadas nas bordas. Abaixo desta cobertura o vertical cresce
-// ate alcanca-la. Em tela deitada (4:3 ja cobre 49) nada muda: so entra abaixo da
-// proporcao ~1,03.
-const CAMPO_HORIZONTAL_MINIMO = 39
+// Mesma duracao da entrada da gaveta (.anim-gaveta, 0.32 s).
+const GAVETA_SEGUNDOS = 0.32
 
 function CameraFov() {
   const isMobile = useIsMobile()
+  const reduzida = useReducedMotion()
   const camera = useThree((s) => s.camera)
   const tamanho = useThree((s) => s.size)
+  // Com a gaveta aberta, a "tela" da camera e so a area livre a esquerda dela.
+  // Antes a camera centralizava na tela INTEIRA e a gaveta cobria o centro: em
+  // 768x1024 o close da peca clicada ficava 59% atras dela (so meia noiva do topo
+  // de bolo a vista), 41% em 1024x768; o caderno do Orcamento, pela metade.
+  // setViewOffset com a largura cheia = area livre desloca e, se a area livre for
+  // estreita, abre o campo — o alvo da camera cai no meio do que se ve.
+  const gavetaAberta = useStore((s) => !isMobile && Boolean(s.panel))
+  const abertura = useRef(gavetaAberta ? 1 : 0)
 
-  useEffect(() => {
-    if (!isMobile) {
-      const proporcao = tamanho.width / Math.max(1, tamanho.height)
-      const meia = THREE.MathUtils.degToRad(CAMPO_HORIZONTAL_MINIMO) / 2
-      const verticalMinimo = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(meia) / proporcao))
-      camera.fov = Math.min(72, Math.max(38, verticalMinimo))
+  const aplicar = useRef(() => {})
+  aplicar.current = () => {
+    const { width, height } = tamanho
+    if (isMobile) {
+      camera.aspect = width / Math.max(1, height)
+      camera.clearViewOffset()
+      camera.fov = fovVertical({ largura: width, altura: height, celular: true })
       camera.updateProjectionMatrix()
       return
     }
-    // No celular o fov sai da PROPORCAO da tela, e nao de um numero fixo.
-    //
-    // Medido: com fov fixo, na proporcao 0,56 (o aparelho do retorno) cabiam 19
-    // de 25 combinacoes de alvo; na proporcao 0,46 cabiam 2, e as duas exigiam
-    // fov 70 — lente larga demais. `fov` no three e VERTICAL, entao tela mais
-    // estreita perde campo horizontal justamente onde a cena precisa dele.
-    // Fixando a cobertura horizontal, cada aparelho recebe o vertical que a
-    // proporcao dele pede, e o enquadramento para de depender do modelo.
-    const meiaHorizontal = THREE.MathUtils.degToRad(CAMPO_HORIZONTAL) / 2
-    const proporcao = Math.max(0.3, tamanho.width / Math.max(1, tamanho.height))
-    const vertical = 2 * Math.atan(Math.tan(meiaHorizontal) / proporcao)
-    camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vertical), 46, 72)
+    const t = abertura.current * abertura.current * (3 - 2 * abertura.current)
+    const livre = Math.max(1, width - t * larguraDaGaveta())
+    camera.fov = fovVertical({ largura: livre, altura: height, celular: false })
+    camera.aspect = livre / Math.max(1, height)
+    if (livre < width - 0.5) camera.setViewOffset(livre, height, 0, 0, width, height)
+    else camera.clearViewOffset()
     camera.updateProjectionMatrix()
-  }, [camera, isMobile, tamanho])
+  }
+
+  // Tamanho, modo, gaveta e movimento reduzido: recalcula na hora. O R3F repoe
+  // `aspect` ao redimensionar; este efeito roda depois e devolve o da area livre.
+  useEffect(() => {
+    if (!isMobile && reduzida) abertura.current = gavetaAberta ? 1 : 0
+    if (isMobile) abertura.current = 0
+    aplicar.current()
+  }, [camera, isMobile, tamanho, gavetaAberta, reduzida])
+
+  // Abrir e fechar a gaveta: a area livre anda junto com a entrada dela, em vez
+  // de a cena pular de lado. Com movimento reduzido o efeito acima ja cortou.
+  useFrame((_, delta) => {
+    const alvo = gavetaAberta ? 1 : 0
+    if (abertura.current === alvo) return
+    const passo = Math.min(delta, 0.05) / GAVETA_SEGUNDOS
+    abertura.current =
+      alvo > abertura.current ? Math.min(alvo, abertura.current + passo) : Math.max(alvo, abertura.current - passo)
+    aplicar.current()
+  })
 
   return null
 }

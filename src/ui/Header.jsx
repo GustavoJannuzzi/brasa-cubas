@@ -41,7 +41,11 @@ function Marca({ onClick }) {
       </span>
       <span className="leading-tight md:hidden min-[60rem]:block">
         <span className="block font-display text-[17px] text-porcelana">{studio.name}</span>
-        <span className="block text-[11px] text-porcelana/80">{studio.tagline}</span>
+        {/* Abaixo de 18rem (zoom de pagina do Android: 390 px a 150% sao 260) o
+            subtitulo quebrava, a marca ia a 5 linhas e as letras desciam 178 px2
+            sobre o chip de posicao e 676 sobre o botao de lista. Ele segue no
+            aria-label. */}
+        <span className="block text-[11px] text-porcelana/80 max-[18rem]:hidden">{studio.tagline}</span>
       </span>
     </button>
   )
@@ -171,7 +175,7 @@ export function MobileNav() {
 
   return (
     <nav
-      className="camada-cena area-segura-b fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-porcelana/10 bg-carvao/92 px-1 pt-1 md:hidden"
+      className="camada-cena area-segura-b fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-porcelana/10 bg-carvao/92 px-1 pt-1 max-[18rem]:gap-1 md:hidden"
       style={{ backdropFilter: 'blur(8px)' }}
       aria-label="Seções do site"
     >
@@ -190,7 +194,14 @@ export function MobileNav() {
               }
             }}
             aria-current={active ? 'page' : undefined}
-            className={`flex-1 rounded-xl px-1 py-2 text-[11px] leading-tight font-medium transition-colors ${
+            // Com zoom de pagina (260 px CSS) as cinco abas somavam mais que a
+            // tela e "Contato" saia pela direita: o minimo de cada aba e a
+            // palavra mais o px-1. Abaixo de 18rem o recuo sai e a letra vai a
+            // 10 px, com 4 px entre as abas (so sem recuo as palavras encostavam:
+            // "ProdutosOrcamento"). Com zoom, 10 px CSS ainda saem maiores na tela
+            // que os 11 sem zoom. Sem `min-w-0` de proposito: com ele as abas
+            // ficam iguais e "Orcamento" nao cabe ja em 300 (medido).
+            className={`flex-1 rounded-xl px-1 py-2 text-[11px] leading-tight font-medium transition-colors max-[18rem]:px-0 max-[18rem]:text-[10px] ${
               active ? 'bg-porcelana/15 text-porcelana' : 'text-porcelana/65'
             }`}
           >

@@ -231,7 +231,11 @@ export const useStore = create(
         contactKind: 'whatsapp',
       },
       setQuoteField: (field, value) => set((s) => ({ quote: { ...s.quote, [field]: value } })),
-      resetQuote: () =>
+      // Apagar o rascunho tem volta, como remover e limpar o pedido. "Comecar do
+      // zero" e um link pequeno ao lado do aviso de rascunho: medido, um toque
+      // apagava tudo — ate a descricao longa da ideia — sem aviso nem desfazer.
+      resetQuote: () => {
+        const anterior = get().quote
         set({
           quote: {
             kind: '',
@@ -243,7 +247,22 @@ export const useStore = create(
             contact: '',
             contactKind: 'whatsapp',
           },
-        }),
+        })
+        const tinhaTexto = ['kind', 'qty', 'eventDate', 'colors', 'details', 'name', 'contact'].some((campo) =>
+          String(anterior[campo] ?? '').trim(),
+        )
+        if (!tinhaTexto) return
+        get().toast('Rascunho apagado', {
+          chave: 'orcamento:desfazer',
+          acao: {
+            rotulo: 'Desfazer',
+            aoClicar: () => {
+              set({ quote: anterior })
+              get().toast('Rascunho de volta', { chave: 'orcamento:desfazer' })
+            },
+          },
+        })
+      },
 
       // --- preferencias / desempenho ---
       simpleMode: false,

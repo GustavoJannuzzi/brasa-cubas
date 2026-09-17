@@ -222,10 +222,10 @@ export function QuotePanel() {
           <button
             type="button"
             onClick={() => {
+              // O aviso (com desfazer) vem do proprio resetQuote.
               resetQuote()
               setSent(false)
               setStep(0)
-              toast('Formulário limpo')
             }}
             className="btn-fantasma text-[13px]"
           >

@@ -169,8 +169,11 @@
     @apply w-full rounded-xl border border-carvao/15 bg-creme px-3.5 py-3 text-base text-carvao;
     @apply placeholder:text-carvao/35;
   }
+  /* Mesmo tom do anel de foco geral. Com a brasa-clara, que ficou aqui quando o
+     anel geral foi trocado, o campo focado dava 2,65:1 na porcelana do painel
+     (medido com Tab nos campos do orcamento), abaixo dos 3:1. */
   .campo:focus {
-    outline: 2px solid var(--color-brasa-clara);
+    outline: 2px solid var(--color-brasa-texto);
     outline-offset: -1px;
     border-color: transparent;
   }

@@ -96,7 +96,9 @@ function Linha({ line }) {
                   if (e.key === 'Enter') e.currentTarget.blur()
                 }}
                 aria-label={`Quantidade de ${product.name}`}
-                className="w-14 bg-transparent text-center text-[15px] font-semibold tabular-nums outline-none focus-visible:rounded-md"
+                // Sem `outline-none`: a utilitaria ganhava do anel de foco geral e
+                // o campo focado pelo Tab nao mostrava nada alem do cursor.
+                className="w-14 bg-transparent text-center text-[15px] font-semibold tabular-nums focus-visible:rounded-md"
               />
             ) : (
               <span className="min-w-10 text-center text-[15px] font-semibold tabular-nums">{qty}</span>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Html } from '@react-three/drei'
+import { useThree } from '@react-three/fiber'
 import { products } from '../data/products'
 import { PIECE_SCALE, shelf, shelfSlotPosition } from '../data/scene'
 import { useCliqueSemArrasto } from '../hooks/useCliqueSemArrasto'
@@ -32,18 +33,30 @@ const FILLER = [
 // quina (como era antes, com `center`), a metade de cima subia por cima do
 // produto: nas pecas baixas — porta-joias, ima, lembrancinha — o proprio preco
 // escondia a peca que ele anuncia.
+// Abaixo desta altura de janela a etiqueta encolhe junto com a cena. Com o fov
+// vertical fixo das telas deitadas, o passo entre vagas e 0,1976 x altura (medido
+// em 1440x900, 1280x800, 1536x730, 1366x657, 1280x632 e 812x375: 0,1974-0,1978).
+// A 720 ele e 142 e sobra vao para a etiqueta de 132; em 1366x657, tamanho comum
+// de notebook, vizinhas se sobrepunham 2,5 px, e em 1280x632, 7,6.
+// Escalar (e nao estreitar) porque o preco "a partir de R$ 320" ja ocupa 121 px
+// dos 110 uteis: numa etiqueta mais estreita ele quebraria em duas linhas, e a
+// fileira de baixo sairia pela borda da tela.
+const ALTURA_DA_ETIQUETA_INTEIRA = 720
+
 function Etiqueta({ product, position, onOpen }) {
   const semArrasto = useCliqueSemArrasto((e) => {
     e.stopPropagation()
     onOpen()
   })
+  const altura = useThree((s) => s.size.height)
+  const escala = Math.min(1, altura / ALTURA_DA_ETIQUETA_INTEIRA)
 
   return (
     <Html position={position} zIndexRange={[18, 0]} style={{ pointerEvents: 'auto', touchAction: 'pan-y' }} aria-hidden="true">
       {/* Sem `center`: o ponto projetado e o canto da etiqueta. O translate
           horizontal centraliza na vaga e deixa a etiqueta CRESCER para baixo,
-          longe da peca. */}
-      <div style={{ transform: 'translate(-50%, 0)' }}>
+          longe da peca. A escala parte do topo, que e o ponto preso a tabua. */}
+      <div style={{ transform: `translate(-50%, 0) scale(${escala})`, transformOrigin: 'top center' }}>
         {/* Fora do caminho do teclado, como os marcadores: a etiqueta e DOM
             solto sobre a cena e continua focavel mesmo fora do quadro. O
             catalogo lista as mesmas pecas, com nome e preco. */}
@@ -127,10 +140,14 @@ export function Shelf({ quality = 'alta' }) {
   const view = useStore((s) => s.view)
   const focusedProduct = useStore((s) => s.focusedProduct)
   const isMobile = useIsMobile()
+  const altura = useThree((s) => s.size.height)
   // As etiquetas aparecem so quando o usuario esta olhando a prateleira de
   // frente. No celular nao cabem cinco por nivel, e quando uma peca esta em
   // destaque a faixa de baixo ja mostra nome e preco.
-  const showTag = !isMobile && view === 'prateleira' && !focusedProduct
+  // Tela baixa (celular deitado) cai no mesmo caso: em 812x375 o passo e 74 px,
+  // e as etiquetas se sobrepunham 58 px com quatro cortadas. Abaixo de 600 a
+  // escala levaria a letra do nome para menos de 10 px.
+  const showTag = !isMobile && altura >= 600 && view === 'prateleira' && !focusedProduct
 
   return (
     <group>

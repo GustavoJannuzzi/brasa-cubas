@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { studio } from '../data/studio'
 import { products } from '../data/products'
 import { useStore } from '../store/useStore'
@@ -28,7 +29,14 @@ export function Loader() {
 
   useEffect(() => {
     if (assetsReady) return
-    const id = setTimeout(() => setDemorou(true), DEMORA)
+    // flushSync: sem ele o aviso esperava a montagem da cena acabar. A atualizacao
+    // vinda de um setTimeout entra na mesma fila de prioridade que a montagem (que
+    // e uma transicao longa), e o agendador segue a montagem primeiro. Medido na
+    // producao com CPU 4x: carregador na tela aos 2,8 s, pronto aos 17,6 s — e o
+    // aviso nunca apareceu, nem no dev (pronto aos 27 s). So aparecia quando o
+    // quadro nunca vinha. Isolado, com a cena ja montada, o mesmo relogio mostra o
+    // aviso aos 12 s.
+    const id = setTimeout(() => flushSync(() => setDemorou(true)), DEMORA)
     return () => clearTimeout(id)
   }, [assetsReady])
 

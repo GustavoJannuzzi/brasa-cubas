@@ -36,8 +36,9 @@ const sondar = () => {
     // So WebGL2: o three desta versao nao roda em WebGL1 (saiu no r163). Aceitar
     // o 'webgl' como reserva mandava o aparelho que so tem WebGL1 para o
     // carregador — o renderer falhava ("Error creating WebGL context"), nenhuma
-    // barreira de erro via, e a tela ficava em "Preparando a bancada…" para
-    // sempre (medido simulando `getContext('webgl2')` nulo). Sem WebGL2, lista.
+    // barreira de erro via, e a tela ficava em "Preparando a bancada…" ate o
+    // aviso de demora, aos 12 s (medido simulando `getContext('webgl2')` nulo).
+    // Sem WebGL2, lista na hora.
     ctx = tela.getContext('webgl2')
   } catch {
     ctx = null

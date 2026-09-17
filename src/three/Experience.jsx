@@ -146,6 +146,8 @@ function GuardaContexto() {
     }
     const voltou = () => {
       useStore.getState().setGl3d('ok')
+      // O mapa de sombra congelado (Sombra) voltou vazio junto com o contexto.
+      gl.shadowMap.needsUpdate = true
       invalidate()
     }
 

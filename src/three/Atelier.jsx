@@ -3,6 +3,7 @@ import { ContactShadows } from '@react-three/drei'
 import { room } from '../data/scene'
 import { plasterTexture, signTexture, windowTexture, woodFloorTexture } from './textures'
 import { roundedBox } from './shapes'
+import { useGeracaoDoContexto } from './useGeracaoDoContexto'
 
 // Casco do ambiente. Tres paredes: fundo, esquerda inteira e um retorno curto
 // na direita. A frente nao existe — e por ali que a camera olha.
@@ -30,6 +31,7 @@ export function Atelier() {
   const wallMap = useMemo(() => plasterTexture(), [])
   const signMap = useMemo(() => signTexture(), [])
   const winMap = useMemo(() => windowTexture(), [])
+  const geracao = useGeracaoDoContexto()
 
   const win = room.window
   const sign = room.sign
@@ -191,8 +193,10 @@ export function Atelier() {
       {/* Oclusao de contato no piso, assada no primeiro quadro. O sol entra
           por um vao so: fora do facho nada ficaria apoiado no chao, tudo
           pareceria flutuar. `far` baixo para so o que esta perto do piso
-          contar — planta pendurada nao pode escurecer o assoalho. */}
+          contar — planta pendurada nao pode escurecer o assoalho. A `key` refaz
+          depois de o contexto cair (useGeracaoDoContexto). */}
       <ContactShadows
+        key={geracao}
         position={[0, 0.004, pisoZ]}
         scale={[W * 2, pisoFundo]}
         resolution={1024}

@@ -37,6 +37,7 @@ const SEM_ACAO = 0
 export function CameraRig() {
   const controls = useRef(null)
   const scene = useThree((s) => s.scene)
+  const invalidate = useThree((s) => s.invalidate)
   const view = useStore((s) => s.view)
   const focusedProduct = useStore((s) => s.focusedProduct)
   const quadroFocado = useStore((s) => s.quadroFocado)
@@ -144,12 +145,15 @@ export function CameraRig() {
 
     ultimoToque.current = performance.now()
     c.setLookAt(...framing.position, ...framing.target, !reduced)
+    // Sem transicao (movimento reduzido) a biblioteca nao emite nada que peca
+    // quadro, e com o loop em pausa a camera mudava sem a tela mudar.
+    invalidate()
     // De volta a um enquadramento conhecido: o rotulo pode voltar a dizer onde
     // a camera esta.
     useStore.getState().setVistaLivre(false)
     // cameraSeq nas dependencias e o que faz "voltar para a visao geral"
     // funcionar quando a vista ja e 'home' e so a camera saiu do lugar.
-  }, [view, focusedProduct, quadroFocado, entered, isMobile, reduced, cameraSeq])
+  }, [view, focusedProduct, quadroFocado, entered, isMobile, reduced, cameraSeq, invalidate])
 
   useFrame((state, delta) => {
     const c = controls.current
@@ -186,8 +190,8 @@ export function CameraRig() {
     if (!entered || reduced) return
     // Com a folha aberta no celular ninguem ve a cena, e o respiro mexe a camera
     // a cada quadro: os controles pedem novo quadro a cada movimento, e a pausa
-    // do loop (PausaSobAFolha) voltava a desenhar ~30 vezes por segundo depois de
-    // alguns segundos parada (medido).
+    // do loop (PausaQuandoNadaMexe) voltava a desenhar ~30 vezes por segundo
+    // depois de alguns segundos parada (medido).
     if (isMobile && painelAberto) return
     if (c.currentAction !== SEM_ACAO) return
     if (performance.now() - ultimoToque.current < ESPERA_RESPIRO) return

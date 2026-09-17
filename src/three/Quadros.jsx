@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTexture } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { quadros, retratos } from '../data/scene'
 import { useReducedMotion } from '../hooks/useMedia'
@@ -49,6 +49,13 @@ function usarFotos(urls) {
 function usarBrilho(reduzida) {
   const material = useRef(null)
   const [perto, setPerto] = useState(false)
+  const invalidate = useThree((s) => s.invalidate)
+
+  // Com o loop em pausa (PausaQuandoNadaMexe), o brilho do toque so aparece se
+  // alguem pedir o quadro.
+  useEffect(() => {
+    invalidate()
+  }, [perto, invalidate])
 
   useFrame((state) => {
     const m = material.current

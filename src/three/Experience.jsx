@@ -1,4 +1,4 @@
-import { Suspense, startTransition, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, memo, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
@@ -76,6 +76,7 @@ function CameraFov() {
   const reduzida = useReducedMotion()
   const camera = useThree((s) => s.camera)
   const tamanho = useThree((s) => s.size)
+  const invalidate = useThree((s) => s.invalidate)
   // Com a gaveta aberta, a "tela" da camera e so a area livre a esquerda dela.
   // Antes a camera centralizava na tela INTEIRA e a gaveta cobria o centro: em
   // 768x1024 o close da peca clicada ficava 59% atras dela (so meia noiva do topo
@@ -93,6 +94,7 @@ function CameraFov() {
       camera.clearViewOffset()
       camera.fov = fovVertical({ largura: width, altura: height, celular: true })
       camera.updateProjectionMatrix()
+      invalidate()
       return
     }
     const t = abertura.current * abertura.current * (3 - 2 * abertura.current)
@@ -102,6 +104,9 @@ function CameraFov() {
     if (livre < width - 0.5) camera.setViewOffset(livre, height, 0, 0, width, height)
     else camera.clearViewOffset()
     camera.updateProjectionMatrix()
+    // Com o loop em pausa (PausaQuandoNadaMexe) ninguem mais desenharia a lente
+    // nova: a gaveta abria e a cena ficava onde estava.
+    invalidate()
   }
 
   // Tamanho, modo, gaveta e movimento reduzido: recalcula na hora. O R3F repoe
@@ -131,6 +136,7 @@ function CameraFov() {
 // a cena fica preta atras do menu, sem aviso nenhum.
 function GuardaContexto() {
   const gl = useThree((s) => s.gl)
+  const invalidate = useThree((s) => s.invalidate)
 
   useEffect(() => {
     const tela = gl.domElement
@@ -138,7 +144,10 @@ function GuardaContexto() {
       e.preventDefault()
       useStore.getState().setGl3d('perdido')
     }
-    const voltou = () => useStore.getState().setGl3d('ok')
+    const voltou = () => {
+      useStore.getState().setGl3d('ok')
+      invalidate()
+    }
 
     tela.addEventListener('webglcontextlost', perdeu)
     tela.addEventListener('webglcontextrestored', voltou)
@@ -149,7 +158,7 @@ function GuardaContexto() {
       tela.removeEventListener('webglcontextlost', perdeu)
       tela.removeEventListener('webglcontextrestored', voltou)
     }
-  }, [gl])
+  }, [gl, invalidate])
 
   return null
 }
@@ -189,8 +198,16 @@ function PerfWatch({ aoBaixarDpr }) {
     return () => document.removeEventListener('visibilitychange', aoVoltar)
   }, [])
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const a = acc.current
+    // Loop em pausa (PausaQuandoNadaMexe): os quadros avulsos que os controles e
+    // o toque pedem chegam separados pelo tempo parado — 200 ms entre dois deles
+    // e a pessoa olhando, nao um aparelho a 5 fps. Nao entram na conta.
+    if (state.frameloop !== 'always') {
+      a.tempos = []
+      a.janela = 0
+      return
+    }
     if (a.carencia < CARENCIA) {
       a.carencia += delta
       return
@@ -256,33 +273,60 @@ function PerfWatch({ aoBaixarDpr }) {
 }
 
 /**
+ * Para de desenhar quando nao ha nada novo para mostrar. Pausado, o loop so
+ * desenha quando alguem pede: os controles da camera pedem sozinhos, e quem
+ * muda a cena por fora de um quadro pede com `invalidate()` (a lente em
+ * CameraFov, o `setLookAt` sem transicao em CameraRig, a peca que interpola em
+ * CeramicPiece, o brilho do toque em Quadros). Dois casos:
+ *
  * No celular, com a folha aberta, a cena fica atras de 84% da tela e continuava
  * desenhando sem parar — medido: 21 renders por segundo com o orcamento aberto e
  * parado (num celular de verdade, ate 60), bateria e calor enquanto a pessoa
  * preenche o formulario (raio-x de 15/09, P10). Depois do voo da camera ate o
- * lugar do painel, o loop passa a desenhar so quando pedem (os controles da
- * camera pedem sozinhos); fechou, volta ao normal. No desktop a gaveta deixa a
+ * lugar do painel, pausa; fechou, volta ao normal. No desktop a gaveta deixa a
  * cena a vista, e nada muda.
+ *
+ * Com movimento reduzido, depois de entrar: poeira, respiro da camera, pulso das
+ * molduras, gato e vento ja param nesse modo, entao o quadro sai IDENTICO ao
+ * anterior — e o loop seguia desenhando 40 a 46 vezes por segundo (medido na
+ * producao, 375 parado). Antes de entrar o carregador precisa dos quadros
+ * (SceneReady, Sombra), por isso a espera pelo `entered`.
+ *
+ * Limite conhecido: com a camera encostada numa parede (colisor), o
+ * camera-controls quer voltar a distancia pedida, a parede nao deixa, e ele
+ * emite 'update' a cada quadro sem mover nada. Ai a pausa nao pausa — o mesmo
+ * custo de antes, sem piora. Resolver mexeria no jeito elastico de a camera
+ * voltar ao se afastar da parede.
+ *
+ * A pausa sobe para o Experience em vez de chamar `setFrameloop` daqui: o Canvas
+ * reaplica o prop `frameloop` a cada render, e sem o prop o padrao e 'always'.
+ * Qualquer render do Experience — o degrau 1 do PerfWatch, por exemplo — desfazia
+ * a pausa em silencio, e o efeito abaixo nao rodava de novo (visto na sonda: com
+ * o dpr ja em 0,75, o loop ficou em 'always' do comeco ao fim).
  */
-function PausaSobAFolha() {
+function PausaQuandoNadaMexe({ aoPausar }) {
   const isMobile = useIsMobile()
+  const reduzido = useReducedMotion()
+  const entered = useStore((s) => s.entered)
   const painelAberto = useStore((s) => Boolean(s.panel))
-  const setFrameloop = useThree((s) => s.setFrameloop)
-  const pausar = isMobile && painelAberto
+  const pausar = (isMobile && painelAberto) || (reduzido && entered)
 
   useEffect(() => {
     if (!pausar) {
-      setFrameloop('always')
+      aoPausar(false)
       return
     }
-    const id = setTimeout(() => setFrameloop('demand'), 1200)
+    const id = setTimeout(() => aoPausar(true), 1200)
     return () => clearTimeout(id)
-  }, [pausar, setFrameloop])
+  }, [pausar, aoPausar])
 
   return null
 }
 
-function Scene({ quality, aoBaixarDpr }) {
+// memo: o Experience renderiza de novo quando a pausa liga e desliga, e sem isto
+// a cena inteira renderizaria junto — logo no fechar da folha, com a animacao
+// dela na tela.
+const Scene = memo(function Scene({ quality, aoBaixarDpr, aoPausar }) {
   const alta = quality === 'alta'
   // Com `prefers-reduced-motion`, a poeira para de flutuar — mas continua na
   // tela. Medido: com reducao pedida e o vento das plantas ja em zero, 1,43%
@@ -317,7 +361,7 @@ function Scene({ quality, aoBaixarDpr }) {
       <fogExp2 attach="fog" args={['#241b16', 0.042]} />
       <CameraFov />
       <GuardaContexto />
-      <PausaSobAFolha />
+      <PausaQuandoNadaMexe aoPausar={aoPausar} />
 
       {montar && (
         <>
@@ -364,7 +408,7 @@ function Scene({ quality, aoBaixarDpr }) {
       )}
     </>
   )
-}
+})
 
 export function Experience() {
   const isMobile = useIsMobile()
@@ -383,10 +427,12 @@ export function Experience() {
   // vinha o degrau 2 (qualidade baixa, que quase nao alivia: o custo e
   // resolucao — GPU 38,7 ms, 20,9 com meio dpr — e nao luz nem sombra) com o
   // aviso "a cena esta pesada". Agora e 75% do dpr em uso, com piso abaixo de 1.
-  const baixarDpr = () => {
+  const baixarDpr = useCallback(() => {
     const emUso = Math.min(Math.max(1, window.devicePixelRatio || 1), teto)
     setTetoDpr(Math.min(1, emUso * 0.75))
-  }
+  }, [teto])
+  // Ver PausaQuandoNadaMexe. `setPausado` e estavel, entao nao desfaz o memo da cena.
+  const [pausado, setPausado] = useState(false)
 
   return (
     <Canvas
@@ -395,6 +441,7 @@ export function Experience() {
       // A borda macia vem de shadow-radius, no Lighting.
       shadows={quality === 'alta' ? 'percentage' : false}
       dpr={[Math.min(1, teto), teto]}
+      frameloop={pausado ? 'demand' : 'always'}
       // Coerente porque o nivel do aparelho nao muda depois de criado o
       // renderer. Em aparelho de toque, 'default' deixa o sistema escolher a
       // GPU integrada, que gasta menos bateria e aquece menos.
@@ -411,7 +458,7 @@ export function Experience() {
       }}
       style={{ position: 'fixed', inset: 0, touchAction: 'none' }}
     >
-      <Scene quality={quality} aoBaixarDpr={baixarDpr} />
+      <Scene quality={quality} aoBaixarDpr={baixarDpr} aoPausar={setPausado} />
     </Canvas>
   )
 }

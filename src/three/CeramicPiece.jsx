@@ -72,6 +72,7 @@ export function CeramicPiece({
   // Experience). Esta peca e a unica coisa da cena que mexe de verdade, entao e
   // ela quem pede o redesenho — nos quadros em que mexeu.
   const gl = useThree((s) => s.gl)
+  const invalidate = useThree((s) => s.invalidate)
 
   const target = useRef({ lift: 0, grow: 1 })
   target.current.lift = highlighted ? 0.035 : hovered ? 0.012 : 0
@@ -82,9 +83,16 @@ export function CeramicPiece({
     const k = 1 - Math.exp(-10 * delta)
     const g = group.current
     const antes = { y: g.position.y, s: g.scale.x, r: g.rotation.y }
-    g.position.y = THREE.MathUtils.lerp(g.position.y, position[1] + target.current.lift, k)
+    // A menos de 0,1 mm do alvo (e 0,01% da escala), chega de uma vez. Deixado
+    // ate a igualdade de float, cada passada do mouse pela peca refazia o mapa
+    // de sombra por 3,25 a 3,5 s (medido: 78 a 86 passadas em 1440), quando o
+    // movimento que se ve acaba em ~0,6 s.
+    const alvoY = position[1] + target.current.lift
+    const y = THREE.MathUtils.lerp(g.position.y, alvoY, k)
+    g.position.y = Math.abs(y - alvoY) < 0.0001 ? alvoY : y
+    const alvoS = target.current.grow * scale
     const s = THREE.MathUtils.lerp(g.scale.x / scale, target.current.grow, k) * scale
-    g.scale.setScalar(s)
+    g.scale.setScalar(Math.abs(s - alvoS) < 0.0001 * scale ? alvoS : s)
 
     if (highlighted && !reduzida) {
       g.rotation.y += delta * 0.35
@@ -101,13 +109,21 @@ export function CeramicPiece({
       if (Math.abs(g.rotation.y - rotation[1]) < 0.004) g.rotation.y = rotation[1]
     }
 
-    // Mexeu, a sombra precisa acompanhar. O lerp converge ate a igualdade de
-    // float, entao parada a peca para de pedir sozinha — nao ha epsilon
-    // arbitrario segurando o pedido ligado para sempre.
+    // Mexeu, a sombra precisa acompanhar. Com o encaixe no alvo acima, parada a
+    // peca para de pedir sozinha.
+    // Com o loop em pausa (PausaQuandoNadaMexe), mexer tambem e o que pede o
+    // proximo quadro, ate a interpolacao chegar.
     if (g.position.y !== antes.y || g.scale.x !== antes.s || g.rotation.y !== antes.r) {
       gl.shadowMap.needsUpdate = true
+      invalidate()
     }
   })
+
+  // O alvo mudou (destaque, toque, mouse): o primeiro quadro da interpolacao
+  // precisa ser pedido, porque ninguem mais desenharia com o loop em pausa.
+  useEffect(() => {
+    invalidate()
+  }, [highlighted, hovered, invalidate])
 
   const setHover = (value) => {
     if (!interactive) return

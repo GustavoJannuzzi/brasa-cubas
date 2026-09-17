@@ -14,16 +14,21 @@ function Canal({ icon: Icon, label, value, href, destaque }) {
   // linhas saiam 116 px pela direita, cortando telefone, e-mail e o @ do
   // Instagram. Precisa valer para TODAS as linhas — consertar uma so nao muda
   // nada, porque as outras continuam forcando a coluna. Medido antes e depois.
+  //
+  // O destaque usa o fundo do botao principal (brasa-texto), e nao a brasa: o
+  // #c2582d ficou para marcador, icone e barra. Com ele, o numero dava 3,96:1 e
+  // o rotulo "WhatsApp" a 70%, 2,72:1. Agora 4,53:1 nos dois — por isso o rotulo
+  // vai cheio: a 70% ainda seriam 3,03.
   return (
     <Tag
       {...(href ? { href, target: href.startsWith('http') ? '_blank' : undefined, rel: 'noreferrer' } : {})}
       className={`flex min-w-0 items-center gap-3 rounded-xl px-3.5 py-3 transition-colors ${
-        destaque ? 'bg-brasa text-porcelana' : 'cartao text-carvao hover:bg-carvao/4'
+        destaque ? 'bg-brasa-texto text-porcelana' : 'cartao text-carvao hover:bg-carvao/4'
       }`}
     >
       <Icon size={20} className={destaque ? 'text-porcelana/80' : 'text-carvao/55'} />
       <span className="min-w-0 flex-1">
-        <span className={`block text-[11px] font-semibold tracking-wide uppercase ${destaque ? 'text-porcelana/70' : 'text-carvao/70'}`}>
+        <span className={`block text-[11px] font-semibold tracking-wide uppercase ${destaque ? 'text-porcelana' : 'text-carvao/70'}`}>
           {label}
         </span>
         <span className="block truncate text-[14px] font-medium">{value}</span>

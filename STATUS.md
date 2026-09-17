@@ -120,7 +120,9 @@ do repositório; aqui vai o mapa por tema (commit de referência entre parêntes
   `fce0739`); cabeçalho de 768 a 960 numa linha (`2955546`, `f7368f6`); zoom de
   página do Android até 228 px CSS (`beb9429`, `b75c8e1`); títulos e linhas que
   quebram em vez de cortar (`142b614`); avisos que não cobrem cartão, folha nem
-  gaveta (`e28c666`, `fe65780`, `7518326`).
+  gaveta (`e28c666`, `fe65780`, `7518326`); efeito de passar o mouse só onde há
+  ponteiro que paira (`90be958`); modo lista sem botões que só existem no 3D
+  (`4f204f2`, `fe09ce1`).
 - **Câmera e cena**: campo de visão por largura e com a gaveta aberta
   (`3c67ad1`, `cc45996`); etiquetas em janela baixa (`f839561`); giro pelo tipo de
   ponteiro (`2f06fc7`); marcadores sem colisão (`2789494`, `55ec943`); foto de
@@ -130,7 +132,8 @@ do repositório; aqui vai o mapa por tema (commit de referência entre parêntes
   primitiva sem montar a geometria padrão e sonda única de WebGL — A/B intercalado
   com CPU 4×: "Entrar" de 15,0 para 13,5 s de mediana (`d93a0e2`, `39a0815`);
   arquivos com hash em cache de um ano (`8491514`); CSS das fontes do Google sem
-  bloquear a pintura (`c4204fd`).
+  bloquear a pintura (`c4204fd`); carregadores de HDR/EXR fora do pacote do 3D,
+  com o mapa de ambiente idêntico (−17 KB comprimidos, `02865f5`).
 - **Resiliência**: foto que falha não derruba o 3D (`9178233`); pacote do 3D que
   não baixa com retentativa real (`1d03a81`); estado guardado com tipo errado
   (`4c23aa4`); limites de erro no painel e na raiz (`4c23aa4`, `162cfbe`); página
@@ -161,7 +164,8 @@ tour sobre os preços, celular deitado, texto colorido em caixa tingida (contras
 entre 3,4 e 4,45:1), borda dos campos (1,33:1), "a partir de R$ 12", modo escuro
 forçado, voltar do Android na foto de perto, cena desenhando parada no celular
 (movimento normal), navegadores suportados (iOS 16.4+ na prática), "Entrar" antes
-das plantas — e as divergências de dados da seção 4.
+das plantas, exemplo de telefone com DDD 51, fontes hospedadas no próprio site —
+e as divergências de dados da seção 4.
 
 ## 3. Pendências
 

@@ -218,8 +218,8 @@ export const products = [
 
 export const productById = (id) => products.find((p) => p.id === id)
 
-// Projetos entregues. As "fotos" sao placeholders em gradiente —
-// substituir por imagens reais em /public/galeria quando houver.
+// Projetos entregues. As fotos moram em /public/fotos (o degrade de espera saiu
+// quando elas entraram); o `palette` segue como cor de fundo enquanto carregam.
 export const gallery = [
   // Legendas genericas de proposito. Antes cada vaga nomeava um projeto e um
   // cliente ("Casamento Marina & Teo", "45 bonecos"), o que nao sobreviveria a

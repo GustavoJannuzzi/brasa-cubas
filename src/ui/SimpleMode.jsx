@@ -207,15 +207,19 @@ export function SimpleMode() {
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {gallery.map((item) => (
               <li key={item.id} className="cartao overflow-hidden">
-                <div
-                  className="h-24"
-                  style={{ background: `linear-gradient(135deg, ${item.palette[0]}, ${item.palette[1]})` }}
+                {/* Igual ao painel de Projetos. A lista tinha ficado com o degrade
+                    de espera quando as fotos entraram, e com "· {ano}" depois que
+                    o ano saiu dos dados: os cinco cards diziam "Porcelana fria · ". */}
+                <img
+                  src={item.foto}
+                  alt={item.title}
+                  loading="lazy"
+                  className="h-56 w-full object-cover"
+                  style={{ background: item.palette[1] }}
                 />
                 <div className="p-3.5">
                   <h3 className="text-[14.5px]">{item.title}</h3>
-                  <p className="mt-0.5 text-[12px] font-medium text-brasa-texto">
-                    {item.kind} · {item.year}
-                  </p>
+                  <p className="mt-0.5 text-[12px] font-medium text-brasa-texto">{item.kind}</p>
                   <p className="mt-1.5 text-[13px] leading-relaxed text-carvao/70">{item.text}</p>
                 </div>
               </li>

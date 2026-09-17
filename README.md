@@ -24,8 +24,9 @@ npm run preview
 (`LatheGeometry`); as plantas, em `src/three/plantGeometry.js`. As texturas —
 assoalho, reboco, cortiça, tapete de corte, placa do ateliê, vidro da janela —
 são desenhadas em `<canvas>` em `src/three/textures.js`. Resultado: **nenhum
-arquivo de imagem ou modelo no repositório** e nada para baixar antes da cena
-aparecer.
+modelo 3D no repositório**. As únicas imagens são as fotos do mural e dos
+quadros (`public/fotos/`): carregam por `Suspense` sem segurar o resto da cena, e
+uma foto que falhe some sozinha em vez de derrubar o 3D (`FotoOpcional`).
 
 **Uma geometria por material, não por objeto.** Cada peça produz até cinco
 grupos (massa, pintura, pétala, folha, miolo da flor) que são mesclados com
@@ -95,9 +96,13 @@ a cena:
 | Conteúdo semântico para buscadores e para quem está sem JS | `<noscript>` em `index.html` |
 
 O modo simples não é um plano B escondido: está no carregamento ("ou ver o
-catálogo como lista"), no menu e é **sugerido automaticamente** quando o quadro
-cai abaixo de ~20 fps (`PerfWatch` em `src/three/Experience.jsx`). No modo
-simples o canvas nem é montado.
+catálogo como lista"), no menu e é **sugerido automaticamente** quando a mediana
+do quadro passa de 50 ms (20 fps) de forma persistente (`PerfWatch` em
+`src/three/Experience.jsx`). O recuo é em dois degraus: primeiro só baixa o
+`dpr`; se não bastar, cai para a qualidade baixa e oferece a lista. O
+rebaixamento vale para as visitas seguintes por 7 dias (`src/lib/tier.js`). No
+modo simples o canvas nem é montado, e quem entra direto nele não baixa o pacote
+do 3D (`src/three/experienceLazy.js`).
 
 ---
 
@@ -115,10 +120,12 @@ Não é o layout de desktop encolhido:
   painel cobre 84% da tela, então mover a câmera atrás dele não serve de nada:
   "ver na prateleira" fecha o painel, destaca a peça no 3D e mostra nome, preço
   e "Adicionar" numa faixa baixa (`FocusedProductBar`).
-- **Hitbox ampliada** (~3× o tamanho da peça) para peças pequenas serem
+- **Hitbox ampliada** (1,6× o diâmetro da peça) para peças pequenas serem
   acertáveis com o dedo.
-- Sombras e antialias desligados, `dpr` limitado, menos partículas e plantas com
-  menos folhas (qualidade `baixa` em `Experience.jsx`).
+- **Qualidade decidida pelo aparelho, não pela largura** (`src/lib/tier.js`):
+  toque grosso, até 4 núcleos, até 2 GB ou renderizador por software caem na
+  `baixa` — sem sombra nem antialias, `dpr` até 1,25, menos partículas e plantas
+  com menos folhas. Girar o celular muda o enquadramento, nunca a qualidade.
 - `prefers-reduced-motion` desliga as transições de câmera e o respiro.
 
 ---
@@ -132,7 +139,11 @@ Não é o layout de desktop encolhido:
   validação, aviso quando a data do evento é mais curta que o prazo de produção,
   e três saídas: WhatsApp, e-mail ou copiar o texto.
 - Carrinho e rascunho do orçamento **sobrevivem a uma recarga** (`persist` do
-  zustand, em `localStorage`).
+  zustand, em `localStorage`; com o armazenamento bloqueado o site funciona, só
+  não lembra).
+- **Links diretos** para painel e peça (`#orcamento`, `#produto/caneca-floral`),
+  e o voltar do navegador fecha o painel em vez de sair do site
+  (`src/hooks/useRotaHash.js`).
 
 Nada é cobrado pelo site — por escolha de modelo, o pedido vira conversa.
 Não há gateway de pagamento.
@@ -148,31 +159,38 @@ src/
   store/      useStore.js — estado único (câmera, painéis, carrinho, orçamento)
   three/      pieceGeometry.js (gerador de peças), plantGeometry.js (plantas),
               shapes.js (caixa e cilindro arredondados, cacheados),
-              textures.js (canvas), Atelier, WorkTable, Shelf, Pinboard,
-              Plants, Hotspot, Lighting, CameraRig, Experience
-  ui/         Header, Panel, Intro, Overlays, SimpleMode, Icons, PieceThumb
+              textures.js (canvas), lente.js (campo de visão e gaveta),
+              experienceLazy.js (o 3D em pacote próprio), Atelier, WorkTable,
+              Shelf, Pinboard, Quadros, Plants, Cat, CeramicPiece, Hotspot,
+              Lighting, CameraRig, FotoOpcional, Experience
+  ui/         Header (com o MobileNav), Panel, Intro, Overlays, SimpleMode,
+              Aviso3D, Boundary3D, Icons, PieceThumb
   ui/panels/  Products, ProductDetail, Quote, Cart, Gallery, Process, Contact, Help
-  hooks/      useMedia.js
-  lib/        format.js (BRL, datas), whatsapp.js (mensagens)
+  hooks/      useMedia.js, useRotaHash.js (hash e voltar do navegador),
+              useCliqueSemArrasto.js
+  lib/        format.js (BRL, datas), prazo.js, rotas.js, tier.js (qualidade
+              por aparelho), webgl.js, whatsapp.js (mensagens)
 ```
 
 ---
 
 ## Custo da cena (medido)
 
-Desktop 1440×900, dpr 1, qualidade alta, GPU integrada Intel UHD:
+Medido em 17/09 na visão geral, pelo `renderer.info` (maior de 5 quadros
+seguidos), GPU integrada Intel UHD:
 
-| | |
-| --- | --- |
-| Triângulos visíveis | ~302 mil |
-| Triângulos por quadro | ~593 mil (o mapa de sombra redesenha quase tudo) |
-| Draw calls | ~377 |
-| Peças de cerâmica | ~199 mil triângulos (o arranjo de rosas sozinho tem 59 mil) |
-| Plantas | ~76 mil em alta, ~37 mil em baixa |
+| | 1440×900, alta, com sombra | 375×812, baixa, sem sombra |
+| --- | --- | --- |
+| Draw calls por quadro | 220 | 167 |
+| Triângulos por quadro | ~172 mil | ~73 mil |
+| Triângulos em malhas visíveis (sem recorte da câmera) | ~184 mil | ~110 mil |
+| Texturas / programas | 32 / 21 | 30 / 20 |
 
-Em retrato (375×812, qualidade baixa, sem sombra) a mesma cena fica em ~227 mil
-triângulos e ~130 draw calls. **O gargalo são as peças, não as plantas**: elas
-não têm versão leve, e é por aí que começa qualquer otimização de celular.
+O mapa de sombra **congela** depois de 45 quadros (`Sombra` em
+`Experience.jsx`), então o quadro comum não repassa a cena para a sombra; quem
+move algo que projeta sombra pede um `needsUpdate` (ver `CeramicPiece`).
+Números de 15/09, antes disso e das otimizações seguintes: ~593 mil triângulos e
+~377 draw calls por quadro no desktop.
 
 ---
 
@@ -199,16 +217,20 @@ compartilhado aparece sem imagem de prévia.
 
 ## O que é placeholder e precisa dos dados reais
 
-1. **`src/data/studio.js`** — WhatsApp, e-mail, Instagram, cidade, horário,
-   prazos e condições de pagamento são fictícios.
+1. **`src/data/studio.js`** — WhatsApp, e-mail, Instagram, horário, prazos e
+   condições de pagamento são fictícios (a cidade, Foz do Iguaçu, já é a real).
+   O `<noscript>` do `index.html` **repete** WhatsApp, e-mail e o prazo de
+   resposta: trocar lá também.
 2. **`src/data/products.js`** — os 11 produtos, preços, prazos e textos são
    inventados para o teste. As cores em `piece` controlam como a peça aparece
    em 3D e na miniatura.
-3. **Galeria** — os "projetos entregues" usam retângulos em degradê com o selo
-   "foto em breve". Para usar fotos de verdade: colocar em `public/galeria/` e
-   trocar o `<div>` do gradiente por `<img>` em `GalleryPanel.jsx` e
-   `SimpleMode.jsx`; no mural 3D (`Pinboard.jsx`), trocar o
-   `meshStandardMaterial color` por `map={useTexture(...)}`.
+3. **Fotos** (`public/fotos/`) — `peca-01` a `peca-05` ilustram os "projetos
+   entregues" (mural 3D e painel de Projetos) e **não são trabalho da Isabela**:
+   são imagens de referência, e as legendas de `gallery` em `products.js`
+   descrevem essas imagens, não peças dela. `retrato-*` são fotos pessoais dela,
+   nos quadros da parede e nos porta-retratos. Para trocar, basta substituir o
+   arquivo mantendo o nome, ou mudar `foto` em `gallery` (`products.js`) e em
+   `quadros` / `retratos` (`scene.js`).
 4. **Fontes** — Fraunces e Inter vêm do Google Fonts. Para não depender de
    rede, baixar e servir de `public/`.
 
@@ -220,8 +242,6 @@ entre o que está aqui e o que já se sabe está em `STATUS.md`.
 
 - Trocar as silhuetas por fotos reais das peças (é o que mais aumenta conversão
   num ateliê artesanal).
-- `React.lazy` no `Experience` para quem entra em modo simples não baixar o
-  three.js (hoje o bundle é ~1,34 MB / 371 kB gzip, quase tudo three + drei).
 - Versão leve das peças para o celular, como já existe para as plantas.
 - Som ambiente com botão de desligar (a referência usa `howler`).
 - Backend para o orçamento cair num painel, em vez de sair por WhatsApp.

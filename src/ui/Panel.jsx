@@ -13,6 +13,12 @@ import { IconBack, IconClose } from './Icons'
 // orcamento e o Tab seguinte continuava pelo menu, nao pelos campos.
 let devolucaoPendente = 0
 
+// O que conta como focavel: a MESMA lista para prender o Tab dentro da folha e
+// para achar um lugar de reserva quando quem abriu o painel nao existe mais.
+// Duas listas escritas por extenso acabariam divergindo.
+const FOCAVEIS =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
 /**
  * Contêiner dos conteudos do site.
  * No desktop e uma gaveta a direita, que deixa a cena visivel ao lado.
@@ -73,6 +79,31 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
         if (document.activeElement?.closest?.('[role="dialog"]')) return
         if (alvo && document.contains(alvo) && !alvo.closest('[inert]')) {
           alvo.focus({ preventScroll: true })
+          return
+        }
+        // Quem abriu NAO existe mais. Medido: o botao "Ver produtos" do card de
+        // destaque abre Produtos, a camera vai para a estante e o card sai da
+        // tela — ao fechar com Esc nao havia para onde devolver, e o foco caia
+        // no body. A producao fazia igual antes do conserto do card: o defeito e
+        // antigo (o card ja se desmontava com painel aberto). Sem quem abriu, o
+        // foco vai para o primeiro elemento focavel fora de dialogo que ACEITAR.
+        // Medido: cai no marcador "Orcamento" da cena, que vem antes do cabecalho
+        // no DOM. O destino e a ordem do DOM, nao uma escolha — mas o foco nao se
+        // perde, e cai num elemento da vista em que a pessoa esta.
+        const candidatos = [...document.querySelectorAll(FOCAVEIS)].filter(
+          (el) =>
+            !el.closest('[role="dialog"]') &&
+            !el.closest('[inert]') &&
+            !el.closest('[aria-hidden="true"]') &&
+            el.getClientRects().length > 0,
+        )
+        // Tenta ate um aceitar DE VERDADE. Elemento com `visibility: hidden` tem
+        // caixa (passa no filtro acima) mas recusa o foco em silencio; parar no
+        // primeiro deixaria o foco no body sem aviso nenhum — que e exatamente o
+        // defeito que este bloco existe para consertar.
+        for (const el of candidatos) {
+          el.focus({ preventScroll: true })
+          if (document.activeElement === el) break
         }
       })
     }
@@ -88,9 +119,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
     if (!isMobile) return
     const onKey = (e) => {
       if (e.key !== 'Tab') return
-      const focaveis = sheet.current?.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )
+      const focaveis = sheet.current?.querySelectorAll(FOCAVEIS)
       if (!focaveis?.length) return
       const primeiro = focaveis[0]
       const ultimo = focaveis[focaveis.length - 1]

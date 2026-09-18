@@ -95,7 +95,7 @@ export function Atelier() {
           key={i}
           geometry={roundedBox(room.wallT, room.wallH, p.d, 0.006)}
           position={[p.x, room.wallH / 2, p.z]}
-          userData={{ ...COLISOR_CAMERA, parede: i === 0 ? 'esq' : 'dir' }}
+          userData={COLISOR_CAMERA}
           castShadow
           receiveShadow
         >

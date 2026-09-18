@@ -93,7 +93,6 @@ function QuadroDeParede({ mapa, item, aoClicar, reduzida }) {
     <group
       position={item.pos}
       rotation={[0, item.gira, item.inclina]}
-      userData={{ parede: item.pos[0] > 1.5 ? 'dir' : undefined }}
       onClick={(e) => {
         // Arrasto que comeca em cima do quadro e giro de camera, nao clique.
         if (e.delta > 6) return

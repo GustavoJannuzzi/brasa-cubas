@@ -8,7 +8,6 @@
 // de 78 cm, vaso de 25 cm. E o que da a referencia de tamanho para tudo.
 
 import { products } from './products'
-import { proto } from '../proto/bandeiras'
 
 export const PIECE_SCALE = 1.45
 
@@ -41,28 +40,22 @@ export const pieceWorldHeight = (piece) =>
 export const room = {
   wallZ: -1.7, // face interna da parede do fundo
   halfW: 1.92, // faces internas das laterais, em -halfW e +halfW
-  // 3,05 m desde o teste do dono no iPhone (`?teto=2.9` volta ao antigo). O teto
+  // 3,05 m desde o teste do dono no iPhone em 17/09 (era 2,90). O teto
   // sobe sozinho com a parede, e a sanca e os postes da viga derivam dele.
   // Medido: subir o teto NAO melhora a navegacao — a colisao da camera e
   // contra as PAREDES, e a distancia apos colisao e identica em 2,9, 3,05 e
   // 3,2 em todos os azimutes. O que ele muda e a composicao da primeira tela.
-  wallH: proto.teto,
+  wallH: 3.05,
   wallT: 0.1,
   leftFrontZ: 1.75, // ate onde a parede da esquerda avanca
-  // O retorno da direita para aqui. Nas variantes de navegacao ele vai ate
-  // 0,85, e o numero saiu de varredura, nao de gosto: com traçado de raios em
-  // seis telas, o vazio de fora do comodo no pior caso do trilho e 17,6% da
-  // tela em 812x375 com o retorno em 0,4, e 0,00% com 0,85 — em todas as
-  // telas, sem precisar apertar a lente. A navegacao de hoje, para comparar,
-  // chega a 36,5% no pior angulo do celular.
-  // Custo: zero triangulo e zero draw call (a parede e uma caixa so, e o
-  // rodape e a profundidade do teto ja derivam desta medida). Conferido que a
-  // IMPORTANTE: quem decide e `proto.ligado`, e nao a variante. Com ?nav=atual
-  // o controle recebe a MESMA sala das variantes, senao o teste compararia
-  // navegacao e geometria ao mesmo tempo — e so a parede estendida ja muda 20
-  // pontos de vazio em 1440. Sem parametro nenhum, 0,1: o site publicado.
-  // samambaia do banquinho nao fura a parede nova: o vertice mais a direita
-  // dela fica em x 1,822, com 9,8 cm de folga da face interna.
+  // O retorno da direita vai ate aqui (era 0,1). E o que fecha o "vazio a
+  // direita": com 0,1, o pior angulo de arrasto no celular mostrava 36,5% do
+  // quadro em fundo escuro, fora do comodo. Medido por tracado de raios em seis
+  // telas, com controle positivo reproduzindo o defeito conhecido antes de
+  // acreditar no conserto. Custo: zero triangulo e zero draw call — a parede e
+  // uma caixa so, e o rodape e a profundidade do teto ja derivam desta medida.
+  // Conferido que a samambaia do banquinho nao fura a parede nova: o vertice
+  // mais a direita dela para em x 1,822, com 9,8 cm de folga.
   rightFrontZ: 0.85,
   floorFrontZ: 2.7, // o assoalho avanca um pouco mais que as paredes
   window: { x: 1.34, y: 1.72, w: 0.7, h: 1.12 },

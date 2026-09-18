@@ -74,10 +74,6 @@ export const useStore = create(
       // foi que as fotos na parede sao pequenas demais no celular para se saber
       // quem esta nelas.
       quadroFocado: null,
-      // Rotulo de onde a camera esta, escrito pela variante de navegacao em
-      // teste (?nav=). Fora do prototipo fica null e nada muda.
-      lugarProto: null,
-      setLugarProto: (lugarProto) => set({ lugarProto }),
       // Conta quantas vezes alguem PEDIU um enquadramento. Pedir 'home' estando
       // em 'home' nao muda `view`, entao o efeito do CameraRig nao rodava: quem
       // se perdia arrastando apertava voltar e nada acontecia.

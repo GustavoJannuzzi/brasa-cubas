@@ -85,7 +85,11 @@ function Planta({ kind, position, rotation, scale, seed, hanging, bracket, stand
   const materiais = materiaisPlanta()
 
   return (
-    <group position={position} rotation={rotation} scale={scale}>
+    <group
+      position={position}
+      rotation={rotation}
+      scale={scale}
+    >
       {Object.entries(built).map(([grupo, geometry]) => (
         <mesh
           key={grupo}

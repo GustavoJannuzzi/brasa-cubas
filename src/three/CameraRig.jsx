@@ -81,6 +81,16 @@ export function CameraRig() {
     }
   }, [scene])
 
+  // Sonda de desenvolvimento: expoe os controles para medir enquadramento,
+  // distancia e limites pelo console. So existe em dev.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    window.__ctrl = controls.current
+    return () => {
+      delete window.__ctrl
+    }
+  }, [])
+
   // Quando o usuario esta no comando, o respiro sai de cena.
   useEffect(() => {
     const c = controls.current

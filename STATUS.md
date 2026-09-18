@@ -167,6 +167,34 @@ forçado, voltar do Android na foto de perto, cena desenhando parada no celular
 das plantas, exemplo de telefone com DDD 51, fontes hospedadas no próprio site —
 e as divergências de dados da seção 4.
 
+## 2c. O que o teste do dono no iPhone decidiu (17 e 18/09)
+
+Ele gravou a tela testando no aparelho (o vídeo está em
+`brasa-cubas-handoff/videos/teste-iphone-2026-09-17.mp4`) e decidiu quatro
+coisas. Todas já valem **sem parâmetro nenhum** na URL:
+
+- **Abertura do celular reenquadrada.** A pose saiu do próprio vídeo: reproduzi
+  o quadro inicial comparando com a cena renderizada no mesmo tamanho de tela
+  (393×714) até os cinco marcadores caírem nos mesmos pixels. A câmera fica
+  fora do cômodo, na frente da abertura (2,53 / 1,73 / 3,17), e o alvo a 4,61 m,
+  dentro da sala (−0,15 / 0,97 / −0,50) — a imagem é a mesma que com um alvo
+  mais longe, mas o pivô no meio do cômodo é o que faz o giro passear pela sala.
+  Medido: **0,0% do quadro** mostrando o vazio de fora, em 393×714 e 375×812.
+- **Pé-direito de 3,05 m** (era 2,90). `?teto=2.9` volta ao antigo. O frustum de
+  sombra do sol foi de 3,8 para 4,0 junto: sem isso a quina frontal da parede
+  esquerda sai dele e o three devolve "iluminado", com uma tira clara na sanca.
+- **Retorno da direita até z 0,85** (era 0,1). É o que fecha o "vazio à direita"
+  que esta página listava como pendência: com 0,1 o pior ângulo do celular
+  mostrava 36,5% de fundo escuro. Custo: zero triângulo e zero draw call — a
+  parede é uma caixa só, e rodapé e profundidade do teto já derivam da medida.
+  Conferido que a samambaia do banquinho não fura a parede nova (9,8 cm de folga).
+- **Barra de baixo mais alta, com ícone.** 46,8 → 67 px, alvo de toque 30 → 48 px,
+  rótulo inativo de 6,8:1 para 8,0:1 e a aba ativa com pílula na cor da marca.
+  Nenhuma cor nova: o contraste já passava, o que faltava era cara de botão.
+  A barra publica em `--barra-altura` de onde as coisas ancoram acima dela.
+
+A **navegação continua a de hoje**: os três protótipos (trilho, órbita, estações)
+ficaram na branch `proto-navegacao`, atrás de `?nav=`, e não foram adotados.
 ## 3. Pendências
 
 **Sem prova no meu ambiente — precisam de aparelho de verdade:**

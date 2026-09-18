@@ -1,6 +1,7 @@
+import { useEffect, useRef } from 'react'
 import { studio } from '../data/studio'
 import { selectCartCount, useStore } from '../store/useStore'
-import { IconCart, IconCube, IconHelp, IconLayers } from './Icons'
+import { IconCart, IconCube, IconHelp, IconLayers, IconNotebook, IconPhone, IconPhotos, IconShelf } from './Icons'
 import { vidro } from './vidro'
 
 // O menu e o principal remedio contra "nao achei onde compra":
@@ -162,56 +163,100 @@ export function Header() {
   )
 }
 
-// Barra de baixo no celular: alcance de polegar e rotulos escritos,
-// em vez de um menu escondido atras de um hamburguer.
+// Barra de baixo no celular.
+//
+// Mais alta e com icone desde o teste do dono no iPhone: o retorno foi "a barra
+// esta baixa e o marrom nao deixa claro que da para navegar por ali". Medido
+// antes de mexer, o contraste do rotulo ja era 6,8:1 — o defeito nao era cor,
+// era tamanho e cara de botao. Por isso nenhuma cor nova entrou aqui.
+//
+// | | antes | agora |
+// | altura da barra | 46,8 px | 67 px |
+// | alvo de toque | 30 px (passa no AA, falha no AAA) | 48 px (passa nos dois) |
+// | rotulo inativo | 6,8:1 | 8,0:1 |
+// | aba ativa | fundo cinza translucido | pilula na cor da marca (3,6:1, e para
+//   objeto o minimo e 3) |
+const ITENS = [
+  { id: 'home', label: 'Ateliê', Icone: IconCube },
+  { id: 'produtos', label: 'Produtos', Icone: IconShelf },
+  { id: 'orcamento', label: 'Orçamento', Icone: IconNotebook },
+  { id: 'galeria', label: 'Projetos', Icone: IconPhotos },
+  { id: 'contato', label: 'Contato', Icone: IconPhone },
+]
+
+// Quanto a barra "ocupa" para quem fica ancorado acima dela: a altura dela mais
+// o mesmo vao de 24 px que o cartao de destaque sempre teve. E a altura entra
+// normalizada no piso de 0,75rem de area segura, porque o CSS desses ancoras ja
+// soma --sobra-area-segura: publicar a altura crua contaria a area segura do
+// iPhone DUAS vezes.
+const BASE_SEGURA = 12
+const RESPIRO = 24
+
 export function MobileNav() {
   const panel = useStore((s) => s.panel)
   const openPanel = useStore((s) => s.openPanel)
   const goTo = useStore((s) => s.goTo)
   const closePanel = useStore((s) => s.closePanel)
   const view = useStore((s) => s.view)
+  const barra = useRef(null)
 
-  const items = [
-    { id: 'home', label: 'Ateliê', icon: IconCube },
-    { id: 'produtos', label: 'Produtos', icon: null },
-    { id: 'orcamento', label: 'Orçamento', icon: null },
-    { id: 'galeria', label: 'Projetos', icon: null },
-    { id: 'contato', label: 'Contato', icon: null },
-  ]
+  useEffect(() => {
+    const el = barra.current
+    if (!el) return
+    const publicar = () => {
+      const padB = parseFloat(getComputedStyle(el).paddingBottom) || 0
+      document.documentElement.style.setProperty(
+        '--barra-altura',
+        `${el.offsetHeight - padB + BASE_SEGURA + RESPIRO}px`,
+      )
+    }
+    publicar()
+    // ResizeObserver, e nao um numero digitado: a barra cresce com a area segura
+    // do aparelho e com o zoom de pagina do Android.
+    const ro = new ResizeObserver(publicar)
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+      document.documentElement.style.removeProperty('--barra-altura')
+    }
+  }, [])
 
   return (
     <nav
-      className="camada-cena area-segura-b fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-porcelana/10 bg-carvao/92 px-1 pt-1 max-[18rem]:gap-1 md:hidden"
+      ref={barra}
+      className="camada-cena area-segura-b fixed inset-x-0 bottom-0 z-30 flex items-stretch gap-0.5 border-t border-porcelana/12 bg-carvao/92 px-1 pt-1.5 md:hidden"
       style={vidro(8)}
       aria-label="Seções do site"
     >
-      {items.map((item) => {
-        const active = item.id === 'home' ? !panel && view === 'home' : panel === item.id
+      {ITENS.map(({ id, label, Icone }) => {
+        const active = id === 'home' ? !panel && view === 'home' : panel === id
         return (
           <button
-            key={item.id}
+            key={id}
             type="button"
             onClick={() => {
-              if (item.id === 'home') {
+              if (id === 'home') {
                 closePanel()
                 goTo('home')
               } else {
-                openPanel(item.id)
+                openPanel(id)
               }
             }}
             aria-current={active ? 'page' : undefined}
-            // Com zoom de pagina (260 px CSS) as cinco abas somavam mais que a
-            // tela e "Contato" saia pela direita: o minimo de cada aba e a
-            // palavra mais o px-1. Abaixo de 18rem o recuo sai e a letra vai a
-            // 10 px, com 4 px entre as abas (so sem recuo as palavras encostavam:
-            // "ProdutosOrcamento"). Com zoom, 10 px CSS ainda saem maiores na tela
-            // que os 11 sem zoom. Sem `min-w-0` de proposito: com ele as abas
-            // ficam iguais e "Orcamento" nao cabe ja em 300 (medido).
-            className={`flex-1 rounded-xl px-1 py-2 text-[11px] leading-tight font-medium transition-colors max-[18rem]:px-0 max-[18rem]:text-[10px] ${
-              active ? 'bg-porcelana/15 text-porcelana' : 'text-porcelana/65'
+            // Abaixo de 18rem (zoom de pagina do Android: 390 px a 150% sao 260)
+            // o recuo sai e a letra vai a 10 px, senao "Orcamento" nao cabe.
+            className={`flex min-h-12 flex-1 flex-col items-center justify-center gap-[3px] rounded-xl px-0.5 py-1 text-[11px] leading-tight font-medium transition-colors max-[18rem]:px-0 max-[18rem]:text-[10px] ${
+              active ? 'text-porcelana' : 'text-porcelana/72'
             }`}
           >
-            {item.label}
+            <span
+              className={`grid h-6 w-[30px] place-items-center rounded-full transition-colors ${
+                active ? 'bg-brasa text-porcelana' : ''
+              }`}
+            >
+              <Icone size={18} />
+            </span>
+            <span className="whitespace-nowrap">{label}</span>
           </button>
         )
       })}

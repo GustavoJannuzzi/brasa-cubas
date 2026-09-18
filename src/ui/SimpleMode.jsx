@@ -4,7 +4,7 @@ import { faq, howToOrder, studio } from '../data/studio'
 import { money, plural, priceLabel } from '../lib/format'
 import { cartMessage, plainHello } from '../lib/whatsapp'
 import { useCartSummary, useStore } from '../store/useStore'
-import { IconArrow, IconCube, IconInstagram, IconMail, IconPlus, IconWhatsapp } from './Icons'
+import { IconArrow, IconCube, IconInstagram, IconMail, IconMinus, IconPlus, IconWhatsapp } from './Icons'
 import { PieceThumb } from './PieceThumb'
 import { vidro } from './vidro'
 
@@ -21,13 +21,34 @@ const SECOES = [
 const irPara = (id) => document.getElementById(id)?.scrollIntoView({ block: 'start' })
 
 // Mesma informacao do ateliê 3D, em uma pagina que rola.
-// Existe para conexao fraca, aparelho antigo, leitor de tela e para quem
-// simplesmente quer ver a lista de precos e ir embora.
+//
+// Ela existe para conexao fraca, aparelho antigo, leitor de tela e para quem
+// simplesmente quer ver preco e ir embora — e esse ultimo caso e a maioria do
+// publico dela, que chega pelo navegador embutido do Instagram.
+//
+// A forma veio de medir a versao anterior e de olhar o catalogo do WhatsApp
+// Business, que e onde esse publico ja compra:
+//
+// - GRADE DE DUAS COLUNAS no celular. A versao anterior era uma coluna so ate
+//   640 px, ou seja, uma coluna para 100% do publico dela. Medido: o primeiro
+//   produto so aparecia depois de 695 px de rolagem, com 38% da primeira tela
+//   ocupada por texto e ZERO preco visivel.
+// - CARTAO INVERTIDO: a peca em cima, grande, e nome e preco como legenda. Era
+//   uma miniatura de 76 px ao lado de um paragrafo.
+// - O PEDIDO SE MONTA SEM ABRIR NADA, e a quantidade se ajusta no proprio
+//   cartao — o "+" do catalogo do WhatsApp existe por isso. Tocar no cartao
+//   abre o detalhe para quem quer ler.
+// - O QUE DECIDE FICA JUNTO DO PRECO: prazo e pedido minimo. Minimo escondido e
+//   o que gera o pedido errado e a conversa chata depois.
 export function SimpleMode() {
   const toggleSimpleMode = useStore((s) => s.toggleSimpleMode)
   const gl3d = useStore((s) => s.gl3d)
   const addToCart = useStore((s) => s.addToCart)
+  const setQty = useStore((s) => s.setQty)
+  const removeFromCart = useStore((s) => s.removeFromCart)
   const openPanel = useStore((s) => s.openPanel)
+  const openProduct = useStore((s) => s.openProduct)
+  const cart = useStore((s) => s.cart)
   const { lines, count, total, isEstimate } = useCartSummary()
   const [filter, setFilter] = useState('todos')
 
@@ -35,6 +56,7 @@ export function SimpleMode() {
     () => (filter === 'todos' ? products : products.filter((p) => p.category === filter)),
     [filter],
   )
+  const noPedido = useMemo(() => new Map(cart.map((l) => [l.id, l.qty])), [cart])
 
   return (
     <div className="min-h-svh bg-porcelana pb-28">
@@ -65,18 +87,6 @@ export function SimpleMode() {
               ))}
             </nav>
 
-            {count > 0 && (
-              <button
-                type="button"
-                onClick={() => openPanel('carrinho')}
-                className="btn-secundario px-3.5 py-2 text-[12.5px] whitespace-nowrap"
-              >
-                {/* `key` pela contagem: com a pagina traduzida pelo navegador o numero
-                    sumia ("Pedido ( )"). Ver src/lib/tradutor.js. */}
-                <span key={count}>Pedido ({count})</span>
-              </button>
-            )}
-
             {/* Com o "Pedido (n)" ao lado nao cabem dois botoes escritos em
                 375px. Aqui a lista e o que a pessoa escolheu: o 3D fica em
                 icone, com nome para leitor de tela.
@@ -95,64 +105,41 @@ export function SimpleMode() {
             )}
           </div>
         </div>
-
-        {/* No celular os links de secao sumiam (hidden sm:flex): chegar ao
-            contato exigia rolar a pagina inteira. Faixa rolavel, que cabe em
-            tela estreita sem empurrar o resto do cabecalho. */}
-        <nav
-          className="rolagem-fina flex gap-1.5 overflow-x-auto border-t border-carvao/10 px-4 py-2 sm:hidden"
-          aria-label="Seções da página"
-        >
-          {SECOES.map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => irPara(id)}
-              className="shrink-0 rounded-full border border-carvao/12 bg-creme px-3 py-1.5 text-[12.5px] font-medium text-carvao/70"
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 [&_section]:scroll-mt-20">
-        <section className="py-8">
-          {/* tabIndex -1: recebe o foco quando a pessoa troca do ateliê para a
-              lista (ver focarDepoisDeTrocarModo no store). */}
-          <h1 tabIndex={-1} className="font-display text-[30px] leading-tight text-carvao outline-none sm:text-[36px]">
-            Peças de porcelana fria, modeladas à mão sob encomenda
+        {/* O topo diz o necessario em duas linhas e sai da frente. Antes eram
+            um titulo de 30 px, um paragrafo de quatro linhas e dois botoes: o
+            catalogo comecava fora da primeira tela. */}
+        <section className="pt-6 pb-3">
+          <h1 tabIndex={-1} className="font-display text-[23px] leading-tight text-carvao outline-none sm:text-[30px]">
+            Peças de porcelana fria, modeladas à mão
           </h1>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-carvao/70">
-            {studio.pitch} Topos de bolo, arranjos de flores, lembrancinhas de festa e peças
-            decorativas. {studio.city} · {studio.shipping}.
+          {/* Uma linha, e so. O envio e a entrega em maos ja estao no FAQ e no
+              contato; aqui eles empurravam o catalogo para fora da tela. */}
+          <p className="mt-1.5 text-[13.5px] leading-relaxed text-carvao/70">
+            {studio.city}. Nada é cobrado aqui: você monta o pedido e ele vai pronto para o WhatsApp.
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <button type="button" onClick={() => irPara('produtos')} className="btn-principal">
-              Ver os produtos
-              <IconArrow size={16} />
-            </button>
-            <button type="button" onClick={() => openPanel('orcamento')} className="btn-secundario">
-              Pedir orçamento
-            </button>
-          </div>
         </section>
 
-        <section id="produtos" className="border-t border-carvao/10 py-8">
-          <h2 className="text-[22px]">Produtos</h2>
-          <p className="mt-1 text-[13.5px] text-carvao/70">
-            {products.length} peças. Valores de tabela; personalização sai por orçamento.
-          </p>
-
-          <div className="mt-4 flex flex-wrap gap-1.5">
+        <section id="produtos" className="pb-8">
+          {/* Os filtros acompanham a rolagem: com 11 pecas em duas colunas, a
+              pessoa passa da metade da lista antes de lembrar que da para
+              filtrar. `top` casa com a altura do cabecalho. */}
+          <div
+            className="rolagem-fina sticky top-[3.9rem] z-10 -mx-4 flex gap-1.5 overflow-x-auto bg-porcelana/95 px-4 py-2.5"
+            style={vidro(8)}
+          >
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setFilter(cat.id)}
                 aria-pressed={filter === cat.id}
-                className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-medium ${
-                  filter === cat.id ? 'border-carvao bg-carvao text-porcelana' : 'border-carvao/15 bg-creme text-carvao/70'
+                className={`min-h-11 shrink-0 rounded-full border px-4 text-[12.5px] font-medium ${
+                  filter === cat.id
+                    ? 'border-carvao bg-carvao text-porcelana'
+                    : 'border-carvao/15 bg-creme text-carvao/70'
                 }`}
               >
                 {cat.label}
@@ -160,40 +147,112 @@ export function SimpleMode() {
             ))}
           </div>
 
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {lista.map((product) => (
-              <li key={product.id} className="cartao flex flex-col p-4">
-                <div className="flex items-start gap-3">
-                  <PieceThumb piece={product.piece} size={76} />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-[15px] leading-snug">{product.name}</h3>
-                    <p className="mt-1 text-[15px] font-semibold text-brasa-texto">{priceLabel(product)}</p>
-                    <p className="text-[11.5px] text-carvao/70">
-                      {product.sizeCm} · {product.leadDays} dias
-                      {product.minQty > 1 && ` · mín. ${product.minQty}`}
-                    </p>
+          <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {lista.map((product) => {
+              const qty = noPedido.get(product.id)
+              return (
+                <li key={product.id} className="cartao flex flex-col overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => openProduct(product.id, { focus: false })}
+                    className="flex-1 text-left"
+                    aria-label={`Ver detalhes: ${product.name}`}
+                  >
+                    {/* aspect-square reserva o espaco antes de desenhar: no
+                        navegador embutido a carga e sempre fria, e caixa que
+                        nasce com altura zero empurra a lista inteira. */}
+                    <span className="grid aspect-square place-items-center bg-creme">
+                      <PieceThumb piece={product.piece} size={112} />
+                    </span>
+                    <span className="block px-2.5 pt-2">
+                      <span className="block text-[13.5px] leading-snug text-carvao">{product.name}</span>
+                      {/* O preco colado no nome, e nao no fim do cartao: e o
+                          campo pelo qual a pessoa veio. */}
+                      <span className="mt-0.5 block text-[15px] font-semibold text-brasa-texto">
+                        {priceLabel(product)}
+                      </span>
+                      {/* Quando ha pedido minimo, o que importa nao e o preco da
+                          unidade: e quanto sai o menor pedido possivel. "a partir
+                          de R$ 12" com "min. 20" escondido em tipo pequeno era o
+                          que fazia a pessoa montar um pedido de R$ 240 sem saber.
+                          A conta e dos dados que ja existem — nada foi inventado. */}
+                      <span className="mt-0.5 block text-[11.5px] text-carvao/70">
+                        {product.leadDays} dias
+                        {product.minQty > 1 && (
+                          <>
+                            {' · mín. '}
+                            {product.minQty}
+                            <span className="block text-carvao/60">
+                              {product.from ? 'a partir de ' : ''}
+                              {money(product.price * product.minQty)} o pedido
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    </span>
+                  </button>
+
+                  <div className="px-2.5 pt-2 pb-2.5">
+                    {qty ? (
+                      <div className="flex items-center justify-between rounded-xl border border-carvao/12 bg-creme">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            qty <= (product.minQty ?? 1) ? removeFromCart(product.id) : setQty(product.id, qty - 1)
+                          }
+                          aria-label={qty <= (product.minQty ?? 1) ? `Tirar ${product.name} do pedido` : 'Menos uma'}
+                          className="grid h-11 w-11 place-items-center rounded-xl text-carvao/70 hover:text-carvao"
+                        >
+                          <IconMinus size={15} />
+                        </button>
+                        {/* `key` pela quantidade: com a pagina traduzida pelo
+                            navegador o numero ficava no valor velho. */}
+                        <span key={qty} className="text-[14px] font-semibold text-carvao">
+                          {qty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setQty(product.id, qty + 1)}
+                          aria-label="Mais uma"
+                          className="grid h-11 w-11 place-items-center rounded-xl text-carvao/70 hover:text-carvao"
+                        >
+                          <IconPlus size={15} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => addToCart(product.id)}
+                        className="btn-secundario min-h-11 w-full justify-center py-2 text-[13px]"
+                      >
+                        <IconPlus size={15} />
+                        Adicionar
+                      </button>
+                    )}
                   </div>
-                </div>
-                <p className="mt-2.5 flex-1 text-[13px] leading-relaxed text-carvao/70">{product.description}</p>
-                <button
-                  type="button"
-                  onClick={() => addToCart(product.id)}
-                  className="btn-secundario mt-3 w-full py-2.5 text-[13px]"
-                >
-                  <IconPlus size={15} />
-                  Adicionar ao pedido
-                </button>
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
+
+          {/* Dizer que o desenho e desenho: nada aqui e foto da peca dela, e
+              deixar isso implicito seria vender uma imagem que nao existe. */}
+          <p className="mt-3 text-[12.5px] leading-relaxed text-carvao/60">
+            {lista.length === products.length
+              ? `${products.length} peças`
+              : `${lista.length} de ${products.length} peças`}{' '}
+            · valores de tabela; personalização sai por orçamento. As peças aparecem como desenho — ainda
+            não há fotos delas aqui.
+          </p>
         </section>
 
         <section id="encomendar" className="border-t border-carvao/10 py-8">
           <h2 className="text-[22px]">Como encomendar</h2>
+          <p className="mt-1.5 text-[13.5px] leading-relaxed text-carvao/70">{studio.pitch}</p>
           <ol className="mt-4 grid gap-3 sm:grid-cols-2">
             {howToOrder.map((item) => (
               <li key={item.step} className="cartao flex gap-3 p-4">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brasa/12 font-display font-semibold text-brasa">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brasa/12 font-display font-semibold text-brasa-texto">
                   {item.step}
                 </span>
                 <span>
@@ -204,7 +263,7 @@ export function SimpleMode() {
             ))}
           </ol>
           <button type="button" onClick={() => openPanel('orcamento')} className="btn-principal mt-4">
-            Começar meu orçamento
+            Pedir um orçamento
             <IconArrow size={16} />
           </button>
         </section>
@@ -221,6 +280,8 @@ export function SimpleMode() {
                   src={item.foto}
                   alt={item.title}
                   loading="lazy"
+                  width="600"
+                  height="400"
                   className="h-56 w-full object-cover"
                   style={{ background: item.palette[1] }}
                 />

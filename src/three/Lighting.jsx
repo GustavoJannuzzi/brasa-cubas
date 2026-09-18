@@ -44,7 +44,11 @@ export function Lighting({ quality = 'alta' }) {
       >
         {/* O frustum tem de cobrir o comodo inteiro: o que fica fora dele
             nao e sombreado, e apareceria como um retalho claro na parede. */}
-        <orthographicCamera attach="shadow-camera" args={[-4.2, 4.2, 3.8, -3.8, 0.5, 13]} />
+        {/* Topo em 4.0, e nao 3.8: com o pe-direito em 3,05 a quina frontal da
+            parede esquerda sai do frustum, e o three devolve "iluminado" para o
+            que esta fora — sairia uma tira clara na sanca daquela ponta. O
+            preco e o texel indo de 3,71 mm para 3,90 mm em 2048. */}
+        <orthographicCamera attach="shadow-camera" args={[-4.2, 4.2, 4.0, -3.8, 0.5, 13]} />
       </directionalLight>
 
       {/* rebatedor da frente aberta: clareia a face das pecas, que ficariam

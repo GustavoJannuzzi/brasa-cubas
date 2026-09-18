@@ -41,7 +41,7 @@ export const pieceWorldHeight = (piece) =>
 export const room = {
   wallZ: -1.7, // face interna da parede do fundo
   halfW: 1.92, // faces internas das laterais, em -halfW e +halfW
-  // ?teto= na URL. Sem parametro isto e 2.9, identico ao publicado. O teto
+  // 3,05 m desde o teste do dono no iPhone (`?teto=2.9` volta ao antigo). O teto
   // sobe sozinho com a parede, e a sanca e os postes da viga derivam dele.
   // Medido: subir o teto NAO melhora a navegacao — a colisao da camera e
   // contra as PAREDES, e a distancia apos colisao e identica em 2,9, 3,05 e
@@ -63,7 +63,7 @@ export const room = {
   // pontos de vazio em 1440. Sem parametro nenhum, 0,1: o site publicado.
   // samambaia do banquinho nao fura a parede nova: o vertice mais a direita
   // dela fica em x 1,822, com 9,8 cm de folga da face interna.
-  rightFrontZ: proto.ligado ? 0.85 : 0.1,
+  rightFrontZ: 0.85,
   floorFrontZ: 2.7, // o assoalho avanca um pouco mais que as paredes
   window: { x: 1.34, y: 1.72, w: 0.7, h: 1.12 },
   // Placa na sobra de parede entre a parede da esquerda e a prateleira.
@@ -224,7 +224,22 @@ export const views = {
     // inteiro, a placa, as tres tabuas, a bancada, a viga em cima e o assoalho
     // embaixo. Cabe nos limites que ja existiam: distancia 4,79 (teto 4,9),
     // azimute 0,68 rad (limite 1,2) e alvo dentro de `targetBounds`.
-    mobile: { position: [1.9, 1.62, 2.4], target: [-1.15, 1.08, -1.28] },
+    // Enquadramento escolhido pelo dono no aparelho dele: ele gravou a tela
+    // testando no iPhone e disse "e bem onde eu quero que comece". Eu reproduzi
+    // a pose comparando o quadro do video com a cena renderizada no mesmo
+    // tamanho de tela (393x714), ajustando ate os cinco marcadores caírem nos
+    // mesmos pixels — o video esta em brasa-cubas-handoff/videos/.
+    //
+    // A camera fica FORA do comodo, na frente da abertura (z 3,17), e e isso que
+    // faz o ateliê inteiro caber: bancada, estante, mural, placa, viga, banquinho
+    // e o vaso do canto, com os cinco marcadores em quadro. Medido: 0,0% do
+    // quadro mostrando o vazio de fora do comodo, em 393x714 e em 375x812.
+    //
+    // O ALVO fica a 4,61 m, dentro da sala e perto do centro — a imagem e a
+    // mesma que com um alvo mais longe, mas o pivô no meio do comodo e o que faz
+    // o giro passear pela sala em vez de girar em torno de um canto. Ele testou
+    // exatamente isso no video e aprovou.
+    mobile: { position: [2.53, 1.73, 3.17], target: [-0.15, 0.97, -0.5] },
   },
   mesa: {
     position: [0.05, 1.42, 1.22],

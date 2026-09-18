@@ -41,10 +41,6 @@ const TETOS = [
   ['3.05', '3,05 m'],
   ['3.2', '3,20 m'],
 ]
-const BARRAS = [
-  ['atual', 'Como esta hoje'],
-  ['b1', 'Mais alta, com icone'],
-]
 
 const ler = () => {
   try {
@@ -74,7 +70,7 @@ const buildAtual = () => {
 }
 
 const endereco = (mudanca) => {
-  const p = new URLSearchParams({ nav: proto.nav, teto: String(proto.teto), barra: proto.barra, ...mudanca })
+  const p = new URLSearchParams({ nav: proto.nav, teto: String(proto.teto), ...mudanca })
   return `?${p.toString()}`
 }
 
@@ -210,7 +206,6 @@ export function Selo() {
           {[
             ['Navegação', NAVS, 'nav', proto.nav],
             ['Teto', TETOS, 'teto', String(proto.teto)],
-            ['Barra de baixo', BARRAS, 'barra', proto.barra],
           ].map(([titulo, opcoes, chave, atual]) => (
             <div key={chave} style={{ marginTop: 12 }}>
               <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em', opacity: 0.65 }}>

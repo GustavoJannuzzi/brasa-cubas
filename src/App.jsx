@@ -32,8 +32,6 @@ import { QuotePanel } from './ui/panels/QuotePanel'
 // Andaime de teste (ver src/proto). Sem parametro na URL as duas constantes
 // ficam null, o import() nunca acontece e nenhum byte de prototipo e baixado.
 const Selo = proto.ligado ? lazy(() => import('./proto/Selo').then((m) => ({ default: m.Selo }))) : null
-const BarraB1 =
-  proto.barra === 'b1' ? lazy(() => import('./proto/BarraB1').then((m) => ({ default: m.BarraB1 }))) : null
 
 const PANELS = {
   produtos: ProductsPanel,
@@ -166,13 +164,7 @@ export default function App() {
           <FocusedProductBar />
           <TourBar />
         </main>
-        {BarraB1 ? (
-          <Suspense fallback={<MobileNav />}>
-            <BarraB1 />
-          </Suspense>
-        ) : (
-          <MobileNav />
-        )}
+        <MobileNav />
 
       </div>
 

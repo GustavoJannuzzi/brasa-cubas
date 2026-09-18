@@ -15,12 +15,14 @@
 // 4. Lista fechada, nunca Number() solto: ?teto=99 construiria um comodo de
 //    99 m e o teste viraria outra coisa.
 //
+// O teto ja nasce em 3,05: essa virou a altura do ateliê depois do teste do dono
+// no aparelho dele. `?teto=2.9` volta ao pe-direito antigo para comparar.
+//
 // Isto e' andaime: quando a variante vencedora for escolhida, a pasta inteira
 // sai num commit so.
 
 const NAVEGACOES = ['atual', 'trilho', 'orbita', 'estacoes']
 const TETOS = ['2.9', '3.05', '3.2']
-const BARRAS = ['atual', 'b1']
 
 const params = new URLSearchParams(window.location.search)
 const recusados = []
@@ -34,16 +36,14 @@ const escolher = (chave, valores, padrao) => {
 }
 
 const nav = escolher('nav', NAVEGACOES, 'atual')
-const teto = escolher('teto', TETOS, '2.9')
-const barra = escolher('barra', BARRAS, 'atual')
+const teto = escolher('teto', TETOS, '3.05')
 
 export const proto = Object.freeze({
   nav,
   teto: Number(teto),
-  barra,
   // Alguma das tres chaves veio na URL, mesmo que com o valor padrao.
-  ligado: params.has('nav') || params.has('teto') || params.has('barra'),
+  ligado: params.has('nav') || params.has('teto'),
   recusados,
   // O que escrever no selo, para ele saber no celular o que esta testando.
-  resumo: `nav=${nav} · teto=${teto} · barra=${barra}`,
+  resumo: `nav=${nav} · teto=${teto}`,
 })

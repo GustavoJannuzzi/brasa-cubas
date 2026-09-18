@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { lugarCurtoDaFoto, lugarDaFoto, passeioDeFotos, vizinhasDaFoto } from '../data/scene'
+import { lugarDaFoto, passeioDeFotos, vizinhasDaFoto } from '../data/scene'
 import { useStore } from '../store/useStore'
 import { IconArrow, IconClose } from './Icons'
 import { vidro } from './vidro'
@@ -22,11 +22,6 @@ const rotulo = (id) => {
   const n = passeioDeFotos.indexOf(id) + 1
   return `Foto ${n} de ${passeioDeFotos.length}, ${lugarDaFoto[id] ?? 'no ateliê'}`
 }
-
-// No celular sobra pouca largura ao lado das setas: medido, a frase inteira
-// truncava em "Foto 8 de 8, na...". A forma curta cabe, e quem usa leitor de
-// tela continua ouvindo a frase inteira.
-const curto = (id) => `${passeioDeFotos.indexOf(id) + 1}/${passeioDeFotos.length} · ${lugarCurtoDaFoto[id] ?? ''}`
 
 export function FotoNav() {
   const quadroFocado = useStore((s) => s.quadroFocado)
@@ -81,28 +76,20 @@ export function FotoNav() {
     )
 
   return (
-    <div className="anim-sobe camada-cena fixed right-3 bottom-[calc(var(--barra-altura,5.7rem)_+_var(--sobra-area-segura))] left-3 z-20 md:right-auto md:bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:left-1/2 md:w-[22rem] md:-translate-x-1/2">
+    <div className="anim-sobe camada-cena fixed bottom-[calc(var(--barra-altura,5.7rem)_+_var(--sobra-area-segura))] left-1/2 z-20 w-auto -translate-x-1/2 md:bottom-[max(1.25rem,env(safe-area-inset-bottom))]">
       <div
         ref={caixa}
         role="region"
         aria-label="Fotos da Isabela"
-        className="relative flex items-center gap-1 rounded-2xl bg-porcelana/95 py-2 pr-2 pl-3 shadow-[var(--shadow-painel)]"
+        className="relative flex items-center justify-center gap-1 rounded-2xl bg-porcelana/95 px-2 py-1.5 shadow-[var(--shadow-painel)]"
         style={vidro(6)}
       >
-        <div className="min-w-0 flex-1">
-          {/* `key` no texto que troca: com a pagina traduzida pelo navegador, o
-              rotulo ficava no lugar velho. Ver src/lib/tradutor.js. */}
-          <p key={quadroFocado} aria-hidden="true" className="truncate text-[12.5px] text-carvao">
-            <span className="md:hidden">{curto(quadroFocado)}</span>
-            <span className="hidden md:inline">{rotulo(quadroFocado)}</span>
-          </p>
-          {/* A frase inteira, so para leitor de tela: e ela que diz onde a
-              camera acabou de parar. */}
-          <span key={`aria-${quadroFocado}`} role="status" aria-live="polite" className="sr-only">
-            {rotulo(quadroFocado)}
-          </span>
-        </div>
-
+        {/* A POSICAO nao mora aqui: ela vai para o chip do topo, que ja existe
+            para dizer onde a camera esta. Aqui tinha um rotulo que truncava
+            ("2/8 · fundo, no ...") com quatro setas na mesma linha em 393 px. */}
+        <span key={`aria-${quadroFocado}`} role="status" aria-live="polite" className="sr-only">
+          {rotulo(quadroFocado)}
+        </span>
         <Seta para={vizinhas.cima} giro="block -rotate-90" titulo="Foto de cima" />
         <Seta para={vizinhas.baixo} giro="block rotate-90" titulo="Foto de baixo" />
         <Seta para={vizinhas.esquerda} giro="block rotate-180" titulo="Foto anterior" />
@@ -112,7 +99,7 @@ export function FotoNav() {
           type="button"
           onClick={clearFocus}
           aria-label="Sair da foto"
-          className="ml-1 grid h-11 w-11 place-items-center rounded-full text-carvao/55 transition-colors hover:bg-carvao/6 hover:text-carvao"
+          className="ml-2 grid h-11 w-11 place-items-center rounded-full text-carvao/55 transition-colors hover:bg-carvao/6 hover:text-carvao"
         >
           <IconClose size={15} />
         </button>

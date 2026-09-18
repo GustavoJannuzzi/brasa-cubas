@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { hotspots } from '../data/scene'
+import { hotspots, lugarDaFoto, passeioDeFotos } from '../data/scene'
 import { products } from '../data/products'
 import { studio } from '../data/studio'
 import { useIsMobile } from '../hooks/useMedia'
@@ -253,8 +253,19 @@ export function OrientationBar() {
   // ela, a foto tocada a partir da visao geral dizia "Ateliê" e escondia o botao
   // de casa (a vista seguia 'home'): medido em 375, a unica saida visivel era a
   // aba "Ateliê", que ja parecia selecionada.
-  const lugar = vistaLivre ? 'Vista livre' : quadroFocado ? 'Foto de perto' : (peca ?? LUGARES[view] ?? LUGARES.home)
-  const lugarCurto = vistaLivre ? 'Vista livre' : quadroFocado ? 'Foto' : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home)
+  // Com uma foto em close o chip conta ONDE ela esta no passeio: e a barra de
+  // baixo que tem as setas, e ali nao cabia o texto junto com quatro botoes.
+  const numeroDaFoto = quadroFocado ? passeioDeFotos.indexOf(quadroFocado) + 1 : 0
+  const lugar = vistaLivre
+    ? 'Vista livre'
+    : quadroFocado
+      ? `Foto ${numeroDaFoto} de ${passeioDeFotos.length} · ${lugarDaFoto[quadroFocado] ?? ''}`
+      : (peca ?? LUGARES[view] ?? LUGARES.home)
+  const lugarCurto = vistaLivre
+    ? 'Vista livre'
+    : quadroFocado
+      ? `Foto ${numeroDaFoto} de ${passeioDeFotos.length}`
+      : (peca ?? LUGARES_CURTO[view] ?? LUGARES_CURTO.home)
 
   return (
     <div className="camada-cena fixed top-[3.4rem] left-[max(0.75rem,env(safe-area-inset-left))] z-20 flex items-center gap-1 md:top-[4.4rem] md:left-[max(1.25rem,env(safe-area-inset-left))]">

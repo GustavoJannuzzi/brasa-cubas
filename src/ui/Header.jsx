@@ -59,7 +59,9 @@ function Marca({ onClick }) {
 }
 
 export function Header() {
-  const panel = useStore((s) => s.panel)
+  // O painel PEDIDO, e nao so o que ja subiu: entre o toque e a chegada da
+  // camera o item do menu precisa acender na hora, senao o toque parece perdido.
+  const panel = useStore((s) => s.panel || s.painelPendente)
   const openPanel = useStore((s) => s.openPanel)
   const goTo = useStore((s) => s.goTo)
   const closePanel = useStore((s) => s.closePanel)
@@ -193,7 +195,7 @@ const BASE_SEGURA = 12
 const RESPIRO = 24
 
 export function MobileNav() {
-  const panel = useStore((s) => s.panel)
+  const panel = useStore((s) => s.panel || s.painelPendente)
   const openPanel = useStore((s) => s.openPanel)
   const goTo = useStore((s) => s.goTo)
   const closePanel = useStore((s) => s.closePanel)

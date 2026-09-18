@@ -31,6 +31,18 @@ const productFraming = (product, mobile) => {
 
 // Tempo parado antes de a camera voltar a respirar sozinha.
 const ESPERA_RESPIRO = 2600
+// Quanto do voo precisa ter acontecido para o cartao subir. A mola do
+// camera-controls tem cauda longa: medido no celular, de 'home' para cada uma
+// das cinco vistas, a camera fica a 30 cm do destino em ~0,5 s, a 2 cm em
+// ~1,4 s e o evento 'rest' so vem em ~1,8 s. Esperar o 'rest' faria a folha
+// demorar quase dois segundos depois do toque. 12% do caminho (com piso de 5 cm,
+// para voo curto) cai justamente no momento em que o movimento ja acabou de ser
+// lido como movimento.
+const VOO_CUMPRIDO = 0.12
+const PISO_DO_VOO = 0.05
+// Teto absoluto: se alguem arrastar a camera no meio do voo, ou o quadro cair,
+// o cartao sobe assim mesmo. Nenhum toque pode ficar sem resposta.
+const TETO_DA_ESPERA = 1100
 // ACTION.NONE do camera-controls: qualquer outro valor e alguem arrastando.
 const SEM_ACAO = 0
 
@@ -50,6 +62,10 @@ export function CameraRig() {
   const ultimoToque = useRef(0)
   const alvo = useMemo(() => new THREE.Vector3(), [])
   const esfera = useMemo(() => new THREE.Spherical(), [])
+  // Voo em andamento com um cartao esperando o fim dele.
+  const voo = useRef(null)
+  const ondeEstou = useMemo(() => new THREE.Vector3(), [])
+  const ondeVou = useMemo(() => new THREE.Vector3(), [])
 
   // Caixa em que o alvo pode andar. `boundaryEnclosesCamera` fica no padrao
   // (falso) de proposito: o preso e o ALVO, nao a camera — ela precisa poder
@@ -154,6 +170,20 @@ export function CameraRig() {
         : (isMobile && preset.mobile) || preset
 
     ultimoToque.current = performance.now()
+
+    // Cartao esperando este voo? Guarda de onde ele parte, para saber quanto
+    // do caminho ja foi feito. Ler o estado aqui (e nao por dependencia) e de
+    // proposito: `openPanel` escreve painelPendente e cameraSeq no MESMO set,
+    // entao quando este efeito roda o pedido ja esta no store.
+    const pendente = useStore.getState().painelPendente
+    if (pendente) {
+      c.getPosition(ondeEstou, false)
+      ondeVou.set(...framing.position)
+      voo.current = { inicial: ondeEstou.distanceTo(ondeVou), desde: performance.now(), seq: cameraSeq }
+    } else {
+      voo.current = null
+    }
+
     c.setLookAt(...framing.position, ...framing.target, !reduced)
     // Sem transicao (movimento reduzido) a biblioteca nao emite nada que peca
     // quadro, e com o loop em pausa a camera mudava sem a tela mudar.
@@ -168,6 +198,19 @@ export function CameraRig() {
   useFrame((state, delta) => {
     const c = controls.current
     if (!c) return
+
+    // --- cartao que espera a camera chegar ---
+    if (voo.current) {
+      c.getPosition(ondeEstou, false)
+      c.getPosition(ondeVou, true)
+      const falta = ondeEstou.distanceTo(ondeVou)
+      const perto = falta <= Math.max(PISO_DO_VOO, voo.current.inicial * VOO_CUMPRIDO)
+      if (perto || performance.now() - voo.current.desde > TETO_DA_ESPERA) {
+        const { seq } = voo.current
+        voo.current = null
+        useStore.getState().revelarPainel(seq)
+      }
+    }
 
     // --- faixa do angulo vertical, refeita a cada quadro ---
     // cameraY = alvoY + distancia * cos(polar). Exigir cameraMinY <= cameraY

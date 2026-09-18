@@ -89,34 +89,95 @@ export const useStore = create(
       panel: null,
       selectedProduct: null,
 
+      // Painel JA PEDIDO que ainda nao subiu: ele espera a camera chegar no
+      // lugar da cena. Quem promove e o CameraRig, quando o voo acaba.
+      //
+      // Medido antes disto, no celular: o cartao aparecia 74 a 169 ms depois do
+      // toque e a camera so chegava perto do destino em ~1,0 s (e parava de vez
+      // em 1,8 s). Ou seja: a folha subia na frente do movimento, e a pessoa
+      // lia o texto sem nunca ver para onde o ateliê tinha andado — o 3D virava
+      // um plano de fundo que mexe sozinho.
+      painelPendente: null,
+
       openPanel: (panel) => {
         const spot = panelToHotspot[panel]
+        // Sem lugar na cena (carrinho, ajuda) nao ha voo nenhum para esperar.
+        // Antes de entrar tambem nao: o CameraRig so voa depois de `entered`, e
+        // um link direto ficaria esperando para sempre um voo que nao acontece.
+        if (!spot || !get().entered) {
+          set({ panel, painelPendente: null })
+          if (spot) get().discover(spot.id)
+          return
+        }
         set((s) => ({
-          panel,
-          view: spot ? spot.view : s.view,
-          // Painel com lugar na cena leva a camera ate la. A foto em close tem
-          // prioridade no CameraRig, e sem limpar aqui a camera ficava na foto
-          // com o rotulo dizendo "O telefone do ateliê" (medido abrindo Contato
-          // com um quadro em close, antes e depois de fechar o painel).
-          quadroFocado: spot ? null : s.quadroFocado,
-          cameraSeq: spot ? s.cameraSeq + 1 : s.cameraSeq,
+          // A folha que estava aberta desce AGORA: a viagem acontece com a cena
+          // a vista, e o cartao novo sobe no fim dela.
+          panel: null,
+          painelPendente: panel,
+          view: spot.view,
+          // A foto em close tem prioridade no CameraRig, e sem limpar aqui a
+          // camera ficava na foto com o rotulo dizendo "O telefone do ateliê"
+          // (medido abrindo Contato com um quadro em close).
+          quadroFocado: null,
+          cameraSeq: s.cameraSeq + 1,
         }))
-        if (spot) get().discover(spot.id)
+        get().discover(spot.id)
       },
 
-      closePanel: () => set({ panel: null, selectedProduct: null }),
+      // Promove o painel que estava esperando. Chamado pelo CameraRig quando a
+      // camera chega; `seq` evita que um voo velho abra o cartao de outro.
+      revelarPainel: (seq) =>
+        set((s) => (s.painelPendente && (seq === undefined || seq === s.cameraSeq) ? { panel: s.painelPendente, painelPendente: null } : s)),
+
+      closePanel: () => set({ panel: null, painelPendente: null, selectedProduct: null }),
+
+      // Fechar o cartao pelo X, pelo toque fora, arrastando para baixo, pelo Esc
+      // ou pelo voltar do navegador devolve a camera para a visao geral.
+      // `closePanel` continua existindo para quem NAO deve mexer na camera — o
+      // Boundary de painel, que fecha por causa de um erro.
+      dispensarPainel: () =>
+        set((s) => {
+          const veioDaCena =
+            Boolean(panelToHotspot[s.panel] || panelToHotspot[s.painelPendente]) ||
+            Boolean(s.focusedProduct) ||
+            Boolean(s.quadroFocado)
+          return {
+            panel: null,
+            painelPendente: null,
+            selectedProduct: null,
+            ...(veioDaCena
+              ? { view: 'home', focusedProduct: null, quadroFocado: null, cameraSeq: s.cameraSeq + 1 }
+              : {}),
+          }
+        }),
 
       // Abre o detalhe do produto e, opcionalmente, aponta a camera para a peca.
       // No celular o painel ocupa quase a tela inteira, entao quem chama passa
       // focus: false — mover a camera atras de uma folha opaca nao serve de nada.
-      openProduct: (id, { focus = true } = {}) =>
+      openProduct: (id, { focus = true } = {}) => {
+        if (!focus || !get().entered) {
+          set((s) => ({
+            panel: 'produto',
+            painelPendente: null,
+            selectedProduct: id,
+            focusedProduct: focus ? id : null,
+            view: focus ? 'prateleira' : s.view,
+            cameraSeq: focus ? s.cameraSeq + 1 : s.cameraSeq,
+          }))
+          return
+        }
+        // Com foco na peca vale a mesma regra do resto: primeiro a camera
+        // chega na prateleira, depois o cartao sobe.
         set((s) => ({
-          panel: 'produto',
+          panel: null,
+          painelPendente: 'produto',
           selectedProduct: id,
-          focusedProduct: focus ? id : null,
-          view: focus ? 'prateleira' : s.view,
-          cameraSeq: focus ? s.cameraSeq + 1 : s.cameraSeq,
-        })),
+          focusedProduct: id,
+          view: 'prateleira',
+          quadroFocado: null,
+          cameraSeq: s.cameraSeq + 1,
+        }))
+      },
 
       // Fecha o painel e destaca a peca na prateleira. E a acao
       // "ver na prateleira": aqui o 3D e o conteudo, nao a decoracao.
@@ -126,13 +187,14 @@ export const useStore = create(
           selectedProduct: id,
           view: 'prateleira',
           panel: null,
+          painelPendente: null,
           cameraSeq: s.cameraSeq + 1,
         })),
 
-      focarQuadro: (id) => set({ quadroFocado: id, panel: null, focusedProduct: null }),
+      focarQuadro: (id) => set({ quadroFocado: id, panel: null, painelPendente: null, focusedProduct: null }),
       clearFocus: () => set({ focusedProduct: null, selectedProduct: null, quadroFocado: null }),
 
-      backToProducts: () => set({ panel: 'produtos', selectedProduct: null, focusedProduct: null }),
+      backToProducts: () => set({ panel: 'produtos', painelPendente: null, selectedProduct: null, focusedProduct: null }),
 
       // --- hotspots: descoberta e visibilidade ---
       discovered: [],
@@ -145,7 +207,7 @@ export const useStore = create(
       tourStep: -1,
       startTour: () => {
         const first = hotspots[0]
-        set((s) => ({ tourStep: 0, panel: null, view: first.view, cameraSeq: s.cameraSeq + 1 }))
+        set((s) => ({ tourStep: 0, panel: null, painelPendente: null, view: first.view, cameraSeq: s.cameraSeq + 1 }))
         get().discover(first.id)
       },
       nextTourStep: () => {

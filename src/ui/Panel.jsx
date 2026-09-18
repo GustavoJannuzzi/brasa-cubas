@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useIsMobile } from '../hooks/useMedia'
+import { useStore } from '../store/useStore'
 import { IconBack, IconClose } from './Icons'
 import { vidro } from './vidro'
 
@@ -28,6 +29,15 @@ const FOCAVEIS =
  */
 export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
   const isMobile = useIsMobile()
+  const dispensarPainel = useStore((s) => s.dispensarPainel)
+  // Fechar o cartao e voltar para a visao geral sao a MESMA acao, e ela mora
+  // aqui — no unico lugar por onde passam o X, o toque fora, o arrasto para
+  // baixo e o Esc. Nos sete paineis, `onClose` e sempre `closePanel`; ele
+  // continua sendo chamado para nao mudar o contrato de quem usa o Panel.
+  const fechar = useCallback(() => {
+    dispensarPainel()
+    onClose()
+  }, [dispensarPainel, onClose])
   const sheet = useRef(null)
   const [drag, setDrag] = useState(0)
   const dragAtual = useRef(0)
@@ -53,11 +63,11 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') fechar()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [fechar])
 
   // ATENCAO a ordem: este efeito precisa vir ANTES do que move o foco para o
   // painel. Efeitos rodam na ordem em que sao declarados, e invertido ele
@@ -180,8 +190,8 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
     const d = dragAtual.current
     dragAtual.current = 0
     setDrag(0)
-    if (d > 110) onClose()
-  }, [onClose])
+    if (d > 110) fechar()
+  }, [fechar])
 
   return (
     <>
@@ -195,7 +205,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
           type="button"
           aria-hidden="true"
           tabIndex={-1}
-          onClick={onClose}
+          onClick={fechar}
           className="camada-cena fixed inset-0 z-30 bg-carvao/35"
           style={vidro(1)}
         />
@@ -258,7 +268,7 @@ export function Panel({ title, subtitle, onClose, onBack, children, footer }) {
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={fechar}
             aria-label="Fechar"
             className="btn-fantasma -my-1.5 h-11 w-11 shrink-0 p-0"
           >

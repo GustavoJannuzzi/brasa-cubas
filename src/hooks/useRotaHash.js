@@ -26,7 +26,9 @@ export function useRotaHash() {
 
     const aplicar = (painel, produto) => {
       const s = useStore.getState()
-      if (!painel) s.closePanel()
+      // Voltar do navegador (no Android, o gesto de fechar qualquer coisa) e
+      // fechar o cartao: leva junto a camera de volta a visao geral, igual ao X.
+      if (!painel) s.dispensarPainel()
       else if (painel === 'produto') s.openProduct(produto, { focus: false })
       else s.openPanel(painel)
     }
@@ -48,18 +50,26 @@ export function useRotaHash() {
     // efeito enxerga o valor do render, que na dupla montagem do StrictMode
     // chega velho — e o ramo de "fechou" apagava o hash que o bloco acima
     // tinha acabado de escrever. A assinatura entrega o anterior de verdade.
+    // O endereco segue o painel PEDIDO, e nao o que ja subiu: entre o toque e a
+    // chegada da camera o cartao fica pendurado em `painelPendente` (ver o
+    // store). Sem isto, trocar de painel passava por um instante com os dois
+    // nulos, e este assinante lia isso como "fechou" — disparava history.back()
+    // e o push do painel novo corria contra ele.
+    const painelDe = (s) => s.panel || s.painelPendente
     const parar = useStore.subscribe((s, ant) => {
-      if (s.panel === ant.panel && s.selectedProduct === ant.selectedProduct) return
+      const painel = painelDe(s)
+      const antes = painelDe(ant)
+      if (painel === antes && s.selectedProduct === ant.selectedProduct) return
 
-      const alvo = hashDoEstado(s.panel, s.selectedProduct)
+      const alvo = hashDoEstado(painel, s.selectedProduct)
       // Mudanca que veio do proprio historico: o endereco ja esta certo.
       if (alvo === window.location.hash) return
 
       if (alvo) {
-        if (ant.panel) {
-          window.history.replaceState({ painel: s.panel }, '', alvo)
+        if (antes) {
+          window.history.replaceState({ painel }, '', alvo)
         } else {
-          window.history.pushState({ painel: s.panel }, '', alvo)
+          window.history.pushState({ painel }, '', alvo)
           empurrado = true
         }
         return

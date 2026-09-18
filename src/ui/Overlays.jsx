@@ -157,7 +157,11 @@ export function FocusedProductBar() {
   const addToCart = useStore((s) => s.addToCart)
   const clearFocus = useStore((s) => s.clearFocus)
   const barra = useRef(null)
-  const visivel = Boolean(focusedProduct && !panel)
+  // `painelPendente` conta como painel aberto: tocar numa peca da prateleira
+  // destaca a peca AGORA e abre o cartao quando a camera chega — sem isto a
+  // barra piscava por meio segundo no meio do voo, so para o cartao cobri-la.
+  const painelPendente = useStore((s) => s.painelPendente)
+  const visivel = Boolean(focusedProduct && !panel && !painelPendente)
 
   // "Ver na prateleira" fecha o painel e mostra esta barra: o botao sumia com o
   // foco dentro e ele caia no body (medido). Se o foco se perdeu, vem para ca.

@@ -7,6 +7,7 @@ import { useStore } from './store/useStore'
 import { Experience } from './three/experienceLazy'
 import { Aviso3D } from './ui/Aviso3D'
 import { Boundary3D } from './ui/Boundary3D'
+import { FotoNav } from './ui/FotoNav'
 import { Header, MobileNav } from './ui/Header'
 import { Loader, Onboarding } from './ui/Intro'
 import { PainelSeguro } from './ui/PainelSeguro'
@@ -152,6 +153,7 @@ export default function App() {
           <OrientationBar />
           <HeroCard />
           <FocusedProductBar />
+          <FotoNav />
           <TourBar />
         </main>
         <MobileNav />

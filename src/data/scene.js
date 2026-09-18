@@ -179,7 +179,20 @@ export const quadros = [
 export const retratos = [
   { id: 'r1', foto: '/fotos/retrato-04.jpg', pos: [1.31, 1.17, -1.6], gira: -0.34, w: 0.15, prop: 0.8 },
   { id: 'r2', foto: '/fotos/retrato-01.jpg', pos: [-0.86, 0.9825, -1.5], gira: 0.42, w: 0.14, prop: 1 },
-  { id: 'r3', foto: '/fotos/retrato-03.jpg', pos: [0.63, 0.78, 0.31], gira: -0.22, w: 0.115, prop: 1 },
+  // O porta-retrato da bancada ganha enquadramento PROPRIO, de grupo: sozinho,
+  // a conta por largura punha a camera a 33 cm dele e a moldura enchia a tela,
+  // sem dizer onde a pessoa estava. Daqui aparecem as quatro fotos daquele lado
+  // do ateliê — esta, a do parapeito da janela e o diptico da parede — com esta
+  // maior em primeiro plano.
+  {
+    id: 'r3',
+    foto: '/fotos/retrato-03.jpg',
+    pos: [0.63, 0.78, 0.31],
+    gira: -0.22,
+    w: 0.115,
+    prop: 1,
+    grupo: ['r3', 'r1', 'q4', 'q5'],
+  },
 ]
 
 /**
@@ -188,6 +201,9 @@ export const retratos = [
  * normal e (sin, 0, cos). A camera vai nessa direcao, na altura do quadro.
  */
 export const quadroFraming = (quadro, mobile) => {
+  // Moldura que pertence a um grupo tem enquadramento proprio: o canto inteiro,
+  // com ela em primeiro plano.
+  if (quadro.grupo) return (mobile && CANTO_DAS_FOTOS.mobile) || CANTO_DAS_FOTOS
   // Distancia proporcional a LARGURA, e nao fixa: a mesma distancia que
   // enquadra um quadro de 23 cm deixaria um porta-retrato de 11,5 cm pequeno no
   // meio da tela. Assim todos ocupam mais ou menos o mesmo pedaco do quadro.
@@ -198,6 +214,71 @@ export const quadroFraming = (quadro, mobile) => {
   return {
     position: [x + nx * d, y, z + nz * d],
     target: [x, y, z],
+  }
+}
+
+/**
+ * Enquadramento do canto das fotos: a camera fica na frente da bancada, do lado
+ * esquerdo, e olha para o canto da janela. Conferido na tela nas duas larguras.
+ */
+const CANTO_DAS_FOTOS = {
+  position: [-0.12, 1.12, 1.42],
+  target: [1.22, 1.16, -0.86],
+  // Em retrato o campo horizontal e menor (32 graus contra 57,7), entao a
+  // camera recua um pouco mais para as quatro molduras caberem.
+  mobile: { position: [-0.12, 1.13, 1.58], target: [1.24, 1.16, -0.9] },
+}
+
+// --- passeio entre as fotos da Isabela --------------------------------------
+// Sao 8 molduras e 3 fotos distintas: o que a seta percorre e LUGAR, nao
+// imagem. A ordem segue a posicao real na sala, da esquerda para a direita de
+// quem esta dentro dela, e a coluna da parede do fundo anda na vertical.
+//
+// A coluna conta como UMA parada na horizontal: entrando nela pela seta, a
+// pessoa cai na moldura da mesma altura e sobe ou desce dali.
+export const colunaDoFundo = ['q1', 'q2', 'q3']
+const PARADAS = [colunaDoFundo, ['r2'], ['r1'], ['q4'], ['q5'], ['r3']]
+
+// Forma curta para o celular: ao lado de ate quatro setas sobram ~150 px, e a
+// frase inteira truncava ("6/8 · na parede ..."). A frase completa continua no
+// leitor de tela e no desktop.
+export const lugarCurtoDaFoto = {
+  q1: 'fundo, em cima',
+  q2: 'fundo, no meio',
+  q3: 'fundo, embaixo',
+  r2: 'na prateleira',
+  r1: 'no parapeito',
+  q4: 'na janela',
+  q5: 'na janela',
+  r3: 'na bancada',
+}
+
+export const lugarDaFoto = {
+  q1: 'parede do fundo, em cima',
+  q2: 'parede do fundo, no meio',
+  q3: 'parede do fundo, embaixo',
+  r2: 'na prateleira de baixo',
+  r1: 'no parapeito da janela',
+  q4: 'na parede da janela',
+  q5: 'na parede da janela',
+  r3: 'na bancada',
+}
+
+/** Todas as molduras, na ordem do passeio. */
+export const passeioDeFotos = PARADAS.flat()
+
+/** Vizinhas de uma moldura em cada direcao, ou null quando nao ha. */
+export const vizinhasDaFoto = (id) => {
+  const parada = PARADAS.findIndex((p) => p.includes(id))
+  if (parada < 0) return { esquerda: null, direita: null, cima: null, baixo: null }
+  const atual = PARADAS[parada]
+  const i = atual.indexOf(id)
+  const entrar = (p) => (p ? (p[Math.min(i, p.length - 1)] ?? p[0]) : null)
+  return {
+    esquerda: parada > 0 ? entrar(PARADAS[parada - 1]) : null,
+    direita: parada < PARADAS.length - 1 ? entrar(PARADAS[parada + 1]) : null,
+    cima: i > 0 ? atual[i - 1] : null,
+    baixo: i < atual.length - 1 ? atual[i + 1] : null,
   }
 }
 

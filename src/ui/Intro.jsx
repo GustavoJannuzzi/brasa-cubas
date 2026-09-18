@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom'
 import { studio } from '../data/studio'
 import { products } from '../data/products'
 import { useStore } from '../store/useStore'
+import { FlorQueAbre } from './FlorQueAbre'
 import { IconArrow, IconLayers, MarcadorEmLinha } from './Icons'
 import { PieceThumb } from './PieceThumb'
 
@@ -68,14 +69,11 @@ export function Loader() {
   return (
     <div className="camada-cena fixed inset-0 z-50 flex flex-col items-center justify-center bg-carvao px-6 text-center">
       <div className="anim-sobe flex w-full max-w-sm flex-col items-center">
-        <div className="mb-6 flex gap-1.5">
-          {products.slice(2, 5).map((p, i) => (
-            <span key={p.id} style={{ opacity: pronto ? 1 : 0.35 + i * 0.1, transition: 'opacity .5s' }}>
-              <PieceThumb piece={p.piece} size={i === 1 ? 74 : 58} />
-            </span>
-          ))}
+        {/* A flor que abre no lugar das tres miniaturas paradas: e o que da vida
+            a esta tela enquanto o pacote do 3D baixa. Ver src/ui/FlorQueAbre.jsx. */}
+        <div className="mb-5">
+          <FlorQueAbre pronta={pronto} />
         </div>
-
         <h1 translate="no" className="font-display text-[34px] leading-none text-porcelana">
           {studio.name}
         </h1>
@@ -86,21 +84,6 @@ export function Loader() {
           {studio.pitch} Aqui você vê as peças, monta um pedido e pede orçamento — dentro do
           ateliê, em 3D.
         </p>
-
-        {/* A marca dela respirando, no lugar da barra que corria de um lado ao
-            outro. Mais leve, e diz "estou montando" sem fingir porcentagem —
-            que era o motivo de a barra ser indeterminada. Pronta, ela para de
-            respirar: a quietude e o aviso de que acabou. O respiro entra na
-            lista do `prefers-reduced-motion` no CSS, como as outras. */}
-        <div className="mt-8 grid place-items-center" aria-hidden="true">
-          <span
-            className={`grid h-9 w-9 place-items-center rounded-full bg-brasa text-porcelana ${
-              pronto ? '' : 'anim-respira'
-            }`}
-          >
-            <span className="font-display text-[15px] leading-none">bc</span>
-          </span>
-        </div>
 
         <p role="status" aria-live="polite" className="mt-3 text-[12.5px] text-porcelana/60">
           {status}

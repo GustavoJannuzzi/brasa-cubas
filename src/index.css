@@ -304,6 +304,71 @@
   animation: respira-marca 2.6s var(--ease-suave) infinite;
 }
 
+/* --- a florzinha da tela inicial ---------------------------------------- */
+/* O estado PARADO e a flor pronta: petala aberta, bolinha de massa encolhida
+   no miolo. A animacao e que parte do fechado, e ela so existe dentro da media
+   query de movimento. Com movimento reduzido, ou se este CSS nao chegar, o que
+   se ve e a flor inteira — nunca um palco vazio. */
+.flor-massa {
+  transform: scale(0.5);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .flor:not(.flor--pronta) .flor-petala {
+    animation: flor-petala 5.2s var(--ease-suave) infinite;
+  }
+  .flor:not(.flor--pronta) .flor-massa {
+    animation: flor-massa 5.2s var(--ease-suave) infinite;
+  }
+  .flor:not(.flor--pronta) .flor-folha {
+    animation: flor-folha 5.2s var(--ease-suave) infinite;
+  }
+  .flor:not(.flor--pronta) .flor-balanco {
+    animation: flor-balanco 5.2s ease-in-out infinite;
+  }
+  /* Cada petala com o proprio atraso: e o que faz abrir em vez de aparecer. */
+  .flor-petala--0 { animation-delay: 0s; }
+  .flor-petala--1 { animation-delay: 0.13s; }
+  .flor-petala--2 { animation-delay: 0.26s; }
+  .flor-petala--3 { animation-delay: 0.39s; }
+  .flor-petala--4 { animation-delay: 0.52s; }
+  .flor-petala--5 { animation-delay: 0.65s; }
+  .flor-folha--dir { animation-delay: 0.35s; }
+  /* Pronta: a flor para ABERTA. A quietude e o aviso de que acabou — por isso
+     um unico pulinho, e nada mais se mexe. */
+  .flor--pronta .flor-balanco {
+    animation: flor-pronta 0.55s var(--ease-suave) 1;
+  }
+}
+
+@keyframes flor-petala {
+  0%, 6% { transform: scale(0.04); }
+  38%, 88% { transform: scale(1); }
+  100% { transform: scale(0.04); }
+}
+
+@keyframes flor-massa {
+  0%, 6% { transform: scale(1); }
+  38%, 88% { transform: scale(0.5); }
+  100% { transform: scale(1); }
+}
+
+@keyframes flor-folha {
+  0%, 14% { transform: scale(0.05); }
+  46%, 88% { transform: scale(1); }
+  100% { transform: scale(0.05); }
+}
+
+@keyframes flor-balanco {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+
+@keyframes flor-pronta {
+  0% { transform: scale(0.94); }
+  60% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
 @media (prefers-reduced-motion: reduce) {
   .anim-pulso,
   .anim-sobe,

@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom'
 import { studio } from '../data/studio'
 import { products } from '../data/products'
 import { useStore } from '../store/useStore'
-import { FlorQueAbre } from './FlorQueAbre'
+import { IsabelaDaEntrada } from './IsabelaDaEntrada'
 import { IconArrow, IconLayers, MarcadorEmLinha } from './Icons'
 import { PieceThumb } from './PieceThumb'
 
@@ -69,10 +69,12 @@ export function Loader() {
   return (
     <div className="camada-cena fixed inset-0 z-50 flex flex-col items-center justify-center bg-carvao px-6 text-center">
       <div className="anim-sobe flex w-full max-w-sm flex-col items-center">
-        {/* A flor que abre no lugar das tres miniaturas paradas: e o que da vida
-            a esta tela enquanto o pacote do 3D baixa. Ver src/ui/FlorQueAbre.jsx. */}
-        <div className="mb-5">
-          <FlorQueAbre pronta={pronto} />
+        {/* A Isabela desenhada, com a flor abrindo na mao dela: e o que da vida a
+            esta tela enquanto o pacote do 3D baixa. Ela existe SO aqui — quem
+            entra no ateliê nao encontra figura nenhuma na cena.
+            Ver src/ui/IsabelaDaEntrada.jsx e src/ui/FlorQueAbre.jsx. */}
+        <div className="mb-3 flex justify-center" style={{ height: 'clamp(9.5rem, 27vh, 17rem)' }}>
+          <IsabelaDaEntrada pronta={pronto} />
         </div>
         <h1 translate="no" className="font-display text-[34px] leading-none text-porcelana">
           {studio.name}

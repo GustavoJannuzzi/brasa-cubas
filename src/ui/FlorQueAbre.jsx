@@ -27,13 +27,9 @@ export function FlorQueAbre({ pronta }) {
   const petalas = [0, 1, 2, 3, 4, 5]
 
   return (
-    <svg
-      viewBox="0 0 140 140"
-      width="132"
-      height="132"
-      aria-hidden="true"
-      className={`flor ${pronta ? 'flor--pronta' : ''}`}
-    >
+    // Sem largura fixa: a flor mora na MAO da figura da entrada e acompanha o
+    // tamanho dela, que encolhe junto com a altura da tela.
+    <svg viewBox="0 0 140 140" aria-hidden="true" className={`flor block w-full ${pronta ? 'flor--pronta' : ''}`}>
       {/* bancada: so uma sombra de apoio, para a flor nao flutuar no escuro */}
       <ellipse cx="70" cy="116" rx="34" ry="5" fill="#f7f1e8" opacity="0.07" />
 

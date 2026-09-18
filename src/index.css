@@ -414,3 +414,40 @@
     color: HighlightText;
   }
 }
+
+/* A figura da entrada respira. Como a flor, a animacao e OPT-IN: sem ela fica a
+   figura parada, que e o estado certo — nunca um palco vazio. */
+.isabela-corpo {
+  transform-origin: 50% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .isabela-corpo {
+    animation: isabela-respira 5.5s var(--ease-suave) infinite;
+  }
+  /* Quando o ateliê fica pronto ela levanta a flor UMA vez — o mesmo aviso que
+     a flor ja da ao parar aberta, dito com o corpo. `forwards` para nao voltar
+     de tranco no fim. */
+  .isabela-entrada--pronta .isabela-flor {
+    animation: isabela-oferece 0.9s var(--ease-suave) 1 forwards;
+  }
+  @keyframes isabela-oferece {
+    0% {
+      transform: translateY(0) rotate(0deg);
+    }
+    45% {
+      transform: translateY(-4%) rotate(-3deg);
+    }
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+  }
+  @keyframes isabela-respira {
+    0%,
+    100% {
+      transform: translateY(0) scaleY(1);
+    }
+    50% {
+      transform: translateY(-0.7%) scaleY(1.004);
+    }
+  }
+}

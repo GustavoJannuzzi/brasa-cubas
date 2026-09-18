@@ -102,11 +102,24 @@ export const useStore = create(
       openPanel: (panel) => {
         const spot = panelToHotspot[panel]
         // Sem lugar na cena (carrinho, ajuda) nao ha voo nenhum para esperar.
-        // Antes de entrar tambem nao: o CameraRig so voa depois de `entered`, e
-        // um link direto ficaria esperando para sempre um voo que nao acontece.
-        if (!spot || !get().entered) {
+        if (!spot) {
           set({ panel, painelPendente: null })
-          if (spot) get().discover(spot.id)
+          return
+        }
+        // Antes de entrar tambem nao ha voo: o CameraRig so voa depois de
+        // `entered`, e um link direto (#orcamento) ficaria esperando para sempre
+        // um voo que nao acontece. O enquadramento continua sendo pedido aqui —
+        // sem isso quem chega pelo link entrava no ateliê olhando para a visao
+        // geral, com o painel do orcamento aberto por cima.
+        if (!get().entered) {
+          set((s) => ({
+            panel,
+            painelPendente: null,
+            view: spot.view,
+            quadroFocado: null,
+            cameraSeq: s.cameraSeq + 1,
+          }))
+          get().discover(spot.id)
           return
         }
         set((s) => ({
